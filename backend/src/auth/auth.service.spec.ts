@@ -1,4 +1,6 @@
+import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
+import { UsersService } from '../users/users.service';
 import { AuthService } from './auth.service';
 
 describe('AuthService', () => {
@@ -7,7 +9,16 @@ describe('AuthService', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [AuthService],
-    }).compile();
+    })
+      .useMocker((token) => {
+        if (token === UsersService) {
+          return { findOne: jest.fn().mockResolvedValue({}) };
+        }
+        if (token === JwtService) {
+          return { sign: jest.fn().mockReturnValue('token-xyz') };
+        }
+      })
+      .compile();
 
     service = module.get<AuthService>(AuthService);
   });
