@@ -1,0 +1,29 @@
+version: "2"
+
+services:
+  backend:
+    container_name: oinkbrew_api
+    build: backend/.
+    command: npm run start:dev
+    cpu_shares: 100
+    mem_limit: 2560000000
+    depends_on:
+      - mongo
+    ports:
+      - "3000:3000"
+    environment:
+      JWT_ACCESS_TOKEN_SECRET: "7a81ac07-30c1-40bd-82af-a60536038464"
+      JWT_ACCESS_TOKEN_EXPIRATION_TIME: "900"
+      JWT_REFRESH_TOKEN_SECRET: "bfc23553-ab7a-4d01-b7d7-9602a00db09b"
+      JWT_REFRESH_TOKEN_EXPIRATION_TIME: "604800"
+    volumes:
+      - ./backend/.:/opt/app
+      - /opt/app/node_modules
+
+  mongo:
+    container_name: oinkbrew_mongo
+    build: docker/definitions/mongo
+    ports:
+      - "27021:27017"
+    logging:
+      driver: "none"

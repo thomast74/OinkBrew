@@ -1,0 +1,30 @@
+#!/bin/bash
+
+set -e
+
+COMPOSE_PROJECT_NAME=oinkbrew
+
+# Linux fix
+CONFIG_FILE=docker-compose.yml
+
+CACHE_INIT=false
+
+SERVICES=(backend)
+SERVICES_DIR=(backend)
+
+BUILD_CMD="docker-compose -f $CONFIG_FILE build"
+UP_CMD="docker-compose -f $CONFIG_FILE up"
+
+function rmContainers() {
+  echo "Removing containers"
+  docker-compose -f $CONFIG_FILE rm -fv $SERVICE_NAME || true
+}
+
+for i in "${!SERVICES[@]}"
+do
+  SERVICE_NAME=${SERVICES[$i]} SERVICE_DIR=${SERVICES_DIR[$i]} rmContainers
+done
+
+$BUILD_CMD
+
+$UP_CMD

@@ -1,0 +1,11 @@
+source 'https://github.com/CocoaPods/Specs.git'
+source 'https://bitbucket.org/aaa-national/aaamobile_acg_ccm_pod_spec/branch/master.git'
+
+
+platform :ios, '12.0'
+use_frameworks!
+
+target 'OinkBrew Mobile' do
+	pod 'Particle-SDK'
+end
+

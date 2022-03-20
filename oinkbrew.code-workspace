@@ -1,0 +1,22 @@
+{
+  "folders": [
+	{
+		"path": "backend"
+	},
+	{
+		"path": "docker"
+	},
+	{
+		"path": "firmware"
+	},
+	{
+		"path": "mobile_ios"
+	},
+	{
+		"path": "."
+	}
+],
+  "settings": {
+    "cortex-debug.openocdPath": "${command:particle.getDebuggerOpenocdPath}"
+  }
+}
