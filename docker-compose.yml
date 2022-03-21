@@ -1,4 +1,4 @@
-version: "2"
+version: '3'
 
 services:
   backend:
@@ -8,22 +8,25 @@ services:
     cpu_shares: 100
     mem_limit: 2560000000
     depends_on:
-      - mongo
+      - postgresql
     ports:
       - "3000:3000"
     environment:
       JWT_ACCESS_TOKEN_SECRET: "7a81ac07-30c1-40bd-82af-a60536038464"
-      JWT_ACCESS_TOKEN_EXPIRATION_TIME: "900"
+      JWT_ACCESS_TOKEN_EXPIRATION_TIME: "15"
       JWT_REFRESH_TOKEN_SECRET: "bfc23553-ab7a-4d01-b7d7-9602a00db09b"
-      JWT_REFRESH_TOKEN_EXPIRATION_TIME: "604800"
+      JWT_REFRESH_TOKEN_EXPIRATION_TIME: "7"
+      DATABASE_URL: "postgresql://postgres:123@localhost:5432/oinkbrew?schema=public"
     volumes:
       - ./backend/.:/opt/app
       - /opt/app/node_modules
 
-  mongo:
-    container_name: oinkbrew_mongo
-    build: docker/definitions/mongo
+  postgresql:
+    container_name: oinkbrew_db
+    image: postgres:13
     ports:
-      - "27021:27017"
-    logging:
-      driver: "none"
+      - 5432:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123
+      POSTGRES_DB: nestjs
