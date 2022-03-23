@@ -1,12 +1,10 @@
-version: '3'
+version: '3.8'
 
 services:
   backend:
     container_name: oinkbrew_api
     build: backend/.
     command: npm run start:dev
-    cpu_shares: 100
-    mem_limit: 2560000000
     depends_on:
       - postgresql
     ports:
@@ -22,8 +20,8 @@ services:
       - /opt/app/node_modules
 
   postgresql:
-    container_name: oinkbrew_db
     image: postgres:13
+    container_name: oinkbrew_db
     ports:
       - 5432:5432
     environment:
