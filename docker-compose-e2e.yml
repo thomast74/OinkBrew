@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  postgresql-e2e:
+    image: postgres:13
+    container_name: oinkbrew_db_e2e
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123
+      POSTGRES_DB: oinkbrew

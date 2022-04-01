@@ -9,31 +9,47 @@ import {
 import { User } from '../users/types';
 import { AuthService } from './auth.service';
 import { GetRequestUser, GetRequestUserId, Public } from './decorators';
-import { AuthDto } from './dtos';
-import { JwtRefreshAuthGuard, LoggedInAuthGuard } from './guards';
+import { AuthDto, OtpDto } from './dtos';
+import {
+  JwtOtphAuthGuard as JwtOtpAuthGuard,
+  JwtRefreshAuthGuard,
+  LoggedInAuthGuard,
+} from './guards';
 import { JwtPayloadWithRefreshToken, Tokens } from './types';
 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  // TODO: Check if user has TOTP verified; yes: send response to request TOTP with totp token; no: return error to setup TOTP
-  // TODO: Verify TOTP, if valid mark user as verified and return access token, if not return 400 error
-  // TODO: Check TOTP, if valid return access token, if not return 400 error
-
   @Public()
   @Post('signup')
-  @HttpCode(HttpStatus.CREATED)
+  @HttpCode(HttpStatus.UNAUTHORIZED)
   async signup(@Body() dto: AuthDto) {
     return this.authService.signup(dto);
   }
 
   @Public()
-  @Post('signin')
-  @UseGuards(LoggedInAuthGuard)
+  @Post('signupOtp')
+  @UseGuards(JwtOtpAuthGuard)
   @HttpCode(HttpStatus.OK)
+  async signupOtp(@Body() dto: OtpDto) {
+    return this.authService.confirmOtp(dto, true);
+  }
+
+  @Public()
+  @Post('signin')
+  @HttpCode(HttpStatus.UNAUTHORIZED)
+  @UseGuards(LoggedInAuthGuard)
   async signin(@GetRequestUser() user: User) {
-    return this.authService.signin(user);
+    return await this.authService.signin(user);
+  }
+
+  @Public()
+  @Post('signinOtp')
+  @UseGuards(JwtOtpAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async signinOtp(@Body() dto: OtpDto) {
+    return this.authService.confirmOtp(dto, false);
   }
 
   @Post('logout')

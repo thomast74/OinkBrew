@@ -8,6 +8,7 @@ import { AuthService } from './auth.service';
 import jwtConfig from './config/jwt.config';
 import {
   JwtAccessStrategy,
+  JwtOtpStrategy,
   JwtRefreshStrategy,
   LoggedInStrategy,
 } from './strategies';
@@ -27,6 +28,7 @@ import {
     LoggedInStrategy,
     JwtAccessStrategy,
     JwtRefreshStrategy,
+    JwtOtpStrategy,
   ],
   controllers: [AuthController],
 })

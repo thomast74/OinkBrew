@@ -6,10 +6,7 @@ import jwtConfig from '../config/jwt.config';
 import { JwtPayload } from '../types';
 
 @Injectable()
-export class JwtAccessStrategy extends PassportStrategy(
-  Strategy,
-  'jwt-access',
-) {
+export class JwtOtpStrategy extends PassportStrategy(Strategy, 'jwt-otp') {
   constructor(
     @Inject(jwtConfig.KEY)
     jwt: ConfigType<typeof jwtConfig>,
@@ -17,11 +14,12 @@ export class JwtAccessStrategy extends PassportStrategy(
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: jwt.accessTokenSecret,
+      passReqToCallback: true,
+      secretOrKey: jwt.otpTokenSecret,
     });
   }
 
-  async validate(payload: JwtPayload) {
+  validate(payload: JwtPayload) {
     return { sub: payload.sub, email: payload.email };
   }
 }

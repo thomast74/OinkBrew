@@ -10,6 +10,8 @@ services:
     ports:
       - "3000:3000"
     environment:
+      JWT_OTP_TOKEN_SECRET: "169ed2a7-cfbb-4d8a-ba41-abd75ac40f74"
+      JWT_OTP_TOKEN_EXPIRATION_TIME: "15"
       JWT_ACCESS_TOKEN_SECRET: "7a81ac07-30c1-40bd-82af-a60536038464"
       JWT_ACCESS_TOKEN_EXPIRATION_TIME: "15"
       JWT_REFRESH_TOKEN_SECRET: "bfc23553-ab7a-4d01-b7d7-9602a00db09b"
@@ -27,4 +29,4 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 123
-      POSTGRES_DB: nestjs
+      POSTGRES_DB: oinkbrew

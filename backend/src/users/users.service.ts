@@ -1,8 +1,9 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 import * as argon2 from 'argon2';
+import { authenticator } from 'otplib';
 import { AuthDto } from '../auth/dtos';
-import { Argon2Options } from '../constants';
+import { ARGON_OPTIONS } from '../constants';
 import { PrismaService } from '../prisma/prisma.service';
 import { User } from './types/user.type';
 
@@ -11,13 +12,15 @@ export class UsersService {
   constructor(private prisma: PrismaService) {}
 
   async create(userDto: AuthDto): Promise<User> {
-    const hash = await argon2.hash(userDto.password, Argon2Options);
+    const hash = await argon2.hash(userDto.password, ARGON_OPTIONS);
+    const otpSecret = authenticator.generateSecret();
 
-    const user = await this.prisma.user
+    const user = await this.prisma.client.user
       .create({
         data: {
           email: userDto.email,
           hash,
+          otpSecret,
         },
       })
       .catch((error) => {
@@ -34,40 +37,52 @@ export class UsersService {
 
   async updateRefreshToken(
     userId: number,
-    refreshToken: string,
+    refreshToken?: string,
+    confirmOtp?: boolean,
   ): Promise<void> {
-    let hash = null;
-    if (refreshToken) {
-      hash = await argon2.hash(refreshToken, Argon2Options);
+    const data = {} as any;
+
+    data.hashedRt = refreshToken
+      ? await argon2.hash(refreshToken, ARGON_OPTIONS)
+      : null;
+
+    if (confirmOtp) {
+      data.otpConfirmed = true;
     }
 
-    await this.prisma.user.update({
+    await this.prisma.client.user.update({
       where: {
         id: userId,
       },
-      data: {
-        hashedRt: hash,
-      },
+      data,
     });
   }
 
   async findById(userId: number): Promise<User | undefined> {
-    const user = await this.prisma.user.findUnique({
-      where: {
-        id: userId,
-      },
-    });
+    try {
+      const user = await this.prisma.client.user.findUnique({
+        where: {
+          id: userId,
+        },
+      });
 
-    return user as User;
+      return user as User;
+    } catch (error) {
+      return undefined;
+    }
   }
 
   async findByEmail(email: string): Promise<User | undefined> {
-    const user = await this.prisma.user.findUnique({
-      where: {
-        email: email,
-      },
-    });
+    try {
+      const user = await this.prisma.client.user.findUnique({
+        where: {
+          email: email,
+        },
+      });
 
-    return user as User;
+      return user as User;
+    } catch (error) {
+      return undefined;
+    }
   }
 }
