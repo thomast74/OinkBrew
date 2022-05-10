@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "backgound_startup.jpeg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}
