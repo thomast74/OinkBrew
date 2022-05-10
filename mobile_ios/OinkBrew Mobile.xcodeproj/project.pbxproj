@@ -3,41 +3,98 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 51;
+	objectVersion = 50;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		8646849D68F756B8CEED3D57 /* Pods_OinkBrew_Mobile.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B225B74C864C2E2B2555E4CF /* Pods_OinkBrew_Mobile.framework */; };
-		D310EC4327D9F77B00994AD6 /* LoginViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D310EC4227D9F77B00994AD6 /* LoginViewModel.swift */; };
-		D381CFA727E085D50058F0BE /* TextFieldAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = D381CFA627E085D50058F0BE /* TextFieldAlert.swift */; };
+		D312D0C32817FB6E00A91252 /* UserStateViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D312D0C22817FB6E00A91252 /* UserStateViewModel.swift */; };
+		D312D0C52817FD4E00A91252 /* PreferenceViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D312D0C42817FD4E00A91252 /* PreferenceViewModel.swift */; };
+		D312D0C7281800D300A91252 /* PreferenceScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D312D0C6281800D300A91252 /* PreferenceScreen.swift */; };
+		D312D0C9281800EA00A91252 /* SignInScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D312D0C8281800EA00A91252 /* SignInScreen.swift */; };
+		D312D0CB281800FE00A91252 /* SignUpScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D312D0CA281800FE00A91252 /* SignUpScreen.swift */; };
+		D312D0CD2818011400A91252 /* HomeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D312D0CC2818011400A91252 /* HomeScreen.swift */; };
+		D35D60492829329A00F6710F /* XCUIApplication.UserDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = D35D60482829329A00F6710F /* XCUIApplication.UserDefaults.swift */; };
+		D35D604B282A733300F6710F /* TextFieldStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = D35D604A282A733300F6710F /* TextFieldStyles.swift */; };
+		D36950FC281AC1C900D51C3B /* BackgroundStartUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D36950FB281AC1C900D51C3B /* BackgroundStartUpView.swift */; };
+		D36950FF281E400100D51C3B /* ButtonStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = D36950FE281E400100D51C3B /* ButtonStyles.swift */; };
+		D3695101281E518C00D51C3B /* DeviceRotationViewModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3695100281E518C00D51C3B /* DeviceRotationViewModifier.swift */; };
+		D3695103281E5BFE00D51C3B /* ViewStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3695102281E5BFE00D51C3B /* ViewStyles.swift */; };
+		D369511228264B7500D51C3B /* PreferenceViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D369511128264B7500D51C3B /* PreferenceViewModelTests.swift */; };
+		D369511828264FD900D51C3B /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = D369511728264FD900D51C3B /* Constants.swift */; };
 		D397A20826934326008F724D /* OinkBrew_MobileApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D397A20726934326008F724D /* OinkBrew_MobileApp.swift */; };
-		D397A20A26934326008F724D /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D397A20926934326008F724D /* LoginView.swift */; };
 		D397A20C26934327008F724D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D397A20B26934327008F724D /* Assets.xcassets */; };
 		D397A20F26934327008F724D /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D397A20E26934327008F724D /* Preview Assets.xcassets */; };
 		D397A21726934509008F724D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D397A21626934509008F724D /* AppDelegate.swift */; };
+		D3B4E0FD282804CE0063BEE8 /* PreferenceScreenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3B4E0FC282804CE0063BEE8 /* PreferenceScreenTests.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		D369510C28264AE900D51C3B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D397A1FC26934326008F724D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D397A20326934326008F724D;
+			remoteInfo = "OinkBrew Mobile";
+		};
+		D3B4E0F72828044A0063BEE8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D397A1FC26934326008F724D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D397A20326934326008F724D;
+			remoteInfo = "OinkBrew Mobile";
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		B225B74C864C2E2B2555E4CF /* Pods_OinkBrew_Mobile.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_OinkBrew_Mobile.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D1209AE12A0B4581EE702E09 /* Pods-OinkBrew Mobile.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OinkBrew Mobile.debug.xcconfig"; path = "Target Support Files/Pods-OinkBrew Mobile/Pods-OinkBrew Mobile.debug.xcconfig"; sourceTree = "<group>"; };
-		D310EC4227D9F77B00994AD6 /* LoginViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewModel.swift; sourceTree = "<group>"; };
-		D381CFA627E085D50058F0BE /* TextFieldAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextFieldAlert.swift; sourceTree = "<group>"; };
+		D312D0C22817FB6E00A91252 /* UserStateViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserStateViewModel.swift; sourceTree = "<group>"; };
+		D312D0C42817FD4E00A91252 /* PreferenceViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferenceViewModel.swift; sourceTree = "<group>"; };
+		D312D0C6281800D300A91252 /* PreferenceScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferenceScreen.swift; sourceTree = "<group>"; };
+		D312D0C8281800EA00A91252 /* SignInScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInScreen.swift; sourceTree = "<group>"; };
+		D312D0CA281800FE00A91252 /* SignUpScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpScreen.swift; sourceTree = "<group>"; };
+		D312D0CC2818011400A91252 /* HomeScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeScreen.swift; sourceTree = "<group>"; };
+		D35D60482829329A00F6710F /* XCUIApplication.UserDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XCUIApplication.UserDefaults.swift; sourceTree = "<group>"; };
+		D35D604A282A733300F6710F /* TextFieldStyles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextFieldStyles.swift; sourceTree = "<group>"; };
+		D36950FB281AC1C900D51C3B /* BackgroundStartUpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundStartUpView.swift; sourceTree = "<group>"; };
+		D36950FE281E400100D51C3B /* ButtonStyles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonStyles.swift; sourceTree = "<group>"; };
+		D3695100281E518C00D51C3B /* DeviceRotationViewModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceRotationViewModifier.swift; sourceTree = "<group>"; };
+		D3695102281E5BFE00D51C3B /* ViewStyles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewStyles.swift; sourceTree = "<group>"; };
+		D369510828264AE800D51C3B /* OinkBrew Mobile Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "OinkBrew Mobile Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		D369511128264B7500D51C3B /* PreferenceViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferenceViewModelTests.swift; sourceTree = "<group>"; };
+		D369511728264FD900D51C3B /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		D397A20426934326008F724D /* OinkBrew Mobile.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "OinkBrew Mobile.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D397A20726934326008F724D /* OinkBrew_MobileApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OinkBrew_MobileApp.swift; sourceTree = "<group>"; };
-		D397A20926934326008F724D /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		D397A20B26934327008F724D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D397A20E26934327008F724D /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		D397A21026934327008F724D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D397A21626934509008F724D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		D3B4E0F12828044A0063BEE8 /* OinkBrew MobileUI Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "OinkBrew MobileUI Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		D3B4E0FC282804CE0063BEE8 /* PreferenceScreenTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreferenceScreenTests.swift; sourceTree = "<group>"; };
 		F7C3457A6FFE308F0E317835 /* Pods-OinkBrew Mobile.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OinkBrew Mobile.release.xcconfig"; path = "Target Support Files/Pods-OinkBrew Mobile/Pods-OinkBrew Mobile.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		D369510528264AE700D51C3B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D397A20126934326008F724D /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				8646849D68F756B8CEED3D57 /* Pods_OinkBrew_Mobile.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D3B4E0EE2828044A0063BEE8 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -61,19 +118,58 @@
 			path = Pods;
 			sourceTree = "<group>";
 		};
-		D310EC4027D9F75800994AD6 /* Views */ = {
+		D310EC4027D9F75800994AD6 /* Screens */ = {
 			isa = PBXGroup;
 			children = (
-				D397A20926934326008F724D /* LoginView.swift */,
-				D381CFA627E085D50058F0BE /* TextFieldAlert.swift */,
+				D312D0C6281800D300A91252 /* PreferenceScreen.swift */,
+				D312D0C8281800EA00A91252 /* SignInScreen.swift */,
+				D312D0CA281800FE00A91252 /* SignUpScreen.swift */,
+				D312D0CC2818011400A91252 /* HomeScreen.swift */,
+				D36950FB281AC1C900D51C3B /* BackgroundStartUpView.swift */,
+				D3695100281E518C00D51C3B /* DeviceRotationViewModifier.swift */,
 			);
-			path = Views;
+			path = Screens;
 			sourceTree = "<group>";
 		};
 		D310EC4127D9F76800994AD6 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
-				D310EC4227D9F77B00994AD6 /* LoginViewModel.swift */,
+				D312D0C22817FB6E00A91252 /* UserStateViewModel.swift */,
+				D312D0C42817FD4E00A91252 /* PreferenceViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		D35D60472829327B00F6710F /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				D35D60482829329A00F6710F /* XCUIApplication.UserDefaults.swift */,
+			);
+			path = Helpers;
+			sourceTree = "<group>";
+		};
+		D36950FD281E3FEC00D51C3B /* Styles */ = {
+			isa = PBXGroup;
+			children = (
+				D36950FE281E400100D51C3B /* ButtonStyles.swift */,
+				D3695102281E5BFE00D51C3B /* ViewStyles.swift */,
+				D35D604A282A733300F6710F /* TextFieldStyles.swift */,
+			);
+			path = Styles;
+			sourceTree = "<group>";
+		};
+		D369510928264AE900D51C3B /* OinkBrew Mobile Tests */ = {
+			isa = PBXGroup;
+			children = (
+				D369511528264CBA00D51C3B /* ViewModels */,
+			);
+			path = "OinkBrew Mobile Tests";
+			sourceTree = "<group>";
+		};
+		D369511528264CBA00D51C3B /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				D369511128264B7500D51C3B /* PreferenceViewModelTests.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -89,6 +185,8 @@
 			isa = PBXGroup;
 			children = (
 				D397A20626934326008F724D /* OinkBrew Mobile */,
+				D369510928264AE900D51C3B /* OinkBrew Mobile Tests */,
+				D3B4E0F22828044A0063BEE8 /* OinkBrew MobileUI Tests */,
 				D397A20526934326008F724D /* Products */,
 				97AD26CF773E6FEB0B25EFC8 /* Pods */,
 				09CAA84D1A78FCAA39D4C18A /* Frameworks */,
@@ -99,6 +197,8 @@
 			isa = PBXGroup;
 			children = (
 				D397A20426934326008F724D /* OinkBrew Mobile.app */,
+				D369510828264AE800D51C3B /* OinkBrew Mobile Tests.xctest */,
+				D3B4E0F12828044A0063BEE8 /* OinkBrew MobileUI Tests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -106,14 +206,16 @@
 		D397A20626934326008F724D /* OinkBrew Mobile */ = {
 			isa = PBXGroup;
 			children = (
+				D36950FD281E3FEC00D51C3B /* Styles */,
 				D3752E5127DB465400D66AF4 /* Models */,
 				D310EC4127D9F76800994AD6 /* ViewModels */,
-				D310EC4027D9F75800994AD6 /* Views */,
+				D310EC4027D9F75800994AD6 /* Screens */,
 				D397A21626934509008F724D /* AppDelegate.swift */,
 				D397A20726934326008F724D /* OinkBrew_MobileApp.swift */,
 				D397A20B26934327008F724D /* Assets.xcassets */,
 				D397A21026934327008F724D /* Info.plist */,
 				D397A20D26934327008F724D /* Preview Content */,
+				D369511728264FD900D51C3B /* Constants.swift */,
 			);
 			path = "OinkBrew Mobile";
 			sourceTree = "<group>";
@@ -126,9 +228,36 @@
 			path = "Preview Content";
 			sourceTree = "<group>";
 		};
+		D3B4E0F22828044A0063BEE8 /* OinkBrew MobileUI Tests */ = {
+			isa = PBXGroup;
+			children = (
+				D35D60472829327B00F6710F /* Helpers */,
+				D3B4E0FC282804CE0063BEE8 /* PreferenceScreenTests.swift */,
+			);
+			path = "OinkBrew MobileUI Tests";
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		D369510728264AE700D51C3B /* OinkBrew Mobile Tests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D369510E28264AEA00D51C3B /* Build configuration list for PBXNativeTarget "OinkBrew Mobile Tests" */;
+			buildPhases = (
+				D369510428264AE700D51C3B /* Sources */,
+				D369510528264AE700D51C3B /* Frameworks */,
+				D369510628264AE700D51C3B /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D369510D28264AE900D51C3B /* PBXTargetDependency */,
+			);
+			name = "OinkBrew Mobile Tests";
+			productName = "OinkBrew Mobile Tests";
+			productReference = D369510828264AE800D51C3B /* OinkBrew Mobile Tests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		D397A20326934326008F724D /* OinkBrew Mobile */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = D397A21326934327008F724D /* Build configuration list for PBXNativeTarget "OinkBrew Mobile" */;
@@ -137,7 +266,6 @@
 				D397A20026934326008F724D /* Sources */,
 				D397A20126934326008F724D /* Frameworks */,
 				D397A20226934326008F724D /* Resources */,
-				C1C96CA513BBA587D9F889D6 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -148,17 +276,43 @@
 			productReference = D397A20426934326008F724D /* OinkBrew Mobile.app */;
 			productType = "com.apple.product-type.application";
 		};
+		D3B4E0F02828044A0063BEE8 /* OinkBrew MobileUI Tests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D3B4E0F92828044A0063BEE8 /* Build configuration list for PBXNativeTarget "OinkBrew MobileUI Tests" */;
+			buildPhases = (
+				D3B4E0ED2828044A0063BEE8 /* Sources */,
+				D3B4E0EE2828044A0063BEE8 /* Frameworks */,
+				D3B4E0EF2828044A0063BEE8 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D3B4E0F82828044A0063BEE8 /* PBXTargetDependency */,
+			);
+			name = "OinkBrew MobileUI Tests";
+			productName = "OinkBrew MobileUI Tests";
+			productReference = D3B4E0F12828044A0063BEE8 /* OinkBrew MobileUI Tests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
 		D397A1FC26934326008F724D /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 1250;
+				LastSwiftUpdateCheck = 1330;
 				LastUpgradeCheck = 1250;
 				TargetAttributes = {
+					D369510728264AE700D51C3B = {
+						CreatedOnToolsVersion = 13.3;
+						TestTargetID = D397A20326934326008F724D;
+					};
 					D397A20326934326008F724D = {
 						CreatedOnToolsVersion = 12.5;
+					};
+					D3B4E0F02828044A0063BEE8 = {
+						CreatedOnToolsVersion = 13.3;
+						TestTargetID = D397A20326934326008F724D;
 					};
 				};
 			};
@@ -176,17 +330,33 @@
 			projectRoot = "";
 			targets = (
 				D397A20326934326008F724D /* OinkBrew Mobile */,
+				D369510728264AE700D51C3B /* OinkBrew Mobile Tests */,
+				D3B4E0F02828044A0063BEE8 /* OinkBrew MobileUI Tests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		D369510628264AE700D51C3B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D397A20226934326008F724D /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				D397A20F26934327008F724D /* Preview Assets.xcassets in Resources */,
 				D397A20C26934327008F724D /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D3B4E0EF2828044A0063BEE8 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -215,41 +385,101 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		C1C96CA513BBA587D9F889D6 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-OinkBrew Mobile/Pods-OinkBrew Mobile-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-OinkBrew Mobile/Pods-OinkBrew Mobile-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-OinkBrew Mobile/Pods-OinkBrew Mobile-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		D369510428264AE700D51C3B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D369511228264B7500D51C3B /* PreferenceViewModelTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D397A20026934326008F724D /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D381CFA727E085D50058F0BE /* TextFieldAlert.swift in Sources */,
+				D36950FC281AC1C900D51C3B /* BackgroundStartUpView.swift in Sources */,
 				D397A21726934509008F724D /* AppDelegate.swift in Sources */,
-				D310EC4327D9F77B00994AD6 /* LoginViewModel.swift in Sources */,
-				D397A20A26934326008F724D /* LoginView.swift in Sources */,
+				D3695101281E518C00D51C3B /* DeviceRotationViewModifier.swift in Sources */,
+				D312D0C52817FD4E00A91252 /* PreferenceViewModel.swift in Sources */,
+				D36950FF281E400100D51C3B /* ButtonStyles.swift in Sources */,
+				D312D0CB281800FE00A91252 /* SignUpScreen.swift in Sources */,
+				D3695103281E5BFE00D51C3B /* ViewStyles.swift in Sources */,
+				D35D604B282A733300F6710F /* TextFieldStyles.swift in Sources */,
+				D369511828264FD900D51C3B /* Constants.swift in Sources */,
+				D312D0C32817FB6E00A91252 /* UserStateViewModel.swift in Sources */,
+				D312D0CD2818011400A91252 /* HomeScreen.swift in Sources */,
+				D312D0C7281800D300A91252 /* PreferenceScreen.swift in Sources */,
 				D397A20826934326008F724D /* OinkBrew_MobileApp.swift in Sources */,
+				D312D0C9281800EA00A91252 /* SignInScreen.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D3B4E0ED2828044A0063BEE8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D3B4E0FD282804CE0063BEE8 /* PreferenceScreenTests.swift in Sources */,
+				D35D60492829329A00F6710F /* XCUIApplication.UserDefaults.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		D369510D28264AE900D51C3B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D397A20326934326008F724D /* OinkBrew Mobile */;
+			targetProxy = D369510C28264AE900D51C3B /* PBXContainerItemProxy */;
+		};
+		D3B4E0F82828044A0063BEE8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D397A20326934326008F724D /* OinkBrew Mobile */;
+			targetProxy = D3B4E0F72828044A0063BEE8 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		D369510F28264AEA00D51C3B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.4;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.oinkbrew.mobile.OinkBrew-MobileTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/OinkBrew Mobile.app/OinkBrew Mobile";
+			};
+			name = Debug;
+		};
+		D369511028264AEA00D51C3B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.4;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.oinkbrew.mobile.OinkBrew-MobileTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/OinkBrew Mobile.app/OinkBrew Mobile";
+			};
+			name = Release;
+		};
 		D397A21126934327008F724D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -414,9 +644,54 @@
 			};
 			name = Release;
 		};
+		D3B4E0FA2828044A0063BEE8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.4;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.oinkbrew.mobile.OinkBrew-MobileUI-Tests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = "OinkBrew Mobile";
+			};
+			name = Debug;
+		};
+		D3B4E0FB2828044A0063BEE8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.4;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.oinkbrew.mobile.OinkBrew-MobileUI-Tests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = "OinkBrew Mobile";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		D369510E28264AEA00D51C3B /* Build configuration list for PBXNativeTarget "OinkBrew Mobile Tests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D369510F28264AEA00D51C3B /* Debug */,
+				D369511028264AEA00D51C3B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		D397A1FF26934326008F724D /* Build configuration list for PBXProject "OinkBrew Mobile" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -431,6 +706,15 @@
 			buildConfigurations = (
 				D397A21426934327008F724D /* Debug */,
 				D397A21526934327008F724D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D3B4E0F92828044A0063BEE8 /* Build configuration list for PBXNativeTarget "OinkBrew MobileUI Tests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D3B4E0FA2828044A0063BEE8 /* Debug */,
+				D3B4E0FB2828044A0063BEE8 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
