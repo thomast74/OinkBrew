@@ -12,15 +12,19 @@ struct PreferenceScreen: View {
     private let proportion = 0.43
     
     fileprivate func ApiUrlInput() -> some View {
-        TextField("API Url", text: $apiUrl)
-            .keyboardType(.URL)
-            .textContentType(.URL)
-            .disableAutocorrection(true)
-            .autocapitalization(.none)
-            .textFieldStyle(RoundedBorderLightTextFieldStyle())
-            .onAppear {
-                self.apiUrl = preference.apiUrl
-            }
+        VStack(alignment: .leading, spacing: 4) {
+            Label("API Url", systemImage: "bolt.fill")
+                .labelStyle(.titleOnly)
+            TextField("", text: $apiUrl)
+                .keyboardType(.URL)
+                .textContentType(.URL)
+                .disableAutocorrection(true)
+                .autocapitalization(.none)
+                .textFieldStyle(RoundedBorderLightTextFieldStyle())
+                .onAppear {
+                    self.apiUrl = preference.apiUrl
+                }
+        }
     }
 
     fileprivate func SaveButton() -> some View {
@@ -70,7 +74,8 @@ struct PreferenceScreen: View {
                             .accessibility(identifier: "Error")
                             .frame(width: 140, height: 44, alignment: .center)
                             .padding(.bottom, 10)
-                        SaveButton().padding(.bottom, 44)
+                        SaveButton()
+                        Spacer()
                     }
                 }
                 .withProportionAndCenter(geometry, proportion)

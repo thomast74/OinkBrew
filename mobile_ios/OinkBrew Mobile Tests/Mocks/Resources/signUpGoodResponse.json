@@ -1,8 +1,6 @@
-//
-//  signUpGoodResponse.json
-//  OinkBrew Mobile Tests
-//
-//  Created by Thomas Trageser on 02/10/2022.
-//
-
-import Foundation
+{
+    "otp_token": "AAAAAA",
+    "otp_url": "BBBBBB",
+    "otp_barcode": "CCCCCC;DDDDDD,FFFFFF",
+    "user_id": 32
+}

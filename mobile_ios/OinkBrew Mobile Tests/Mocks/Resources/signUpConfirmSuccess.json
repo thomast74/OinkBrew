@@ -1,8 +1,4 @@
-//
-//  signUpConfirmSuccess.json
-//  OinkBrew Mobile Tests
-//
-//  Created by Thomas Trageser on 05/10/2022.
-//
-
-import Foundation
+{
+    "access_token": "AAAAAA",
+    "refresh_token": "BBBBBB",
+}

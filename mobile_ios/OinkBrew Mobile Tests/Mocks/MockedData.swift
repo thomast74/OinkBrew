@@ -2,6 +2,7 @@ import Foundation
 
 public final class MockedData {
     public static let signUpResponse: URL = Bundle.module.url(forResource: "signUpGoodResponse", withExtension: "json")!
+    public static let signUpOtpResponse: URL = Bundle.module.url(forResource: "signUpConfirmSuccess", withExtension: "json")!
 }
 
 extension Bundle {

@@ -1,8 +1,18 @@
-//
-//  Preferences.swift
-//  OinkBrew Mobile
-//
-//  Created by Thomas Trageser on 30/09/2022.
-//
-
 import Foundation
+
+class Preferences {
+    
+    static let shared = Preferences()
+    
+    var apiUrl: String = ""
+    
+    private init() {}
+    
+    func correctedApiUrl() -> String {
+        if apiUrl.hasSuffix("/") {
+            apiUrl = String(apiUrl.dropLast())
+        }
+        
+        return apiUrl
+    }
+}

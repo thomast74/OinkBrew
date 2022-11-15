@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 51;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -14,6 +14,12 @@
 		D312D0C9281800EA00A91252 /* SignInScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D312D0C8281800EA00A91252 /* SignInScreen.swift */; };
 		D312D0CB281800FE00A91252 /* SignUpScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D312D0CA281800FE00A91252 /* SignUpScreen.swift */; };
 		D312D0CD2818011400A91252 /* HomeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D312D0CC2818011400A91252 /* HomeScreen.swift */; };
+		D34327A328E583BE00B19689 /* URLResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = D34327A228E583BE00B19689 /* URLResponse.swift */; };
+		D34327A528E6CA4200B19689 /* UserStateViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D34327A428E6CA4100B19689 /* UserStateViewModelTests.swift */; };
+		D34327A728E6D27600B19689 /* Preferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = D34327A628E6D27600B19689 /* Preferences.swift */; };
+		D34327AE28EA0C6C00B19689 /* MockedData.swift in Sources */ = {isa = PBXBuildFile; fileRef = D34327AD28EA0C6C00B19689 /* MockedData.swift */; };
+		D34327B128EA0F1D00B19689 /* signUpGoodResponse.json in Resources */ = {isa = PBXBuildFile; fileRef = D34327B028EA0F1D00B19689 /* signUpGoodResponse.json */; };
+		D34327B328ED69D400B19689 /* signUpConfirmSuccess.json in Resources */ = {isa = PBXBuildFile; fileRef = D34327B228ED69D400B19689 /* signUpConfirmSuccess.json */; };
 		D35D60492829329A00F6710F /* XCUIApplication.UserDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = D35D60482829329A00F6710F /* XCUIApplication.UserDefaults.swift */; };
 		D35D604B282A733300F6710F /* TextFieldStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = D35D604A282A733300F6710F /* TextFieldStyles.swift */; };
 		D36950FC281AC1C900D51C3B /* BackgroundStartUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D36950FB281AC1C900D51C3B /* BackgroundStartUpView.swift */; };
@@ -27,6 +33,7 @@
 		D397A20F26934327008F724D /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D397A20E26934327008F724D /* Preview Assets.xcassets */; };
 		D397A21726934509008F724D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D397A21626934509008F724D /* AppDelegate.swift */; };
 		D3B4E0FD282804CE0063BEE8 /* PreferenceScreenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3B4E0FC282804CE0063BEE8 /* PreferenceScreenTests.swift */; };
+		DAE675476DE0F0687DB299A1 /* Pods_OinkBrew_Mobile_Tests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F283108827C070C926FB8716 /* Pods_OinkBrew_Mobile_Tests.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -47,6 +54,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		3BB15C46180041BF95EBB8E5 /* Pods-OinkBrew Mobile Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OinkBrew Mobile Tests.release.xcconfig"; path = "Target Support Files/Pods-OinkBrew Mobile Tests/Pods-OinkBrew Mobile Tests.release.xcconfig"; sourceTree = "<group>"; };
+		A67EAF68524A2199408F2310 /* Pods-OinkBrew Mobile Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OinkBrew Mobile Tests.debug.xcconfig"; path = "Target Support Files/Pods-OinkBrew Mobile Tests/Pods-OinkBrew Mobile Tests.debug.xcconfig"; sourceTree = "<group>"; };
 		B225B74C864C2E2B2555E4CF /* Pods_OinkBrew_Mobile.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_OinkBrew_Mobile.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D1209AE12A0B4581EE702E09 /* Pods-OinkBrew Mobile.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OinkBrew Mobile.debug.xcconfig"; path = "Target Support Files/Pods-OinkBrew Mobile/Pods-OinkBrew Mobile.debug.xcconfig"; sourceTree = "<group>"; };
 		D312D0C22817FB6E00A91252 /* UserStateViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserStateViewModel.swift; sourceTree = "<group>"; };
@@ -55,6 +64,12 @@
 		D312D0C8281800EA00A91252 /* SignInScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInScreen.swift; sourceTree = "<group>"; };
 		D312D0CA281800FE00A91252 /* SignUpScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpScreen.swift; sourceTree = "<group>"; };
 		D312D0CC2818011400A91252 /* HomeScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeScreen.swift; sourceTree = "<group>"; };
+		D34327A228E583BE00B19689 /* URLResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLResponse.swift; sourceTree = "<group>"; };
+		D34327A428E6CA4100B19689 /* UserStateViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserStateViewModelTests.swift; sourceTree = "<group>"; };
+		D34327A628E6D27600B19689 /* Preferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Preferences.swift; path = "OinkBrew Mobile Tests/ViewModels/Preferences.swift"; sourceTree = SOURCE_ROOT; };
+		D34327AD28EA0C6C00B19689 /* MockedData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockedData.swift; sourceTree = "<group>"; };
+		D34327B028EA0F1D00B19689 /* signUpGoodResponse.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = signUpGoodResponse.json; sourceTree = "<group>"; };
+		D34327B228ED69D400B19689 /* signUpConfirmSuccess.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = signUpConfirmSuccess.json; sourceTree = "<group>"; };
 		D35D60482829329A00F6710F /* XCUIApplication.UserDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XCUIApplication.UserDefaults.swift; sourceTree = "<group>"; };
 		D35D604A282A733300F6710F /* TextFieldStyles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextFieldStyles.swift; sourceTree = "<group>"; };
 		D36950FB281AC1C900D51C3B /* BackgroundStartUpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundStartUpView.swift; sourceTree = "<group>"; };
@@ -72,6 +87,7 @@
 		D397A21626934509008F724D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		D3B4E0F12828044A0063BEE8 /* OinkBrew MobileUI Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "OinkBrew MobileUI Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D3B4E0FC282804CE0063BEE8 /* PreferenceScreenTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreferenceScreenTests.swift; sourceTree = "<group>"; };
+		F283108827C070C926FB8716 /* Pods_OinkBrew_Mobile_Tests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_OinkBrew_Mobile_Tests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F7C3457A6FFE308F0E317835 /* Pods-OinkBrew Mobile.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OinkBrew Mobile.release.xcconfig"; path = "Target Support Files/Pods-OinkBrew Mobile/Pods-OinkBrew Mobile.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -80,6 +96,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DAE675476DE0F0687DB299A1 /* Pods_OinkBrew_Mobile_Tests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -105,6 +122,7 @@
 			isa = PBXGroup;
 			children = (
 				B225B74C864C2E2B2555E4CF /* Pods_OinkBrew_Mobile.framework */,
+				F283108827C070C926FB8716 /* Pods_OinkBrew_Mobile_Tests.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -114,6 +132,8 @@
 			children = (
 				D1209AE12A0B4581EE702E09 /* Pods-OinkBrew Mobile.debug.xcconfig */,
 				F7C3457A6FFE308F0E317835 /* Pods-OinkBrew Mobile.release.xcconfig */,
+				A67EAF68524A2199408F2310 /* Pods-OinkBrew Mobile Tests.debug.xcconfig */,
+				3BB15C46180041BF95EBB8E5 /* Pods-OinkBrew Mobile Tests.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -140,6 +160,32 @@
 			path = ViewModels;
 			sourceTree = "<group>";
 		};
+		D34327A128E5839B00B19689 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				D34327A228E583BE00B19689 /* URLResponse.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
+		D34327A828E9AB6500B19689 /* Mocks */ = {
+			isa = PBXGroup;
+			children = (
+				D34327AF28EA0D4400B19689 /* Resources */,
+				D34327AD28EA0C6C00B19689 /* MockedData.swift */,
+			);
+			path = Mocks;
+			sourceTree = "<group>";
+		};
+		D34327AF28EA0D4400B19689 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				D34327B028EA0F1D00B19689 /* signUpGoodResponse.json */,
+				D34327B228ED69D400B19689 /* signUpConfirmSuccess.json */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
 		D35D60472829327B00F6710F /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
@@ -161,6 +207,7 @@
 		D369510928264AE900D51C3B /* OinkBrew Mobile Tests */ = {
 			isa = PBXGroup;
 			children = (
+				D34327A828E9AB6500B19689 /* Mocks */,
 				D369511528264CBA00D51C3B /* ViewModels */,
 			);
 			path = "OinkBrew Mobile Tests";
@@ -170,6 +217,7 @@
 			isa = PBXGroup;
 			children = (
 				D369511128264B7500D51C3B /* PreferenceViewModelTests.swift */,
+				D34327A428E6CA4100B19689 /* UserStateViewModelTests.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -177,6 +225,7 @@
 		D3752E5127DB465400D66AF4 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				D34327A628E6D27600B19689 /* Preferences.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -206,6 +255,7 @@
 		D397A20626934326008F724D /* OinkBrew Mobile */ = {
 			isa = PBXGroup;
 			children = (
+				D34327A128E5839B00B19689 /* Extensions */,
 				D36950FD281E3FEC00D51C3B /* Styles */,
 				D3752E5127DB465400D66AF4 /* Models */,
 				D310EC4127D9F76800994AD6 /* ViewModels */,
@@ -244,9 +294,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = D369510E28264AEA00D51C3B /* Build configuration list for PBXNativeTarget "OinkBrew Mobile Tests" */;
 			buildPhases = (
+				33AF57A92E73193E659BEE38 /* [CP] Check Pods Manifest.lock */,
 				D369510428264AE700D51C3B /* Sources */,
 				D369510528264AE700D51C3B /* Frameworks */,
 				D369510628264AE700D51C3B /* Resources */,
+				5CA73157D295C208A99B0D57 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -266,6 +318,7 @@
 				D397A20026934326008F724D /* Sources */,
 				D397A20126934326008F724D /* Frameworks */,
 				D397A20226934326008F724D /* Resources */,
+				F31760D8FB2DE2A9DDD2D4D6 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -341,6 +394,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D34327B328ED69D400B19689 /* signUpConfirmSuccess.json in Resources */,
+				D34327B128EA0F1D00B19689 /* signUpGoodResponse.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -385,6 +440,62 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
+		33AF57A92E73193E659BEE38 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-OinkBrew Mobile Tests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		5CA73157D295C208A99B0D57 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-OinkBrew Mobile Tests/Pods-OinkBrew Mobile Tests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-OinkBrew Mobile Tests/Pods-OinkBrew Mobile Tests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-OinkBrew Mobile Tests/Pods-OinkBrew Mobile Tests-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		F31760D8FB2DE2A9DDD2D4D6 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-OinkBrew Mobile/Pods-OinkBrew Mobile-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-OinkBrew Mobile/Pods-OinkBrew Mobile-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-OinkBrew Mobile/Pods-OinkBrew Mobile-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -393,6 +504,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				D369511228264B7500D51C3B /* PreferenceViewModelTests.swift in Sources */,
+				D34327AE28EA0C6C00B19689 /* MockedData.swift in Sources */,
+				D34327A528E6CA4200B19689 /* UserStateViewModelTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -408,11 +521,13 @@
 				D312D0CB281800FE00A91252 /* SignUpScreen.swift in Sources */,
 				D3695103281E5BFE00D51C3B /* ViewStyles.swift in Sources */,
 				D35D604B282A733300F6710F /* TextFieldStyles.swift in Sources */,
+				D34327A328E583BE00B19689 /* URLResponse.swift in Sources */,
 				D369511828264FD900D51C3B /* Constants.swift in Sources */,
 				D312D0C32817FB6E00A91252 /* UserStateViewModel.swift in Sources */,
 				D312D0CD2818011400A91252 /* HomeScreen.swift in Sources */,
 				D312D0C7281800D300A91252 /* PreferenceScreen.swift in Sources */,
 				D397A20826934326008F724D /* OinkBrew_MobileApp.swift in Sources */,
+				D34327A728E6D27600B19689 /* Preferences.swift in Sources */,
 				D312D0C9281800EA00A91252 /* SignInScreen.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -444,6 +559,7 @@
 /* Begin XCBuildConfiguration section */
 		D369510F28264AEA00D51C3B /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = A67EAF68524A2199408F2310 /* Pods-OinkBrew Mobile Tests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
@@ -463,6 +579,7 @@
 		};
 		D369511028264AEA00D51C3B /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3BB15C46180041BF95EBB8E5 /* Pods-OinkBrew Mobile Tests.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";

@@ -26,9 +26,11 @@ struct ApplicationSwitcher: View {
     
     var body: some View {
         Group {
-            if (!preference.hasApiUrl) {
+            if (!preference.available) {
                 PreferenceScreen()
-            } else if (!userState.isLoggedIn) {
+            } else if (userState.needsSignUp) {
+                SignUpScreen()
+            } else if (!userState.isSignedIn) {
                 SignInScreen()
             } else {
                 HomeScreen()

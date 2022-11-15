@@ -1,7 +1,7 @@
 import XCTest
 @testable import OinkBrew_Mobile
 
-
+@MainActor
 class PreferenceViewModelTests: XCTestCase {
     private var userDefaults: UserDefaults!
     private var model: PreferenceViewModel!
@@ -16,9 +16,6 @@ class PreferenceViewModelTests: XCTestCase {
         userDefaults.set(apiUrl, forKey: PREF_ApiUrl)
         
         model = PreferenceViewModel(userDefaults: userDefaults)
-    }
-
-    override func tearDownWithError() throws {
     }
     
     func testInitShouldLoadApiUrl() throws {

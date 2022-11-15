@@ -8,34 +8,53 @@ enum PreferenceStateError: Error {
 
 class PreferenceViewModel: ObservableObject {
 
-    @Published var apiUrl = ""
+    @Published var available = false
     
+    private let preferences = Preferences.shared
     private let userDefaults: UserDefaults
     
     init(userDefaults: UserDefaults) {
         self.userDefaults = userDefaults
-        apiUrl = self.userDefaults.string(forKey: PREF_ApiUrl) ?? ""
+        preferences.apiUrl = self.userDefaults.string(forKey: PREF_ApiUrl) ?? ""
+        
+        available = allPreferencesAvailable
+    }
+    
+    var allPreferencesAvailable: Bool {
+        get {
+            return hasApiUrl
+        }
     }
     
     var hasApiUrl: Bool {
         get {
-            debugPrint(apiUrl)
-            return !apiUrl.isEmpty
+            debugPrint(preferences.apiUrl)
+            return !preferences.apiUrl.isEmpty
+        }
+    }
+    
+    var apiUrl: String {
+        get {
+            return preferences.apiUrl
         }
     }
     
     func save(apiUrl: String) async -> Result<Bool, PreferenceStateError>  {
         
         guard let url = URL(string: apiUrl) else {
+            available = false
             return .failure(.invalidUrl)
         }
         
         if await !UIApplication.shared.canOpenURL(url) {
+            available = false
             return .failure(.invalidUrl)
         }
         
         userDefaults.set(url.absoluteString, forKey: PREF_ApiUrl)
-        self.apiUrl = apiUrl
+        preferences.apiUrl = apiUrl
+        
+        available = allPreferencesAvailable
         
         return .success(true)
     }

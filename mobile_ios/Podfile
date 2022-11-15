@@ -4,4 +4,9 @@ platform :ios, '14.0'
 use_frameworks!
 
 target 'OinkBrew Mobile' do
+  pod 'Argon2Swift'
+end
+
+target 'OinkBrew Mobile Tests' do
+  pod 'Mocker', '~> 2.5.4'
 end
