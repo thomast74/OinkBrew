@@ -13,7 +13,7 @@ import { AuthDto, OtpDto } from './dtos';
 import {
   JwtOtphAuthGuard as JwtOtpAuthGuard,
   JwtRefreshAuthGuard,
-  LoggedInAuthGuard,
+  LogInAuthGuard,
 } from './guards';
 import { JwtPayloadWithRefreshToken, Tokens } from './types';
 
@@ -23,7 +23,7 @@ export class AuthController {
 
   @Public()
   @Post('signup')
-  @HttpCode(HttpStatus.UNAUTHORIZED)
+  @HttpCode(HttpStatus.OK)
   async signup(@Body() dto: AuthDto) {
     return this.authService.signup(dto);
   }
@@ -38,8 +38,8 @@ export class AuthController {
 
   @Public()
   @Post('signin')
-  @HttpCode(HttpStatus.UNAUTHORIZED)
-  @UseGuards(LoggedInAuthGuard)
+  @UseGuards(LogInAuthGuard)
+  @HttpCode(HttpStatus.OK)
   async signin(@GetRequestUser() user: User) {
     return await this.authService.signin(user);
   }

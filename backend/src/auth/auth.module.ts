@@ -10,7 +10,7 @@ import {
   JwtAccessStrategy,
   JwtOtpStrategy,
   JwtRefreshStrategy,
-  LoggedInStrategy,
+  LogInStrategy,
 } from './strategies';
 
 @Module({
@@ -25,7 +25,7 @@ import {
   ],
   providers: [
     AuthService,
-    LoggedInStrategy,
+    LogInStrategy,
     JwtAccessStrategy,
     JwtRefreshStrategy,
     JwtOtpStrategy,

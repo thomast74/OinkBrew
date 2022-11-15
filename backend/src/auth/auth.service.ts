@@ -3,11 +3,12 @@ import {
   ForbiddenException,
   Inject,
   Injectable,
+  Logger,
 } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
-import { authenticator, totp } from 'otplib';
+import { authenticator } from 'otplib';
 import * as qrcode from 'qrcode';
 import { ARGON_OPTIONS } from '../constants';
 import { User } from '../users/types/user.type';
@@ -30,6 +31,7 @@ export class AuthService {
     const user = await this.usersService.findByEmail(email);
 
     if (!user) {
+      Logger.log('user not found');
       return null;
     }
 
@@ -38,6 +40,8 @@ export class AuthService {
       password,
       ARGON_OPTIONS,
     );
+
+    Logger.log(`passwordMatches: ${passwordMatches}`);
 
     if (passwordMatches) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -68,10 +72,8 @@ export class AuthService {
       throw new BadRequestException('User not valid');
     }
 
-    const otpValid = totp.verify({
-      token: dto.otpPassword,
-      secret: user.otpSecret,
-    });
+    const otpValid = authenticator.check(dto.otpPassword, user.otpSecret);
+
     if (!otpValid) {
       throw new ForbiddenException('Access Denied');
     }
@@ -93,6 +95,8 @@ export class AuthService {
     ) {
       throw new BadRequestException('User not signed up correctly');
     }
+
+    Logger.log('get otp token');
 
     return await this.getOtpToken(user.id, user.email);
   }
@@ -123,7 +127,9 @@ export class AuthService {
 
   private async getOtpTokenAndBarcode(user: User): Promise<Tokens> {
     const tokens = await this.getOtpToken(user.id, user.email);
-    tokens.otp_barcode = await this.getOtpBarcode(user.email, user.otpSecret);
+
+    tokens.otpUrl = this.getOtpUrl(user.email, user.otpSecret);
+    tokens.otpBarcode = await this.getOtpBarcode(tokens.otpUrl);
 
     return tokens;
   }
@@ -140,14 +146,17 @@ export class AuthService {
     });
 
     return {
-      otp_token: otp,
+      otpToken: otp,
+      userId,
     };
   }
 
-  private async getOtpBarcode(email: string, otpSecret: string): Promise<any> {
-    const otpAuth = authenticator.keyuri(email, OTP_SERVICE_NAME, otpSecret);
+  private getOtpUrl(email: string, otpSecret: string): string {
+    return authenticator.keyuri(email, OTP_SERVICE_NAME, otpSecret);
+  }
 
-    return await qrcode.toDataURL(otpAuth);
+  private async getOtpBarcode(otpUrl: string): Promise<any> {
+    return await qrcode.toDataURL(otpUrl);
   }
 
   private async getAccessTokensAndUpdateUser(
@@ -158,7 +167,7 @@ export class AuthService {
     const tokens = await this.getAccessTokens(userId, email);
     await this.usersService.updateRefreshToken(
       userId,
-      tokens.refresh_token,
+      tokens.refreshToken,
       confirmOtp,
     );
 
@@ -186,8 +195,8 @@ export class AuthService {
     ]);
 
     return {
-      access_token: at,
-      refresh_token: rt,
+      accessToken: at,
+      refreshToken: rt,
     };
   }
 }

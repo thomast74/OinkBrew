@@ -177,8 +177,6 @@ describe('AuthController (e2e)', () => {
 
   describe('signin', () => {
     it('should return UNAUTHORIZED if no email provided', async () => {
-      const user = await createUser(prisma, true);
-
       const response = await request(app.getHttpServer())
         .post('/auth/signin')
         .send({});

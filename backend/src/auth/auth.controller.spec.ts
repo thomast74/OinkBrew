@@ -14,7 +14,7 @@ import { OtpDto } from './dtos';
 import {
   JwtOtphAuthGuard,
   JwtRefreshAuthGuard,
-  LoggedInAuthGuard,
+  LogInAuthGuard,
 } from './guards';
 import { JwtPayloadWithRefreshToken, Tokens } from './types';
 
@@ -63,13 +63,13 @@ describe('AuthController', () => {
       expect(path).toEqual('signup');
     });
 
-    it('should return HttpStatus.UNAUTHORIZED', () => {
+    it('should return HttpStatus.OK', () => {
       const metadata = Reflect.getMetadata(
         HTTP_CODE_METADATA,
         controller.signup,
       );
 
-      expect(metadata).toEqual(HttpStatus.UNAUTHORIZED);
+      expect(metadata).toEqual(HttpStatus.OK);
     });
 
     it('should call auth service with user dto', async () => {
@@ -157,26 +157,26 @@ describe('AuthController', () => {
       expect(path).toEqual('signin');
     });
 
-    it('should return HttpStatus.UNAUTHORIZED', () => {
+    it('should return HttpStatus.OK', () => {
       const metadata = Reflect.getMetadata(
         HTTP_CODE_METADATA,
         controller.signin,
       );
 
-      expect(metadata).toEqual(HttpStatus.UNAUTHORIZED);
+      expect(metadata).toEqual(HttpStatus.OK);
     });
 
-    it('should use guard LoggedInAuthGuard', () => {
+    it('should use guard LogInAuthGuard', () => {
       const metadata = Reflect.getMetadata(GUARDS_METADATA, controller.signin);
 
-      expect(metadata).toEqual([LoggedInAuthGuard]);
+      expect(metadata).toEqual([LogInAuthGuard]);
     });
 
     it('should call auth service signin', async () => {
       const user = await createDbdUser(userDto);
       const expectedTokens = {
-        otp_token: 'otp',
-        otp_barcode: undefined,
+        otpToken: 'otp',
+        otpBarcode: undefined,
       } as Tokens;
       (service.signin as jest.Mock).mockResolvedValue(expectedTokens);
 
