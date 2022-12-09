@@ -2,11 +2,12 @@ version: '3.8'
 
 services:
   backend:
-    container_name: oinkbrew_api
+    container_name: oinkbrew-api
     build: backend/.
     command: npm run start:dev
     depends_on:
-      - postgres
+      - database
+      - cache
     ports:
       - "3000:3000"
     environment:
@@ -21,9 +22,9 @@ services:
       - ./backend/.:/opt/app
       - /opt/app/node_modules
 
-  postgres:
-    image: postgres:14-alpine
-    container_name: oinkbrew_db
+  database:
+    image: postgres:15.1-alpine
+    container_name: oinkbrew-db
     restart: 'unless-stopped'
     ports:
       - 5432:5432
@@ -33,8 +34,22 @@ services:
       POSTGRES_DB: oinkbrew
       PGDATA: '/var/lib/postgresql/data/pgdata'
     volumes:
-      - postgres:/var/lib/postgresql/data # This is where the database data is stored - a docker volume
+      - database:/var/lib/postgresql/data # This is where the database data is stored - a docker volume
       - ./backup:/backup
 
+  cache:
+    image: redis:7.0.5-alpine
+    container_name: oinkbrew-cache
+    restart: always
+    ports:
+      - '6379:6379'
+    command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+    volumes:
+      - cache:/data
+
 volumes:
-  postgres:
+  database:
+    name: oinkbrew-db
+  cache:
+    name: oinkbrew-cache
+    driver: local

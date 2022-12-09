@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   postgresql-e2e:
-    image: postgres:13
+    image: postgres:15.1-alpine
     container_name: oinkbrew_db_e2e
     ports:
       - 5432:5432

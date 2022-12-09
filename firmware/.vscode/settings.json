@@ -5,7 +5,7 @@
   "files.associations": {
     "*.ino": "cpp"
   },
-  "particle.firmwareVersion": "3.2.0",
+  "particle.firmwareVersion": "3.3.0",
   "particle.targetDevice": "ControlBox",
   "particle.targetPlatform": "photon"
 }

@@ -1,22 +1,34 @@
 {
   "folders": [
-	{
-		"path": "backend"
-	},
-	{
-		"path": "docker"
-	},
-	{
-		"path": "firmware"
-	},
-	{
-		"path": "mobile_ios"
-	},
-	{
-		"path": "."
-	}
-],
+    {
+      "path": "backend"
+    },
+    {
+      "path": "docker"
+    },
+    {
+      "path": "firmware"
+    },
+    {
+      "path": "mobile_ios"
+    },
+    {
+      "path": "."
+    }
+  ],
   "settings": {
-    "cortex-debug.openocdPath": "${command:particle.getDebuggerOpenocdPath}"
+    "jest.disabledWorkspaceFolders": [
+      "docker",
+      "firmware",
+      "mobile_ios",
+      "OinkBrew"
+    ],
+    "jest.jestCommandLine": "source ~/.zshrc && npx jest",
+    "jest.shell": "/bin/zsh",
+    "jest.autoRun": {
+      "watch": false,
+      "onStartup": ["all-tests"],
+      "onSave": "test-src-file"
+    }
   }
 }

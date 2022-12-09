@@ -19,6 +19,6 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
     if (process.env.NODE_ENV === 'production') return;
 
     // teardown logic
-    return Promise.all([prisma.user.deleteMany()]);
+    return Promise.all([prisma.user.deleteMany(), prisma.device.deleteMany()]);
   }
 }

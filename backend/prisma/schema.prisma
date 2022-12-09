@@ -11,13 +11,45 @@ datasource db {
 }
 
 model User {
-  id            Int       @id @default(autoincrement())
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  email         String    @unique
-  hash          String
-  hashedRt      String?
-  otpConfirmed  Boolean   @default(false)
-  otpSecret     String
+  id           Int      @id @default(autoincrement())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  email        String   @unique
+  hash         String
+  hashedRt     String?
+  otpConfirmed Boolean  @default(false)
+  otpSecret    String
+
   @@map("users")
+}
+
+model Device {
+  id                       String            @id
+  createdAt                DateTime          @default(now())
+  updatedAt                DateTime          @updatedAt
+  name                     String
+  last_ip_address          String
+  last_heard               DateTime
+  last_handshake_at        DateTime
+  product_id               Int
+  online                   Boolean
+  connected                Boolean
+  platform_id              Int
+  cellular                 Boolean
+  notes                    String?
+  firmware_updates_enabled Boolean
+  firmware_updates_forced  Boolean
+  status                   String
+  serial_number            String
+  system_firmware_version  String
+  current_build_target     String
+  pinned_build_target      String?
+  default_build_target     String
+  functions                String[]
+  variables                Json?
+  shieldVersion            Int?
+  firmwareVersion          Float?
+  connectedDevices         Json?
+
+  @@map("devices")
 }
