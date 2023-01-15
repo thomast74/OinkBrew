@@ -29,6 +29,10 @@
       "watch": false,
       "onStartup": ["all-tests"],
       "onSave": "test-src-file"
+    },
+    "[typescript]": {
+      "javascript.preferences.importModuleSpecifier": "relative",
+      "typescript.preferences.importModuleSpecifier": "relative"
     }
   }
 }

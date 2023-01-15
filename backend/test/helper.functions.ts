@@ -84,3 +84,9 @@ export async function createRefreshToken(
 
   return refreshToken;
 }
+
+export function sleep(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}

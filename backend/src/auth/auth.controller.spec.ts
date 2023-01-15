@@ -149,7 +149,7 @@ describe('AuthController', () => {
       expect(metadata).toEqual(true);
     });
 
-    it('should return react to POST signin', () => {
+    it('should react to POST signin', () => {
       const method = Reflect.getMetadata(METHOD_METADATA, controller.signin);
       const path = Reflect.getMetadata(PATH_METADATA, controller.signin);
 
@@ -246,7 +246,7 @@ describe('AuthController', () => {
       expect(metadata).toBeUndefined();
     });
 
-    it('should return react to POST logout', () => {
+    it('should react to POST logout', () => {
       const method = Reflect.getMetadata(METHOD_METADATA, controller.logout);
       const path = Reflect.getMetadata(PATH_METADATA, controller.logout);
 
@@ -288,7 +288,7 @@ describe('AuthController', () => {
       expect(metadata).toEqual(true);
     });
 
-    it('should return react to POST signin', () => {
+    it('should react to POST signin', () => {
       const method = Reflect.getMetadata(
         METHOD_METADATA,
         controller.refreshTokens,

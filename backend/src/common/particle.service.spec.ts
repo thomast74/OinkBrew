@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { parseJSON } from 'date-fns';
 import * as Particle from 'particle-api-js';
 import { ParticleService } from './particle.service';
 
@@ -152,4 +153,73 @@ describe('ParticleService', () => {
       expect(value).toEqual({ key: 'fff' });
     });
   });
+
+  describe('eventStream', () => {
+    it('should start listening for particle events', () => {
+      const testSubject = testModule.get<ParticleService>(ParticleService);
+
+      testSubject.eventStream().subscribe();
+
+      expect(Particle.mockGetEventStream).toBeCalledWith({
+        deviceId: 'mine',
+        name: 'oinkbrew',
+        auth: '123456',
+      });
+    });
+
+    it('should only start listening to particle events once', async () => {
+      Particle.mockGetEventStream.mockClear();
+      const testSubject = testModule.get<ParticleService>(ParticleService);
+
+      testSubject.eventStream().subscribe();
+      testSubject.eventStream().subscribe();
+
+      expect(Particle.mockGetEventStream).toHaveBeenCalledTimes(1);
+    });
+
+    it('should send new particle events to event stream', async () => {
+      let receivedEventData;
+      const testSubject = testModule.get<ParticleService>(ParticleService);
+
+      testSubject.eventStream().subscribe({
+        next: (data) => {
+          receivedEventData = data;
+        },
+      });
+      await new Promise(setImmediate);
+      Particle.mockStreamResponse(sendEventData);
+
+      expect(receivedEventData).toEqual(expectedEventData);
+    });
+
+    it('should send error to event stream in case particle event failed', async () => {
+      let receivedError;
+      Particle.mockGetEventStream.mockRejectedValue('This is an error');
+      const testSubject = testModule.get<ParticleService>(ParticleService);
+
+      testSubject.eventStream().subscribe({
+        error: (error) => {
+          receivedError = error;
+        },
+      });
+      await new Promise(setImmediate);
+
+      expect(receivedError).not.toBeUndefined();
+    });
+  });
 });
+
+const sendEventData = {
+  data: 'true',
+  ttl: 60,
+  published_at: '2022-12-09T09:34:31.936Z',
+  coreid: '3b003d000747343232363230',
+  name: 'oinkbrew/start',
+};
+const expectedEventData = {
+  data: 'true',
+  ttl: 60,
+  published_at: parseJSON('2022-12-09T09:34:31.936Z'),
+  coreid: '3b003d000747343232363230',
+  name: 'oinkbrew/start',
+};

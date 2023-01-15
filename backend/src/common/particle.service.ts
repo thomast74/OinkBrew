@@ -1,16 +1,20 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Device } from '@prisma/client';
+import { parseJSON } from 'date-fns';
 import * as Particle from 'particle-api-js';
 import {
   catchError,
   firstValueFrom,
   from,
   map,
+  Observable,
   of,
   ReplaySubject,
+  Subject,
   switchMap,
   tap,
 } from 'rxjs';
+import { EventData } from 'src/devices/types';
 import { TokenInfo } from './types';
 
 @Injectable()
@@ -19,6 +23,8 @@ export class ParticleService {
 
   private particle: Particle;
   private tokenInfo = new ReplaySubject<TokenInfo>(1);
+  private eventStreamSubsription = false;
+  private events = new Subject<EventData>();
 
   constructor() {
     this.init();
@@ -75,11 +81,13 @@ export class ParticleService {
     const $source = this.tokenInfo.pipe(
       tap(() => this.logger.debug('Get devices')),
       switchMap((tokens: any) =>
-        this.particle.getVariable({
-          deviceId,
-          name,
-          auth: tokens.access_token,
-        }),
+        from(
+          this.particle.getVariable({
+            deviceId,
+            name,
+            auth: tokens.access_token,
+          }),
+        ),
       ),
       map((response: any) =>
         response?.body?.result ? (response.body.result as any) : '',
@@ -97,5 +105,48 @@ export class ParticleService {
     );
 
     return firstValueFrom($source);
+  }
+
+  public eventStream(): Observable<EventData> {
+    this.startEventStreamListener();
+
+    return this.events.asObservable();
+  }
+
+  private startEventStreamListener() {
+    if (this.eventStreamSubsription) {
+      return;
+    }
+
+    this.eventStreamSubsription = true;
+    this.tokenInfo
+      .pipe(
+        tap(() => this.logger.log('Start listening to particle cloud events')),
+        switchMap((tokens: any) =>
+          from(
+            this.particle.getEventStream({
+              deviceId: 'mine',
+              name: 'oinkbrew',
+              auth: tokens.access_token,
+            }),
+          ),
+        ),
+      )
+      .subscribe({
+        next: (stream: any) => {
+          stream.on('event', (data: any) => {
+            const event = {
+              ...data,
+              published_at: parseJSON(data.published_at),
+            };
+            this.events.next(event);
+          });
+        },
+        error: (error) => {
+          this.logger.error(`startEventStreamListener`, error);
+          this.eventStreamSubsription = false;
+          this.events.error(error);
+        },
+      });
   }
 }

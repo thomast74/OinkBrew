@@ -3,7 +3,7 @@ import { Logger } from '@nestjs/common';
 import { Device, Prisma } from '@prisma/client';
 import { Job } from 'bull';
 import { ParticleService } from '../common/particle.service';
-import { PrismaService } from '../prisma/prisma.service';
+import { DevicesService } from './devices.service';
 import { ConnectedDevice } from './types';
 
 @Processor('devices')
@@ -12,17 +12,17 @@ export class DevicesProcessor {
 
   constructor(
     private particle: ParticleService,
-    private prisma: PrismaService,
+    private devices: DevicesService,
   ) {}
 
   @Process('refresh')
   async refresh(job: Job) {
-    this.logger.debug('Start refreshing...');
+    this.logger.log('Start refreshing...');
     try {
       const devices = await this.particle.listDevices();
       this.logger.debug(`Retrieved ${devices.length} devices`);
       for (const device of devices) {
-        let storedDevice = await this.findDevice(device.id);
+        let storedDevice = await this.devices.findById(device.id);
         storedDevice = {
           ...storedDevice,
           ...device,
@@ -52,13 +52,7 @@ export class DevicesProcessor {
           storedDevice.connectedDevices = [];
         }
 
-        await this.prisma.client.device.upsert({
-          where: {
-            id: storedDevice.id,
-          },
-          update: storedDevice as any,
-          create: storedDevice as any,
-        });
+        await this.devices.save(storedDevice);
       }
     } catch (error) {
       this.logger.error(error);
@@ -66,14 +60,6 @@ export class DevicesProcessor {
         message: `${error}`,
       });
     }
-  }
-
-  private async findDevice(deviceId: string): Promise<Device | null> {
-    return await this.prisma.client.device.findUnique({
-      where: {
-        id: deviceId,
-      },
-    });
   }
 
   private updateConnectedDevices(

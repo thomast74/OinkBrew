@@ -4,6 +4,7 @@ import { prismaMock } from '../../prisma-singleton';
 import { ParticleService } from '../common/particle.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { DevicesProcessor } from './devices.processor';
+import { DevicesService } from './devices.service';
 
 describe('DevicesProcessor', () => {
   let processor: DevicesProcessor;
@@ -15,7 +16,7 @@ describe('DevicesProcessor', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [DevicesProcessor, ParticleService],
+      providers: [DevicesProcessor, ParticleService, DevicesService],
     })
       .useMocker((token) => {
         if (token === PrismaService) {

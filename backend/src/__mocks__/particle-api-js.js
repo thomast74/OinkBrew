@@ -17,6 +17,17 @@ getVariable.mockResolvedValue({
   body: '',
 });
 
+let streamResponse = undefined;
+const stream = {
+  on: jest.fn(),
+};
+stream.on.mockImplementation((eventName, callback) => {
+  streamResponse = callback;
+});
+
+const getEventStream = jest.fn();
+getEventStream.mockResolvedValue(stream);
+
 class Particle {
   constructor(options = {}) {
     initOptions = options;
@@ -37,10 +48,23 @@ class Particle {
   static get mockGetVariable() {
     return getVariable;
   }
+
+  static get mockGetEventStream() {
+    return getEventStream;
+  }
+
+  static mockStreamResponse(data) {
+    if (streamResponse) {
+      streamResponse(data);
+    } else {
+      console.error('stream response function not set');
+    }
+  }
 }
 
 Particle.prototype.loginAsClientOwner = loginAsClientOwner;
 Particle.prototype.listDevices = listDevices;
 Particle.prototype.getVariable = getVariable;
+Particle.prototype.getEventStream = getEventStream;
 
 module.exports = Particle;
