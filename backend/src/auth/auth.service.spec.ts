@@ -37,7 +37,6 @@ describe('AuthService', () => {
             signAsync: jest.fn().mockImplementation(jwtServiceMockImpl),
           };
         }
-        console.error(token);
       })
       .compile();
 

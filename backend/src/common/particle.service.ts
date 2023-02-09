@@ -55,20 +55,23 @@ export class ParticleService {
 
   public listDevices(): Promise<Device[]> {
     const $source = this.tokenInfo.pipe(
-      tap(() => this.logger.debug('Get devices')),
-      switchMap((tokens: any) =>
-        from(this.particle.listDevices({ auth: tokens.access_token })),
+      switchMap(async (tokens: any) =>
+        from(
+          this.particle.listDevices({
+            auth: tokens.access_token,
+          }),
+        ),
       ),
       map((response: any) =>
         response?.body ? (response.body as Device[]) : [],
       ),
       catchError((error) => {
-        this.logger.error('Could not get devices', error);
+        this.logger.error(`Could not get devices: ${error}`);
         return of([]);
       }),
       tap({
         next: (devices) =>
-          this.logger.debug(
+          this.logger.log(
             `Retrieved ${devices.length} devices from Particle Cloud`,
           ),
       }),

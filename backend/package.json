@@ -23,7 +23,7 @@
     "env:test": "export $(cat .env.test | xargs)",
     "e2e:up": "docker-compose -f ../docker-compose-e2e.yml up -d && sleep 3 ",
     "e2e:down": "docker-compose -f ../docker-compose-e2e.yml down",
-    "e2e:run": "jest --ci --config ./test/jest-e2e.json",
+    "e2e:run": "jest --ci --config ./test/jest-e2e.json --forceExit --detectOpenHandles",
     "e2e:db:deploy": "npx prisma migrate reset --force"
   },
   "dependencies": {

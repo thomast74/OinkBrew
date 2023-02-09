@@ -2,7 +2,7 @@ import { HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
 import * as argon2 from 'argon2';
-import { totp } from 'otplib';
+import { authenticator } from 'otplib';
 import * as request from 'supertest';
 import {
   createUser,
@@ -49,13 +49,17 @@ describe('AuthController (e2e)', () => {
     await prisma.client.$disconnect();
   });
 
+  afterAll(async () => {
+    await app.close();
+  });
+
   describe('signup', () => {
     it('should return UNAUTHORIZED and otp token if successful', async () => {
       const response = await request(app.getHttpServer())
         .post('/auth/signup')
         .send(userDto);
 
-      expect(response.status).toEqual(HttpStatus.UNAUTHORIZED);
+      expect(response.status).toEqual(HttpStatus.OK);
       expect(response.body).toEqual(expectedOtpBarcodeTokens);
     });
 
@@ -135,7 +139,7 @@ describe('AuthController (e2e)', () => {
 
     it('should return access and refres token if otp password is valid', async () => {
       const otpToken = await createOtpToken(jwt, user?.id, user?.email);
-      const otpPassword = totp.generate(user?.otpSecret ?? '');
+      const otpPassword = authenticator.generate(user?.otpSecret ?? '');
 
       const response = await request(app.getHttpServer())
         .post('/auth/signupOtp')
@@ -148,7 +152,7 @@ describe('AuthController (e2e)', () => {
 
     it('should set users refresh token', async () => {
       const otpToken = await createOtpToken(jwt, user?.id, user?.email);
-      const otpPassword = totp.generate(user?.otpSecret ?? '');
+      const otpPassword = authenticator.generate(user?.otpSecret ?? '');
 
       await request(app.getHttpServer())
         .post('/auth/signupOtp')
@@ -162,7 +166,7 @@ describe('AuthController (e2e)', () => {
 
     it('should set user as otp cofirmed', async () => {
       const otpToken = await createOtpToken(jwt, user?.id, user?.email);
-      const otpPassword = totp.generate(user?.otpSecret ?? '');
+      const otpPassword = authenticator.generate(user?.otpSecret ?? '');
 
       await request(app.getHttpServer())
         .post('/auth/signupOtp')
@@ -235,7 +239,7 @@ describe('AuthController (e2e)', () => {
           password: '12345',
         });
 
-      expect(response.status).toEqual(HttpStatus.UNAUTHORIZED);
+      expect(response.status).toEqual(HttpStatus.OK);
       expect(response.body).toEqual(expectedOtpTokens);
     });
   });
@@ -290,7 +294,7 @@ describe('AuthController (e2e)', () => {
 
     it('should return access and refresh token if otp password is valid', async () => {
       const otpToken = await createOtpToken(jwt, user?.id, user?.email);
-      const otpPassword = totp.generate(user?.otpSecret ?? '');
+      const otpPassword = authenticator.generate(user?.otpSecret ?? '');
 
       const response = await request(app.getHttpServer())
         .post('/auth/signinOtp')
@@ -303,7 +307,7 @@ describe('AuthController (e2e)', () => {
 
     it('should set users refresh token', async () => {
       const otpToken = await createOtpToken(jwt, user?.id, user?.email);
-      const otpPassword = totp.generate(user?.otpSecret ?? '');
+      const otpPassword = authenticator.generate(user?.otpSecret ?? '');
 
       await request(app.getHttpServer())
         .post('/auth/signinOtp')
@@ -470,7 +474,7 @@ describe('AuthController (e2e)', () => {
         .set('Authorization', `Bearer ${refreshToken}`)
         .send({});
 
-      const newRefreshToken = response.body.refresh_token;
+      const newRefreshToken = response.body.refreshToken;
       const dbUser = await findUserByEmail(prisma, userDto.email);
       const rtMatches = await argon2.verify(
         dbUser?.hashedRt ?? '',
@@ -484,24 +488,22 @@ describe('AuthController (e2e)', () => {
 });
 
 const expectedOtpTokens = {
-  otp_token: expect.any(String),
-  otp_barcode: undefined,
-  access_token: undefined,
-  refresh_token: undefined,
+  otpToken: expect.any(String),
+  userId: 13,
 };
 
 const expectedOtpBarcodeTokens = {
-  otp_token: expect.any(String),
-  otp_barcode: expect.any(String),
-  access_token: undefined,
-  refresh_token: undefined,
+  otpToken: expect.any(String),
+  otpBarcode: expect.any(String),
+  otpUrl: expect.any(String),
+  userId: 1,
 };
 
 const expectedAccessTokens = {
-  otp_token: undefined,
-  otp_barcode: undefined,
-  access_token: expect.any(String),
-  refresh_token: expect.any(String),
+  otpToken: undefined,
+  otpBarcode: undefined,
+  accessToken: expect.any(String),
+  refreshToken: expect.any(String),
 };
 
 const userFreshlyCreated = {

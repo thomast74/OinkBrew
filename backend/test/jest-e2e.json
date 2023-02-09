@@ -1,6 +1,7 @@
 {
-  "moduleFileExtensions": ["js", "json", "ts"],
   "rootDir": "../src",
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "modulePathIgnorePatterns": ["<rootDir>/__mocks__"],
   "testEnvironment": "node",
   "testRegex": ".e2e-spec.ts$",
   "transform": {
