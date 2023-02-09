@@ -31,23 +31,29 @@ void Controller::dispose()
         this->heatActuator = NULL;
     }
 
-    if (this->pid != NULL)
-    {
-        delete this->pid;
-        this->pid = NULL;
-    }
+    this->disposePID();
 }
 
 void Controller::setConfig(ControllerConfiguration &config)
 {
     memcpy(&this->config, &config, sizeof(ControllerConfiguration));
 
-    setTempSensor(this->config.tempSensor);
-    setHeatActuator(this->config.heatActuator);
+    setTempSensor(getConfig().tempSensor);
+    setHeatActuator(getConfig().heatActuator);
 
     setTargetTemperature(getConfig().temperature);
 
+    this->disposePID();
     this->pid = new PID(&currentTemperature, &output, &setPoint, this->config.p, this->config.i, this->config.d, PID_DIRECT);
+}
+
+void Controller::disposePID()
+{
+    if (this->pid != NULL)
+    {
+        delete this->pid;
+        this->pid = NULL;
+    }
 }
 
 ControllerConfiguration &Controller::getConfig()

@@ -51,6 +51,7 @@ protected:
 
     PID *getPID();
     float getOutput();
+    void disposePID();
 
     DeviceAddress DEVICE_ADDRESS_EMPTY = {0, 0, 0, 0, 0, 0, 0, 0};
 

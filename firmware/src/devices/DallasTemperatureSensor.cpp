@@ -108,7 +108,7 @@ void DallasTemperature::readScratchPad(const uint8_t *deviceAddress, uint8_t *sc
     _wire->select(deviceAddress);
     _wire->write(READSCRATCH);
 
-    // TODO => collect all comments &  use simple loop
+    // collect all comments &  use simple loop
     // byte 0: temperature LSB
     // byte 1: temperature MSB
     // byte 2: high alarm temp

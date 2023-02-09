@@ -57,6 +57,7 @@ void BrewController::setConfig(ControllerConfiguration &config)
     {
         if (this->pump1Actuator != NULL)
         {
+            this->turnOffPump1();
             delete this->pump1Actuator;
             this->pump1Actuator = NULL;
         }
@@ -71,6 +72,7 @@ void BrewController::setConfig(ControllerConfiguration &config)
     {
         if (this->pump2Actuator != NULL)
         {
+            this->turnOffPump2();
             delete this->pump2Actuator;
             this->pump2Actuator = NULL;
         }

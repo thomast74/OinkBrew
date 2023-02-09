@@ -110,18 +110,3 @@ void processCommand(ReceivedConfig config)
     break;
   }
 }
-
-// set offset for temp sensor
-// DeviceRequest dr3;
-// parseJson(&TcpListener::receiveDeviceRequest, &dr3);
-// deviceManager.setOffset(dr3);
-
-// add or update a current configuration
-// ControllerConfiguration cr1;
-// parseJson(&TcpListener::receiveConfiguration, &cr1);
-// controllerManager.changeController(cr1);
-
-// remove a configuration
-// ControllerConfiguration cr2;
-// parseJson(&TcpListener::receiveConfiguration, &cr2);
-// controllerManager.removeController(cr2.id);

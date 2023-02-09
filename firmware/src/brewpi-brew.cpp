@@ -2,7 +2,7 @@
 //       THIS IS A GENERATED FILE - DO NOT EDIT       //
 /******************************************************/
 
-#line 1 "/Users/thomast74/Projects/Brew-Particle/brewpi-brew/src/brewpi-brew.ino"
+#line 1 "/Users/thomast74/Projects/OinkBrew/firmware/src/brewpi-brew.ino"
 #include "Particle.h"
 #include "Settings.h"
 #include "config/ShieldSpark.h"
@@ -18,7 +18,7 @@ void publishValues(unsigned long time);
 void detectNewDevices(unsigned long time);
 int receiveConfiguration(String funtionData);
 void processCommand(ReceivedConfig config);
-#line 9 "/Users/thomast74/Projects/Brew-Particle/brewpi-brew/src/brewpi-brew.ino"
+#line 9 "/Users/thomast74/Projects/OinkBrew/firmware/src/brewpi-brew.ino"
 SerialLogHandler logHandler;
 Buzzer buzzer;
 DeviceManager deviceManager = DeviceManager::getInstance();
@@ -123,18 +123,3 @@ void processCommand(ReceivedConfig config)
     break;
   }
 }
-
-// set offset for temp sensor
-// DeviceRequest dr3;
-// parseJson(&TcpListener::receiveDeviceRequest, &dr3);
-// deviceManager.setOffset(dr3);
-
-// add or update a current configuration
-// ControllerConfiguration cr1;
-// parseJson(&TcpListener::receiveConfiguration, &cr1);
-// controllerManager.changeController(cr1);
-
-// remove a configuration
-// ControllerConfiguration cr2;
-// parseJson(&TcpListener::receiveConfiguration, &cr2);
-// controllerManager.removeController(cr2.id);
