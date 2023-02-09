@@ -4,5 +4,8 @@
     "docker/": true,
     "firmware/": true,
     "mobile_ios/": true
+  },
+  "[markdown]": {
+    "editor.wordWrap": "off"
   }
 }
