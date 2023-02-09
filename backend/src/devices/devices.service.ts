@@ -9,6 +9,10 @@ export class DevicesService {
 
   constructor(private prisma: PrismaService) {}
 
+  public async findAll(): Promise<Device[]> {
+    return await this.prisma.client.device.findMany();
+  }
+
   public async findById(deviceId: string): Promise<Device | null> {
     return await this.prisma.client.device.findUnique({
       where: {
@@ -66,7 +70,7 @@ export class DevicesService {
     connectedDevice: ConnectedDevice,
     connectStatus: boolean,
   ): Device | null {
-    let cDevices = ConnectedDevice.parseArray(
+    const cDevices = ConnectedDevice.parseArray(
       (device.connectedDevices as any[]) ?? [],
     );
 

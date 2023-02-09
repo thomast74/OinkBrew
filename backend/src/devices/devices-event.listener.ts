@@ -21,12 +21,10 @@ export class DevicesEventListener implements OnApplicationBootstrap {
   ) {}
 
   onApplicationBootstrap() {
-    console.error('aaa');
     this.startEventStream();
   }
 
   private startEventStream(retryCount = 3) {
-    console.error('bbb');
     this.particle.eventStream().subscribe({
       next: (data) => {
         this.eventProcessor(data);
@@ -34,7 +32,6 @@ export class DevicesEventListener implements OnApplicationBootstrap {
       error: () => {
         if (retryCount > 0) {
           setTimeout(() => {
-            console.error('ccc');
             retryCount--;
             this.startEventStream(retryCount);
           }, 750);
@@ -58,13 +55,14 @@ export class DevicesEventListener implements OnApplicationBootstrap {
         this.oinkbrewRemoveDevice(eventData);
         break;
       case 'oinkbrew/devices/values':
-        // add new sensor data values to cofiguration
+        // TODO: add new sensor data values to cofiguration
         break;
     }
   }
 
   private oinkbrewStart(eventData: EventData) {
-    // send active configuration to device
+    // TODO: send offset data
+    // TODO: send active configuration to device
   }
 
   private oinkbrewNewDevice(eventData: EventData) {

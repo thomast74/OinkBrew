@@ -22,6 +22,29 @@ describe('DevicesService', () => {
     service = module.get<DevicesService>(DevicesService);
   });
 
+  describe('findAll', () => {
+    it('should call prisma to get all devices with sensors', async () => {
+      await service.findAll();
+
+      expect(prismaMock.device.findMany).toHaveBeenCalled();
+    });
+
+    it('should return found devices', async () => {
+      const expectedDevices = [{ id: 'aaa', name: 'bb bcccddd' } as Device];
+      prismaMock.device.findMany.mockResolvedValue(expectedDevices);
+
+      const receivedDevices = await service.findAll();
+
+      expect(receivedDevices).toEqual(expectedDevices);
+    });
+
+    it('should return error from prisma client', async () => {
+      prismaMock.device.findMany.mockRejectedValue(new Error('db error'));
+
+      expect(service.findAll()).rejects.toEqual(new Error('db error'));
+    });
+  });
+
   describe('findById', () => {
     it('should call prisma get single record by deviceId', async () => {
       await service.findById('aaa');

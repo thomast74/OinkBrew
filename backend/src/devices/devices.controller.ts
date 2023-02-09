@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   HttpCode,
+  HttpException,
   HttpStatus,
   Logger,
   OnApplicationBootstrap,
@@ -11,6 +12,7 @@ import {
 import { Device } from '@prisma/client';
 import { Queue } from 'bull';
 import { DevicesEventListener } from './devices-event.listener';
+import { DevicesService } from './devices.service';
 
 @Controller('devices')
 export class DevicesController implements OnApplicationBootstrap {
@@ -18,6 +20,7 @@ export class DevicesController implements OnApplicationBootstrap {
 
   constructor(
     @InjectQueue('devices') private readonly devicesQueue: Queue,
+    private devices: DevicesService,
     private eventListener: DevicesEventListener,
   ) {}
 
@@ -27,11 +30,19 @@ export class DevicesController implements OnApplicationBootstrap {
 
   @Get('/')
   @HttpCode(HttpStatus.OK)
-  get(): Promise<Device[]> {
-    return Promise.resolve([]);
+  async getListOfDevices(): Promise<Device[]> {
+    try {
+      const devices = await this.devices.findAll();
+      return devices;
+    } catch (error) {
+      throw new HttpException(
+        error.message ?? error,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
-  @Post('refresh')
+  @Post('/refresh')
   @HttpCode(HttpStatus.OK)
   refresh(): Promise<boolean> {
     this.devicesQueue.add('refresh');
