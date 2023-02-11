@@ -20,7 +20,7 @@ export class DevicesProcessor {
     this.logger.log('Start refreshing...');
     try {
       const devices = await this.particle.listDevices();
-      this.logger.debug(`Retrieved ${devices.length} devices`);
+      this.logger.log(`Retrieved ${devices.length} devices`);
       for (const device of devices) {
         let storedDevice = await this.devices.findById(device.id);
         storedDevice = {

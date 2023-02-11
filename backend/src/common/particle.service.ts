@@ -55,12 +55,8 @@ export class ParticleService {
 
   public listDevices(): Promise<Device[]> {
     const $source = this.tokenInfo.pipe(
-      switchMap(async (tokens: any) =>
-        from(
-          this.particle.listDevices({
-            auth: tokens.access_token,
-          }),
-        ),
+      switchMap((tokens: any) =>
+        from(this.particle.listDevices({ auth: tokens.access_token })),
       ),
       map((response: any) =>
         response?.body ? (response.body as Device[]) : [],

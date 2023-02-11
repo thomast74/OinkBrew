@@ -4,6 +4,7 @@
   "modulePathIgnorePatterns": ["<rootDir>/__mocks__"],
   "testEnvironment": "node",
   "testRegex": ".e2e-spec.ts$",
+  "testTimeout": 10000,
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
   }

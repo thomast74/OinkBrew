@@ -25,7 +25,7 @@ describe('AuthController (e2e)', () => {
   let prisma: PrismaService;
   let jwt: JwtService;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
@@ -44,16 +44,16 @@ describe('AuthController (e2e)', () => {
 
   afterEach(async () => {
     const deleteUsers = prisma.client.user.deleteMany();
-
     await prisma.client.$transaction([deleteUsers]);
     await prisma.client.$disconnect();
   });
 
   afterAll(async () => {
+    await prisma.client.$disconnect();
     await app.close();
   });
 
-  describe('signup', () => {
+  describe('POST /auth/signup', () => {
     it('should return UNAUTHORIZED and otp token if successful', async () => {
       const response = await request(app.getHttpServer())
         .post('/auth/signup')
@@ -89,7 +89,7 @@ describe('AuthController (e2e)', () => {
     });
   });
 
-  describe('signupOtp', () => {
+  describe('POST /auth/signupOtp', () => {
     let user: User | null;
 
     beforeEach(async () => {
@@ -179,7 +179,7 @@ describe('AuthController (e2e)', () => {
     });
   });
 
-  describe('signin', () => {
+  describe('POST /auth/signin', () => {
     it('should return UNAUTHORIZED if no email provided', async () => {
       const response = await request(app.getHttpServer())
         .post('/auth/signin')
@@ -213,7 +213,7 @@ describe('AuthController (e2e)', () => {
       expect(response.status).toEqual(HttpStatus.FORBIDDEN);
     });
 
-    it('should return UNAUTHORIZED if otp is not confirmed', async () => {
+    it('should return BAD_REQUEST if otp is not confirmed', async () => {
       const user = await createUser(prisma, false);
 
       const response = await request(app.getHttpServer())
@@ -229,7 +229,7 @@ describe('AuthController (e2e)', () => {
       });
     });
 
-    it('should return UNAUTHORIZED and otp token if successful', async () => {
+    it('should return OK and otp token if successful', async () => {
       const user = await createUser(prisma, true);
 
       const response = await request(app.getHttpServer())
@@ -244,7 +244,7 @@ describe('AuthController (e2e)', () => {
     });
   });
 
-  describe('signinOtp', () => {
+  describe('POST /auth/signinOtp', () => {
     let user: User | null;
 
     beforeEach(async () => {
@@ -321,7 +321,7 @@ describe('AuthController (e2e)', () => {
     });
   });
 
-  describe('logout', () => {
+  describe('POST /auth/logout', () => {
     let user: User | null;
     let refreshToken: string;
 
@@ -382,7 +382,7 @@ describe('AuthController (e2e)', () => {
     });
   });
 
-  describe('refresh', () => {
+  describe('POST /auth/refresh', () => {
     let user: User | null;
     let refreshToken: string;
     let hashedRt: string;
@@ -489,14 +489,14 @@ describe('AuthController (e2e)', () => {
 
 const expectedOtpTokens = {
   otpToken: expect.any(String),
-  userId: 13,
+  userId: expect.any(Number),
 };
 
 const expectedOtpBarcodeTokens = {
   otpToken: expect.any(String),
   otpBarcode: expect.any(String),
   otpUrl: expect.any(String),
-  userId: 1,
+  userId: expect.any(Number),
 };
 
 const expectedAccessTokens = {

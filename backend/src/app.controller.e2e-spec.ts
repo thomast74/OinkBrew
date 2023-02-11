@@ -8,7 +8,7 @@ describe('AppController (e2e)', () => {
   let app: INestApplication;
   let prisma: PrismaService;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
@@ -19,16 +19,15 @@ describe('AppController (e2e)', () => {
     prisma = moduleFixture.get<PrismaService>(PrismaService);
   });
 
-  afterEach(async () => {
-    await prisma.client.$disconnect();
-  });
-
   afterAll(async () => {
+    await prisma.client.$disconnect();
     await app.close();
   });
 
-  // TODO make it work with an JWT Access Token
-  it('/profile (GET) not authenticated', () => {
-    return request(app.getHttpServer()).get('/profile').expect(401);
+  describe('GET /profile', () => {
+    // TODO make it work with an JWT Access Token
+    it('should return not authenticated when no valid token provided', () => {
+      return request(app.getHttpServer()).get('/profile').expect(401);
+    });
   });
 });
