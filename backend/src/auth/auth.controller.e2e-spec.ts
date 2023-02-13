@@ -8,13 +8,13 @@ import {
   createUser,
   findUserByEmail,
   updateUser,
-} from '../../test/db-helper.functions';
+} from '../../test/db-helper.fn';
 import {
   createAccessToken,
   createOtpToken,
   createRefreshToken,
   userDto,
-} from '../../test/helper.functions';
+} from '../../test/helper.fn';
 import { AppModule } from '../app.module';
 import { ARGON_OPTIONS } from '../constants';
 import { PrismaService } from '../prisma/prisma.service';

@@ -3,7 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
 import { authenticator } from 'otplib';
-import { createDbdUser, userDto } from '../../test/helper.functions';
+import { createDbdUser, userDto } from '../../test/helper.fn';
 import { UsersService } from '../users/users.service';
 import { AuthService } from './auth.service';
 import jwtConfig from './config/jwt.config';

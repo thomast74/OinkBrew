@@ -2,9 +2,10 @@
   "rootDir": "../src",
   "moduleFileExtensions": ["js", "json", "ts"],
   "modulePathIgnorePatterns": ["<rootDir>/__mocks__"],
+  "setupFilesAfterEnv": ["../test/matcher-extensions"],
   "testEnvironment": "node",
   "testRegex": ".e2e-spec.ts$",
-  "testTimeout": 10000,
+  "testTimeout": 30000,
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
   }

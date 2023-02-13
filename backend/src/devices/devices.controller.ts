@@ -1,5 +1,6 @@
 import { InjectQueue } from '@nestjs/bull';
 import {
+  Body,
   Controller,
   Get,
   HttpCode,
@@ -7,12 +8,16 @@ import {
   HttpStatus,
   Logger,
   OnApplicationBootstrap,
+  Param,
   Post,
+  Put,
+  UseGuards,
 } from '@nestjs/common';
 import { Device } from '@prisma/client';
 import { Queue } from 'bull';
 import { DevicesEventListener } from './devices-event.listener';
 import { DevicesService } from './devices.service';
+import { DeviceNameGuard } from './guards';
 
 @Controller('devices')
 export class DevicesController implements OnApplicationBootstrap {
@@ -42,7 +47,18 @@ export class DevicesController implements OnApplicationBootstrap {
     }
   }
 
-  @Post('/refresh')
+  @Post('/:id')
+  @UseGuards(DeviceNameGuard)
+  @HttpCode(HttpStatus.OK)
+  async updateDevice(
+    @Param('id') id: string,
+    @Body('name') name: string,
+    @Body('notes') notes?: string,
+  ): Promise<Device | null> {
+    return this.devices.update(id, name, notes);
+  }
+
+  @Put('/refresh')
   @HttpCode(HttpStatus.OK)
   refresh(): Promise<boolean> {
     this.devicesQueue.add('refresh');

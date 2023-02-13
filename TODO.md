@@ -10,8 +10,9 @@
 
 | Done | Short                                   | Description                                                                                             |
 | ---- | --------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-|      | GET /devices                            | Get a list of currently stored devices with attached devices and sensors                                |
-|      | POST /devices/{id}                      | Update Device Name and certain properties                                                               |
+| X)   | GET /devices                            | Get a list of currently stored devices with attached devices and sensors                                |
+| X)   | PUT /devices/refresh                    | To refresh devices from ParticleIO                                                                      |
+| X)   | POST /devices/{id}                      | Update Device Name and Notes, including updating ParticleIO                                             |
 |      | POST /devices/{id}/{pinNr}/{hw_address} | Update certain properties of a sensor attached to a specific device                                     |
 |      | Configuration DB Backend                | Ability to create/update a Brew/Ferment configuration                                                   |
 |      | GET /configurations                     | Get a list of all configurations, option is active and non-active                                       |

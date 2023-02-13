@@ -1,6 +1,11 @@
+import {
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { Device, Prisma } from '@prisma/client';
 import { prismaMock } from '../../prisma-singleton';
+import { ParticleService } from '../common/particle.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { DevicesService } from './devices.service';
 import { ConnectedDevice, ConnectedDeviceType } from './types';
@@ -8,18 +13,26 @@ import { ConnectedDevice, ConnectedDeviceType } from './types';
 describe('DevicesService', () => {
   let service: DevicesService;
 
+  const mockParticleService = {
+    updateDevice: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module = await Test.createTestingModule({
-      providers: [DevicesService],
+      providers: [DevicesService, ParticleService],
     })
       .useMocker((token) => {
         if (token === PrismaService) {
           return { client: prismaMock };
         }
       })
+      .overrideProvider(ParticleService)
+      .useValue(mockParticleService)
       .compile();
 
     service = module.get<DevicesService>(DevicesService);
+
+    mockParticleService.updateDevice.mockResolvedValue(void 0);
   });
 
   describe('findAll', () => {
@@ -41,7 +54,7 @@ describe('DevicesService', () => {
     it('should return error from prisma client', async () => {
       prismaMock.device.findMany.mockRejectedValue(new Error('db error'));
 
-      expect(service.findAll()).rejects.toEqual(new Error('db error'));
+      await expect(service.findAll()).rejects.toEqual(new Error('db error'));
     });
   });
 
@@ -83,6 +96,75 @@ describe('DevicesService', () => {
       } catch (error) {
         expect(error).toEqual('bad');
       }
+    });
+  });
+
+  describe('update', () => {
+    it('should return NotFoundException when no device found', async () => {
+      prismaMock.device.findUnique.mockResolvedValue(null);
+
+      await expect(service.update('aaa', 'bbb', 'ccc')).rejects.toEqual(
+        new NotFoundException('Device not found'),
+      );
+    });
+
+    it('should save updated device to database', async () => {
+      const dbDevice = { id: 'aaa', name: 'old name', notes: null } as Device;
+      const newDevice = {
+        id: 'aaa',
+        name: 'new name',
+        notes: 'my notes',
+      } as Device;
+      prismaMock.device.findUnique.mockResolvedValue(dbDevice);
+
+      await service.update('aaa', 'new name', 'my notes');
+
+      expect(prismaMock.device.upsert).toHaveBeenCalledWith({
+        where: {
+          id: 'aaa',
+        },
+        update: newDevice,
+        create: newDevice,
+      });
+    });
+
+    it('should return internal server error when save has an error', async () => {
+      const dbDevice = { id: 'aaa', name: 'old name', notes: null } as Device;
+      prismaMock.device.findUnique.mockResolvedValue(dbDevice);
+      prismaMock.device.upsert.mockRejectedValue(new Error('Save error'));
+
+      await expect(
+        service.update('aaa', 'new name', 'my notes'),
+      ).rejects.toEqual(new InternalServerErrorException('Save error'));
+    });
+
+    it('should call ParticleService to update name and notes', async () => {
+      const dbDevice = { id: 'aaa', name: 'old name', notes: null } as Device;
+      prismaMock.device.findUnique.mockResolvedValue(dbDevice);
+      prismaMock.device.upsert.mockResolvedValue(dbDevice);
+
+      await service.update('aaa', 'new name', 'my notes');
+
+      expect(mockParticleService.updateDevice).toHaveBeenCalledWith(
+        'aaa',
+        'new name',
+        'my notes',
+      );
+    });
+
+    it('should return internal server error when particle update fails', async () => {
+      const dbDevice = { id: 'aaa', name: 'old name', notes: null } as Device;
+      prismaMock.device.findUnique.mockResolvedValue(dbDevice);
+      prismaMock.device.upsert.mockResolvedValue(dbDevice);
+      mockParticleService.updateDevice.mockRejectedValue(
+        new Error('Particle device update failed'),
+      );
+
+      await expect(
+        service.update('aaa', 'new name', 'my notes'),
+      ).rejects.toEqual(
+        new InternalServerErrorException('Particle device update failed'),
+      );
     });
   });
 

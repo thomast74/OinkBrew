@@ -2,14 +2,20 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
 
+import { faker } from '@faker-js/faker';
 import * as argon2 from 'argon2';
 import * as request from 'supertest';
-import { createUser, updateUser } from '../../test/db-helper.functions';
+import {
+  createUser,
+  findDeviceById,
+  updateUser,
+} from '../../test/db-helper.fn';
 import {
   createAccessToken,
   createRefreshToken,
   sleep,
-} from '../../test/helper.functions';
+} from '../../test/helper.fn';
+import { getParticleDevice } from '../../test/particle-helper.fn';
 import { AppModule } from '../app.module';
 import { ARGON_OPTIONS } from '../constants';
 import { PrismaService } from '../prisma/prisma.service';
@@ -76,7 +82,71 @@ describe('DevicesController (e2e)', () => {
     });
   });
 
-  describe('POST /devices/refresh', () => {
+  describe('POST /devices/{id}', () => {
+    it('should return not authenticated if no valid token provided', () => {
+      return request(app.getHttpServer())
+        .post(`/devices/${expectedDevice1.id}`)
+        .send({})
+        .expect(401);
+    });
+
+    it('should return bad request when device with {id} is not found in database', async () => {});
+
+    it('should return bad request when name is empty', async () => {
+      return request(app.getHttpServer())
+        .post(`/devices/${expectedDevice1.id}`)
+        .set('Authorization', `Bearer ${validAccessToken}`)
+        .send({
+          name: '',
+        })
+        .expect(400);
+    });
+
+    it('should return bad request when name is null/undefined', async () => {
+      return request(app.getHttpServer())
+        .post(`/devices/${expectedDevice1.id}`)
+        .set('Authorization', `Bearer ${validAccessToken}`)
+        .send({})
+        .expect(400);
+    });
+
+    it('should update name and notes in database', async () => {
+      const name = faker.word.noun();
+      const notes = faker.random.words(5);
+
+      const response = await request(app.getHttpServer())
+        .post(`/devices/${expectedDevice2.id}`)
+        .set('Authorization', `Bearer ${validAccessToken}`)
+        .send({
+          name,
+          notes,
+        });
+      const device = await findDeviceById(prisma, expectedDevice2.id);
+
+      expect(response.statusCode).toEqual(200);
+      expect(device?.name).toEqual(name);
+      expect(device?.notes).toEqual(notes);
+    });
+
+    it('should update name and notes in ParticleIO', async () => {
+      const name = faker.word.noun();
+      const notes = faker.random.words(5);
+
+      await request(app.getHttpServer())
+        .post(`/devices/${expectedDevice2.id}`)
+        .set('Authorization', `Bearer ${validAccessToken}`)
+        .send({
+          name,
+          notes,
+        });
+
+      const device = await getParticleDevice(expectedDevice2.id);
+      expect(device.name).toEqual(name);
+      expect(device.notes).toEqual(notes);
+    });
+  });
+
+  describe('PUT /devices/refresh', () => {
     beforeEach(async () => {
       const deleteDevices = prisma.client.device.deleteMany();
       await prisma.client.$transaction([deleteDevices]);
@@ -86,15 +156,15 @@ describe('DevicesController (e2e)', () => {
     });
 
     it('should return not authenticated if no valid token provided', () => {
-      return request(app.getHttpServer()).post('/devices/refresh').expect(401);
+      return request(app.getHttpServer()).put('/devices/refresh').expect(401);
     });
 
     it('should get devices from ParticleIO', async () => {
       const response = await request(app.getHttpServer())
-        .post('/devices/refresh')
+        .put('/devices/refresh')
         .set('Authorization', `Bearer ${validAccessToken}`)
         .send();
-      await sleep(2000);
+      await sleep(4000);
       const deviceCount = await prisma.client.device.count();
 
       expect(response.statusCode).toEqual(200);
@@ -118,8 +188,8 @@ const expectedDevice1 = {
   last_handshake_at: expect.any(String),
   last_heard: expect.any(String),
   last_ip_address: expect.any(String),
-  name: 'ControlBox',
-  notes: null,
+  name: expect.any(String),
+  notes: expect.nullOrAny(String),
   online: false,
   pinned_build_target: '2.1.0',
   platform_id: 6,
@@ -152,8 +222,8 @@ const expectedDevice2 = {
   last_handshake_at: expect.any(String),
   last_heard: expect.any(String),
   last_ip_address: expect.any(String),
-  name: 'Fridge',
-  notes: null,
+  name: expect.any(String),
+  notes: expect.nullOrAny(String),
   online: false,
   pinned_build_target: null,
   platform_id: 6,

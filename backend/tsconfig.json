@@ -18,5 +18,8 @@
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false
-  }
+  },
+  "files": ["./test/matcher-extensions/matcher-extensions.d.ts"],
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "test/matchers", "test/matcher-extensions"]
 }

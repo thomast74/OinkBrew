@@ -8,14 +8,13 @@ loginAsClientOwner.mockResolvedValue({
 });
 
 const listDevices = jest.fn();
-listDevices.mockResolvedValue({
-  body: [],
-});
+listDevices.mockResolvedValue({ body: [] });
+
+updateDevice = jest.fn();
+updateDevice.mockResolvedValue({ body: '' });
 
 const getVariable = jest.fn();
-getVariable.mockResolvedValue({
-  body: '',
-});
+getVariable.mockResolvedValue({ body: '' });
 
 let streamResponse = undefined;
 const stream = {
@@ -45,6 +44,10 @@ class Particle {
     return listDevices;
   }
 
+  static get mockUpdateDevice() {
+    return updateDevice;
+  }
+
   static get mockGetVariable() {
     return getVariable;
   }
@@ -64,6 +67,7 @@ class Particle {
 
 Particle.prototype.loginAsClientOwner = loginAsClientOwner;
 Particle.prototype.listDevices = listDevices;
+Particle.prototype.updateDevice = updateDevice;
 Particle.prototype.getVariable = getVariable;
 Particle.prototype.getEventStream = getEventStream;
 

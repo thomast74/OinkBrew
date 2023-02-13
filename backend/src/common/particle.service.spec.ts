@@ -97,8 +97,33 @@ describe('ParticleService', () => {
     });
   });
 
+  describe('updateDevice', () => {
+    it('should update device name and notes to particle io', async () => {
+      Particle.mockUpdateDevice.mockResolvedValue({ body: '' });
+      const testSubject = testModule.get<ParticleService>(ParticleService);
+
+      await testSubject.updateDevice('aaa', 'new name', 'my notes');
+
+      expect(Particle.mockUpdateDevice).toHaveBeenCalledWith({
+        auth: '123456',
+        deviceId: 'aaa',
+        name: 'new name',
+        notes: 'my notes',
+      });
+    });
+
+    it('should any error received', async () => {
+      Particle.mockUpdateDevice.mockRejectedValue(new Error('API error'));
+      const testSubject = testModule.get<ParticleService>(ParticleService);
+
+      await expect(
+        testSubject.updateDevice('aaa', 'new name', 'my notes'),
+      ).rejects.toEqual(new Error('API error'));
+    });
+  });
+
   describe('getVariable', () => {
-    it('should call particle service with device, name and auth token', async () => {
+    it('should call particle service with deviceId, name and auth token', async () => {
       Particle.mockGetVariable.mockResolvedValue({
         body: { result: '' },
       });

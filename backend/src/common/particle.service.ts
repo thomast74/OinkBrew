@@ -76,6 +76,32 @@ export class ParticleService {
     return firstValueFrom($source);
   }
 
+  public async updateDevice(
+    deviceId: string,
+    name: string,
+    notes?: string,
+  ): Promise<void> {
+    const $source = this.tokenInfo.pipe(
+      switchMap((tokens: any) =>
+        from(
+          this.particle.updateDevice({
+            auth: tokens.access_token,
+            deviceId,
+            name,
+            notes,
+          }),
+        ),
+      ),
+      tap({
+        next: () =>
+          this.logger.log(`Name and notes for device ${deviceId} successful`),
+      }),
+      map(() => void 0),
+    );
+
+    return firstValueFrom($source);
+  }
+
   public getVariable(deviceId: string, name: string): Promise<any> {
     const $source = this.tokenInfo.pipe(
       tap(() => this.logger.debug('Get devices')),

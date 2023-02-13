@@ -1,9 +1,10 @@
+import { Device } from '@prisma/client';
 import * as argon2 from 'argon2';
 import { authenticator } from 'otplib';
 import { ARGON_OPTIONS } from '../src/constants';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { User } from '../src/users/types';
-import { userDto } from './helper.functions';
+import { userDto } from './helper.fn';
 
 export async function createUser(
   prisma: PrismaService,
@@ -52,4 +53,17 @@ export async function findUserByEmail(
   });
 
   return user;
+}
+
+export async function findDeviceById(
+  prisma: PrismaService,
+  deviceId: string,
+): Promise<Device | null> {
+  const device = await prisma.client.device.findUnique({
+    where: {
+      id: deviceId,
+    },
+  });
+
+  return device;
 }

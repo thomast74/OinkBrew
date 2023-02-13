@@ -1,5 +1,11 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { Device } from '@prisma/client';
+import { ParticleService } from '../common/particle.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { ConnectedDevice } from './types';
 
@@ -7,7 +13,10 @@ import { ConnectedDevice } from './types';
 export class DevicesService {
   private readonly logger = new Logger(DevicesService.name);
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private particle: ParticleService,
+  ) {}
 
   public async findAll(): Promise<Device[]> {
     return await this.prisma.client.device.findMany();
@@ -19,6 +28,29 @@ export class DevicesService {
         id: deviceId,
       },
     });
+  }
+
+  public async update(
+    deviceId: string,
+    name: string,
+    notes?: string,
+  ): Promise<Device> {
+    const device = await this.findById(deviceId);
+    if (!device) {
+      throw new NotFoundException('Device not found');
+    }
+
+    try {
+      device.name = name;
+      device.notes = notes ?? null;
+      await this.save(device);
+
+      await this.particle.updateDevice(deviceId, name, notes);
+
+      return device;
+    } catch (error) {
+      throw new InternalServerErrorException(error.message || 'Unknown error');
+    }
   }
 
   public async save(device: Device): Promise<void> {

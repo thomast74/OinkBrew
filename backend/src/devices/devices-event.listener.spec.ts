@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Subject } from 'rxjs';
-import { sleep } from '../../test/helper.functions';
+import { sleep } from '../../test/helper.fn';
 import { ParticleService } from '../common/particle.service';
 import { DevicesEventListener } from './devices-event.listener';
 import { DevicesService } from './devices.service';

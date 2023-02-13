@@ -6,7 +6,7 @@ import {
   PATH_METADATA,
 } from '@nestjs/common/constants';
 import { Test, TestingModule } from '@nestjs/testing';
-import { createDbdUser, userDto } from '../../test/helper.functions';
+import { createDbdUser, userDto } from '../../test/helper.fn';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { IS_PUBLIC_KEY } from './decorators';

@@ -3,7 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 import * as argon2 from 'argon2';
 import { prismaMock } from '../../prisma-singleton';
-import { createDbdUser, userDto } from '../../test/helper.functions';
+import { createDbdUser, userDto } from '../../test/helper.fn';
 import { ARGON_OPTIONS } from '../constants';
 import { PrismaService } from '../prisma/prisma.service';
 import { UsersService } from './users.service';
