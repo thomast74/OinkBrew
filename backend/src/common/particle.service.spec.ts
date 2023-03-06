@@ -260,6 +260,51 @@ describe('ParticleService', () => {
     });
   });
 
+  describe('restart', () => {
+    it('should send restart request to device', async () => {
+      const testSubject = testModule.get<ParticleService>(ParticleService);
+
+      await testSubject.restart('aaa');
+
+      expect(Particle.mockCallFunction).toHaveBeenCalledWith({
+        auth: '123456',
+        deviceId: 'aaa',
+        name: 'setConfig',
+        argument: JSON.stringify({
+          command: 4,
+          data: {},
+        }),
+      });
+    });
+
+    it('should return UpdateResponse with isSuccessful false and error code', async () => {
+      Particle.mockCallFunction.mockRejectedValue({
+        statusCode: 403,
+        body: { info: 'Device not found' },
+      });
+      const testSubject = testModule.get<ParticleService>(ParticleService);
+
+      const updateResponse = await testSubject.restart('aaa');
+
+      expect(updateResponse).toEqual({
+        isSuccessful: false,
+        errorCode: 403,
+        info: 'Device not found',
+      });
+    });
+
+    it('should return UpdateResponse with isSuccessful true', async () => {
+      Particle.mockCallFunction.mockResolvedValue({});
+      const testSubject = testModule.get<ParticleService>(ParticleService);
+
+      const updateResponse = await testSubject.restart('aaa');
+
+      expect(updateResponse).toEqual({
+        isSuccessful: true,
+      });
+    });
+  });
+
   describe('eventStream', () => {
     it('should start listening for particle events', () => {
       const testSubject = testModule.get<ParticleService>(ParticleService);

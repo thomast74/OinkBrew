@@ -16,6 +16,7 @@ describe('DevicesService', () => {
   const mockParticleService = {
     updateDevice: jest.fn(),
     updateConnectedDeviceOffset: jest.fn(),
+    restart: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -35,10 +36,14 @@ describe('DevicesService', () => {
 
     mockParticleService.updateDevice.mockReset();
     mockParticleService.updateConnectedDeviceOffset.mockReset();
+    mockParticleService.restart.mockReset();
     mockParticleService.updateDevice.mockResolvedValue({
       isSuccessful: true,
     });
     mockParticleService.updateConnectedDeviceOffset.mockResolvedValue({
+      isSuccessful: true,
+    });
+    mockParticleService.restart.mockResolvedValue({
       isSuccessful: true,
     });
   });
@@ -513,6 +518,32 @@ describe('DevicesService', () => {
       } catch (error) {
         expect(error).toEqual('upsert error');
       }
+    });
+  });
+
+  describe('restart', () => {
+    it('should call Particle service to restart device', async () => {
+      await service.restart('bbb');
+
+      expect(mockParticleService.restart).toHaveBeenCalledWith('bbb');
+    });
+
+    it('should return true if restart was successful', async () => {
+      const result = await service.restart('bbb');
+
+      expect(result).toBe(true);
+    });
+
+    it('should return InternalServer error in case update failed', async () => {
+      mockParticleService.restart.mockResolvedValue({
+        isSuccessful: false,
+        errorCode: 403,
+        info: 'restart failed',
+      });
+
+      await expect(service.restart('bbb')).rejects.toEqual(
+        new InternalServerErrorException('403: restart failed'),
+      );
     });
   });
 });

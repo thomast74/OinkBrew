@@ -228,6 +228,41 @@ describe('DevicesController (e2e)', () => {
     // });
   });
 
+  describe('POST /devices/{id}/restart', () => {
+    it('should return not authenticated if no valid token provided', () => {
+      const deviceId = 'bbb';
+      return request(app.getHttpServer())
+        .post(`/devices/${deviceId}/restart`)
+        .send({})
+        .expect(401);
+    });
+
+    // this test passes only when device connected with sensor
+    // *
+    // it('should return ok when device restart was successful', async () => {
+    //   const deviceId = '3b003d000747343232363230';
+    //   return request(app.getHttpServer())
+    //     .post(`/devices/${deviceId}/restart`)
+    //     .set('Authorization', `Bearer ${validAccessToken}`)
+    //     .send({})
+    //     .expect(200);
+    // });
+
+    it('should return internal error when particle restart failed', async () => {
+      const deviceId = 'bbb';
+      const result = await request(app.getHttpServer())
+        .post(`/devices/${deviceId}/restart`)
+        .set('Authorization', `Bearer ${validAccessToken}`)
+        .send({});
+
+      const error = JSON.parse(result.text);
+      expect(result.statusCode).toBe(500);
+      expect(error.message).toBe(
+        "403: I didn't recognize that device name or ID, try opening https://api.particle.io/v1/devices?access_token=undefined",
+      );
+    });
+  });
+
   describe('POST /devices/{id}', () => {
     it('should return not authenticated if no valid token provided', () => {
       return request(app.getHttpServer())

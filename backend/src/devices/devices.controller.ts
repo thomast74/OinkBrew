@@ -67,6 +67,13 @@ export class DevicesController implements OnApplicationBootstrap {
     );
   }
 
+  @Post('/:id/restart')
+  @HttpCode(HttpStatus.OK)
+  async restartDevice(@Param('id') id: string): Promise<boolean> {
+    await this.devices.restart(id);
+    return true;
+  }
+
   @Post('/:id')
   @UseGuards(DeviceNameGuard)
   @HttpCode(HttpStatus.OK)

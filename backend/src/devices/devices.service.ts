@@ -163,6 +163,18 @@ export class DevicesService {
     await this.save(device);
   }
 
+  public async restart(deviceId: string): Promise<boolean> {
+    const updateResponse = await this.particle.restart(deviceId);
+
+    if (!updateResponse.isSuccessful) {
+      throw new InternalServerErrorException(
+        `${updateResponse.errorCode}: ${updateResponse.info}`,
+      );
+    }
+
+    return true;
+  }
+
   private markOrAddConnectedDevice(
     device: Device,
     connectedDevice: ConnectedDevice,

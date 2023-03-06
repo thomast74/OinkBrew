@@ -28,6 +28,7 @@ describe('DevicesController', () => {
     findAll: jest.fn(),
     update: jest.fn(),
     updateConnectedDeviceWithNameAndOffset: jest.fn(),
+    restart: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -232,6 +233,49 @@ describe('DevicesController', () => {
           0.8,
         ),
       ).rejects.toEqual(new InternalServerErrorException('Bad error'));
+    });
+  });
+
+  describe('POST /{id}/refresh', () => {
+    it('should not be public', () => {
+      const controller = module.get<DevicesController>(DevicesController);
+      const metadata = Reflect.getMetadata(
+        IS_PUBLIC_KEY,
+        controller.restartDevice,
+      );
+
+      expect(metadata).toBeUndefined();
+    });
+
+    it('should react to POST /{id}/restart', () => {
+      const controller = module.get<DevicesController>(DevicesController);
+      const method = Reflect.getMetadata(
+        METHOD_METADATA,
+        controller.restartDevice,
+      );
+      const path = Reflect.getMetadata(PATH_METADATA, controller.restartDevice);
+
+      expect(method).toEqual(RequestMethod.POST);
+      expect(path).toEqual('/:id/restart');
+    });
+
+    it('should return HttpStatus.OK', () => {
+      const controller = module.get<DevicesController>(DevicesController);
+      const metadata = Reflect.getMetadata(
+        HTTP_CODE_METADATA,
+        controller.restartDevice,
+      );
+
+      expect(metadata).toEqual(HttpStatus.OK);
+    });
+
+    it('should call device service with id', async () => {
+      mockDevicesService.update.mockResolvedValue({});
+      const controller = module.get<DevicesController>(DevicesController);
+
+      await controller.restartDevice('abcdefg');
+
+      expect(mockDevicesService.restart).toHaveBeenCalledWith('abcdefg');
     });
   });
 

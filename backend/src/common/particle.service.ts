@@ -147,7 +147,7 @@ export class ParticleService {
       }),
       catchError((error: any) => {
         this.logger.error(
-          `callFunction error: ${error.statusCode} => ${error.body.info}`,
+          `Offset callFunction error: ${error.statusCode} => ${error.body.info}`,
         );
         return of({
           isSuccessful: false,
@@ -184,6 +184,43 @@ export class ParticleService {
           this.logger.debug(
             `Retrieved variable ${name} from device ${deviceId}: ${value}`,
           ),
+      }),
+    );
+
+    return firstValueFrom($source);
+  }
+
+  public async restart(deviceId: string): Promise<UpdateResponse> {
+    const data = {
+      command: 4, // RESTART
+      data: {},
+    };
+
+    const $source = this.tokenInfo.pipe(
+      tap(() => this.logger.debug('callFunction: RESTART')),
+      switchMap((tokens: any) =>
+        from(
+          this.particle.callFunction({
+            deviceId,
+            name: 'setConfig',
+            argument: JSON.stringify(data),
+            auth: tokens.access_token,
+          }),
+        ),
+      ),
+      map((response) => {
+        this.logger.error(`RESTART: ${JSON.stringify(response)}`);
+        return { isSuccessful: true };
+      }),
+      catchError((error: any) => {
+        this.logger.error(
+          `restart callFunction error: ${error.statusCode} => ${error.body.info}`,
+        );
+        return of({
+          isSuccessful: false,
+          errorCode: error.statusCode,
+          info: error.body.info,
+        });
       }),
     );
 
