@@ -29,11 +29,11 @@ DeviceRequest ConfigManager::parseDeviceRequest(JSONValue data)
     JSONObjectIterator iter(data);
     while (iter.next())
     {
-        if (iter.name() == "pin_nr")
+        if (iter.name() == "pinNr")
         {
             request.pin_nr = iter.value().toInt();
         }
-        else if (iter.name() == "hw_address")
+        else if (iter.name() == "hwAddress")
         {
             const char *hw_address = iter.value().toString().data();
             ConfigManager::setBytes(request.hw_address, hw_address, 8);
@@ -150,11 +150,11 @@ ActingDevice ConfigManager::parseActingDevice(JSONValue data)
     JSONObjectIterator iter(data);
     while (iter.next())
     {
-        if (iter.name() == "pin_nr")
+        if (iter.name() == "pinNr")
         {
             device.pin_nr = iter.value().toInt();
         }
-        else if (iter.name() == "hw_address")
+        else if (iter.name() == "hwAddress")
         {
             const char *hw_address = iter.value().toString().data();
             setBytes(device.hw_address, hw_address, 8);

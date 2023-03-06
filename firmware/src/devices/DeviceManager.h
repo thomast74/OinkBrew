@@ -42,7 +42,7 @@ public:
     void setDeviceValue(uint8_t &pin_nr, DeviceAddress &hw_address, float value);
 
     String getDevicesJson();
-    String getDeviceJson(uint8_t &pin_nr, DeviceAddress &hw_address, DeviceType type);
+    String getDeviceJson(uint8_t &pin_nr, DeviceAddress &hw_address, float offset, DeviceType type);
     String getDeviceValuesJson();
 
 private:

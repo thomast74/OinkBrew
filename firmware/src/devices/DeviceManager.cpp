@@ -68,7 +68,7 @@ bool DeviceManager::findNewDevices()
             memcpy(&activeDevices[registered_devices], &devices[i], sizeof(Device));
             registered_devices++;
 
-            Particle.publish("oinkbrew/devices/new", getDeviceJson(devices[i].pin_nr, devices[i].hw_address, devices[i].type));
+            Particle.publish("oinkbrew/devices/new", getDeviceJson(devices[i].pin_nr, devices[i].hw_address, devices[i].offset, devices[i].type));
 
             new_device_found = true;
         }
@@ -137,7 +137,7 @@ bool DeviceManager::removeDevice(uint8_t &pin_nr, DeviceAddress &hw_address, Dev
 
     if (removed)
     {
-        Particle.publish("oinkbrew/devices/remove", getDeviceJson(pin_nr, hw_address, type));
+        Particle.publish("oinkbrew/devices/remove", getDeviceJson(pin_nr, hw_address, 0, type));
         memcpy(activeDevices, newActiveDevices, sizeof(newActiveDevices));
         registered_devices = new_registered_devices;
     }
@@ -281,7 +281,7 @@ String DeviceManager::getDevicesJson()
                 notFirst = true;
             }
 
-            json.concat(getDeviceJson(activeDevices[i].pin_nr, activeDevices[i].hw_address, activeDevices[i].type));
+            json.concat(getDeviceJson(activeDevices[i].pin_nr, activeDevices[i].hw_address, activeDevices[i].offset, activeDevices[i].type));
         }
     }
 
@@ -290,7 +290,7 @@ String DeviceManager::getDevicesJson()
     return json;
 }
 
-String DeviceManager::getDeviceJson(uint8_t &pin_nr, DeviceAddress &hw_address, DeviceType type)
+String DeviceManager::getDeviceJson(uint8_t &pin_nr, DeviceAddress &hw_address, float offset, DeviceType type)
 {
     char buf[17];
     String json = String("{");
@@ -304,11 +304,13 @@ String DeviceManager::getDeviceJson(uint8_t &pin_nr, DeviceAddress &hw_address, 
         json.concat(",");
     }
 
-    json.concat("\"pin_nr\":\"");
+    json.concat("\"pinNr\":");
     json.concat(pin_nr);
-    json.concat("\",\"hw_address\":\"");
+    json.concat(",\"hwAddress\":\"");
     json.concat(buf);
-    json.concat("\"}");
+    json.concat("\",\"deviceOffset\":");
+    json.concat(offset);
+    json.concat("}");
 
     return json;
 }
@@ -335,9 +337,9 @@ String DeviceManager::getDeviceValuesJson()
 
             Helper::getBytes(activeDevices[i].hw_address, 8, buf);
 
-            json.concat("{\"pin_nr\":\"");
+            json.concat("{\"pinNr\":");
             json.concat(activeDevices[i].pin_nr);
-            json.concat("\",\"hw_address\":\"");
+            json.concat(",\"hwAddress\":\"");
             json.concat(buf);
             json.concat("\",\"value\":");
             json.concat(activeDevices[i].value);
