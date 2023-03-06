@@ -79,6 +79,7 @@ export class DevicesProcessor {
       );
       if (index >= 0) {
         cDevices[index].connected = true;
+        cDevices[index].deviceOffset = connectedDevice.deviceOffset;
       } else {
         connectedDevice.connected = true;
         cDevices.push(connectedDevice);

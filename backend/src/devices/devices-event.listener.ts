@@ -66,7 +66,7 @@ export class DevicesEventListener implements OnApplicationBootstrap {
   }
 
   private oinkbrewNewDevice(eventData: EventData) {
-    this.devices.updateConnectedDevice(
+    this.devices.updateConnectedDeviceWithConnectStatus(
       eventData.coreid,
       ConnectedDevice.parseData(JSON.parse(eventData.data)),
       true,
@@ -74,7 +74,7 @@ export class DevicesEventListener implements OnApplicationBootstrap {
   }
 
   private oinkbrewRemoveDevice(eventData: EventData) {
-    this.devices.updateConnectedDevice(
+    this.devices.updateConnectedDeviceWithConnectStatus(
       eventData.coreid,
       ConnectedDevice.parseData(JSON.parse(eventData.data)),
       false,

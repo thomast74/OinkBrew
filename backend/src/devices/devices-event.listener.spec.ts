@@ -17,7 +17,7 @@ describe('DevicesEventListener', () => {
   mockParticleService.eventStream.mockReturnValue(mockEventStream);
 
   const mockDevicesService = {
-    updateConnectedDevice: jest.fn(),
+    updateConnectedDeviceWithConnectStatus: jest.fn(),
   };
 
   const resetEventStream = () => {
@@ -62,7 +62,7 @@ describe('DevicesEventListener', () => {
   describe('event data: oinkbrew/devices/new', () => {
     it('should call DeviceService updateConnectedDevice', () => {
       const event = {
-        data: '{"type":1,"pin_nr":"17","hw_address":"0000000000000000"}',
+        data: eventConnectedDeviceString,
         ttl: 60,
         published_at: new Date('2022-12-09 09:34:31.056'),
         coreid: '3b003d000747343232363230',
@@ -71,18 +71,16 @@ describe('DevicesEventListener', () => {
       listener.onApplicationBootstrap();
       mockEventStream.next(event);
 
-      expect(mockDevicesService.updateConnectedDevice).toHaveBeenCalledWith(
-        event.coreid,
-        JSON.parse(event.data),
-        true,
-      );
+      expect(
+        mockDevicesService.updateConnectedDeviceWithConnectStatus,
+      ).toHaveBeenCalledWith(event.coreid, expectedConnectedDevice, true);
     });
   });
 
   describe('event data: oinkbrew/devices/remove', () => {
     it('should call DeviceService updateConnectedDevice', () => {
       const event = {
-        data: '{"type":1,"pin_nr":"17","hw_address":"0000000000000000"}',
+        data: eventConnectedDeviceString,
         ttl: 60,
         published_at: new Date('2022-12-09 09:34:31.056'),
         coreid: '3b003d000747343232363230',
@@ -91,11 +89,23 @@ describe('DevicesEventListener', () => {
       listener.onApplicationBootstrap();
       mockEventStream.next(event);
 
-      expect(mockDevicesService.updateConnectedDevice).toHaveBeenCalledWith(
-        event.coreid,
-        JSON.parse(event.data),
-        false,
-      );
+      expect(
+        mockDevicesService.updateConnectedDeviceWithConnectStatus,
+      ).toHaveBeenCalledWith(event.coreid, expectedConnectedDevice, false);
     });
   });
 });
+
+const eventConnectedDevice = {
+  type: 1,
+  pinNr: 17,
+  hwAddress: '0000000000000000',
+  offset: 0.0,
+  deviceOffset: 0.0,
+};
+const eventConnectedDeviceString = JSON.stringify(eventConnectedDevice);
+const expectedConnectedDevice = {
+  ...eventConnectedDevice,
+  offset: 0.0,
+  deviceOffset: 0.0,
+};

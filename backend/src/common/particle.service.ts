@@ -15,7 +15,7 @@ import {
   tap,
 } from 'rxjs';
 import { EventData } from 'src/devices/types';
-import { TokenInfo } from './types';
+import { TokenInfo, UpdateResponse } from './types';
 
 @Injectable()
 export class ParticleService {
@@ -80,7 +80,7 @@ export class ParticleService {
     deviceId: string,
     name: string,
     notes?: string,
-  ): Promise<void> {
+  ): Promise<UpdateResponse> {
     const $source = this.tokenInfo.pipe(
       switchMap((tokens: any) =>
         from(
@@ -92,11 +92,69 @@ export class ParticleService {
           }),
         ),
       ),
-      tap({
-        next: () =>
-          this.logger.log(`Name and notes for device ${deviceId} successful`),
+      map((response) => {
+        this.logger.log(
+          `Name and notes for device ${deviceId} updated successful`,
+        );
+        this.logger.error(JSON.stringify(response));
+        return { isSuccessful: true };
       }),
-      map(() => void 0),
+      catchError((error: any) => {
+        this.logger.error(
+          `callFunction error: ${error.statusCode} => ${error.body.info}`,
+        );
+        return of({
+          isSuccessful: false,
+          errorCode: error.statusCode,
+          info: error.body.info,
+        });
+      }),
+    );
+
+    return firstValueFrom($source);
+  }
+
+  public async updateConnectedDeviceOffset(
+    deviceId: string,
+    pinNr: number,
+    hwAddress: string,
+    offset: number,
+  ): Promise<UpdateResponse> {
+    const data = {
+      command: 1,
+      data: {
+        pinNr: pinNr,
+        hwAddress: hwAddress,
+        offset,
+      },
+    };
+
+    const $source = this.tokenInfo.pipe(
+      tap(() => this.logger.debug('callFunction: OFFSET')),
+      switchMap((tokens: any) =>
+        from(
+          this.particle.callFunction({
+            deviceId,
+            name: 'setConfig',
+            argument: JSON.stringify(data),
+            auth: tokens.access_token,
+          }),
+        ),
+      ),
+      map((response) => {
+        this.logger.error(JSON.stringify(response));
+        return { isSuccessful: true };
+      }),
+      catchError((error: any) => {
+        this.logger.error(
+          `callFunction error: ${error.statusCode} => ${error.body.info}`,
+        );
+        return of({
+          isSuccessful: false,
+          errorCode: error.statusCode,
+          info: error.body.info,
+        });
+      }),
     );
 
     return firstValueFrom($source);

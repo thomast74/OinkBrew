@@ -37,6 +37,7 @@ export class DevicesService {
   ): Promise<Device> {
     const device = await this.findById(deviceId);
     if (!device) {
+      this.logger.error('Update => Device not found');
       throw new NotFoundException('Device not found');
     }
 
@@ -44,13 +45,23 @@ export class DevicesService {
       device.name = name;
       device.notes = notes ?? null;
       await this.save(device);
-
-      await this.particle.updateDevice(deviceId, name, notes);
-
-      return device;
     } catch (error) {
+      this.logger.error(`Update => General error: ${error}`);
       throw new InternalServerErrorException(error.message || 'Unknown error');
     }
+
+    const updateResponse = await this.particle.updateDevice(
+      deviceId,
+      name,
+      notes,
+    );
+    if (!updateResponse.isSuccessful) {
+      throw new InternalServerErrorException(
+        `${updateResponse.errorCode}: ${updateResponse.info}`,
+      );
+    }
+
+    return device;
   }
 
   public async save(device: Device): Promise<void> {
@@ -64,14 +75,69 @@ export class DevicesService {
     this.logger.debug(`Saved ${device.id} to database`);
   }
 
-  public async addConnectedDevice(
+  public async addConnectedDeviceWithConnectStatus(
     deviceId: string,
     connectedDevice: ConnectedDevice,
   ): Promise<void> {
-    await this.updateConnectedDevice(deviceId, connectedDevice, true);
+    await this.updateConnectedDeviceWithConnectStatus(
+      deviceId,
+      connectedDevice,
+      true,
+    );
   }
 
-  public async updateConnectedDevice(
+  public async updateConnectedDeviceWithNameAndOffset(
+    deviceId: string,
+    pinNr: number,
+    hwAddress: string,
+    name: string,
+    offset: number,
+  ): Promise<Device | null> {
+    const device = await this.findById(deviceId);
+    if (!device) {
+      this.logger.error(
+        'updateConnectedDeviceWithNameAndOffset => Device not found',
+      );
+      throw new NotFoundException('Device not found');
+    }
+
+    const cDevices = ConnectedDevice.parseArray(
+      (device.connectedDevices as any[]) ?? [],
+    );
+
+    const cDevice = this.findConnectedDevice(cDevices, pinNr, hwAddress);
+    if (!cDevice) {
+      this.logger.error(
+        'updateConnectedDeviceWithNameAndOffset => Connected device not found',
+      );
+      throw new NotFoundException('Connected device not found');
+    }
+
+    cDevice.name = name;
+    cDevice.offset = offset;
+    this.replaceConnectedDevice(cDevices, cDevice);
+    device.connectedDevices = ConnectedDevice.toJsonArray(cDevices);
+    await this.save(device);
+
+    if (device.online) {
+      const updateResponse = await this.particle.updateConnectedDeviceOffset(
+        deviceId,
+        pinNr,
+        hwAddress,
+        offset,
+      );
+
+      if (!updateResponse.isSuccessful) {
+        throw new InternalServerErrorException(
+          `${updateResponse.errorCode}: ${updateResponse.info}`,
+        );
+      }
+    }
+
+    return device;
+  }
+
+  public async updateConnectedDeviceWithConnectStatus(
     deviceId: string,
     connectedDevice: ConnectedDevice,
     connectStatus: boolean,
@@ -108,12 +174,13 @@ export class DevicesService {
 
     const cDevice = this.findConnectedDevice(
       cDevices,
-      connectedDevice.pin_nr,
-      connectedDevice.hw_address,
+      connectedDevice.pinNr,
+      connectedDevice.hwAddress,
     );
 
     if (cDevice) {
       cDevice.connected = connectStatus;
+      cDevice.deviceOffset = connectedDevice.deviceOffset;
       this.replaceConnectedDevice(cDevices, cDevice);
     } else {
       if (connectStatus) {
@@ -131,12 +198,11 @@ export class DevicesService {
 
   private findConnectedDevice(
     cDevices: ConnectedDevice[],
-    pin_nr: string,
-    hw_address: string,
+    pinNr: number,
+    hwAddress: string,
   ): ConnectedDevice | undefined {
     const connectedDevice = cDevices?.find(
-      (cDevice) =>
-        cDevice.pin_nr === pin_nr && cDevice.hw_address === hw_address,
+      (cDevice) => cDevice.pinNr === pinNr && cDevice.hwAddress === hwAddress,
     );
 
     return connectedDevice;
@@ -148,8 +214,8 @@ export class DevicesService {
   ) {
     const index = cDevices.findIndex(
       (connectedDevice) =>
-        connectedDevice.pin_nr === cDevice.pin_nr &&
-        connectedDevice.hw_address === cDevice.hw_address,
+        connectedDevice.pinNr === cDevice.pinNr &&
+        connectedDevice.hwAddress === cDevice.hwAddress,
     );
     cDevices.splice(index, 1, cDevice);
   }

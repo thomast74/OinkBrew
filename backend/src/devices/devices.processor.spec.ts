@@ -188,87 +188,111 @@ describe('DevicesProcessor', () => {
 });
 
 const connectedDevicesNew =
-  '[{"type":1,"pin_nr":"10","hw_address":"0000000000000000"},{"type":1,"pin_nr":"11","hw_address":"0000000000000000"},{"type":1,"pin_nr":"16","hw_address":"0000000000000000"},{"type":1,"pin_nr":"17","hw_address":"0000000000000000"}]';
+  '[{"type":1,"pinNr":10,"hwAddress":"0000000000000000","deviceOffset":0.5},{"type":1,"pinNr":11,"hwAddress":"0000000000000000"},{"type":1,"pinNr":16,"hwAddress":"0000000000000000"},{"type":1,"pinNr":17,"hwAddress":"0000000000000000"}]';
 const expectedConnectedDevicesNew = [
   {
     type: 1,
-    pin_nr: '10',
-    hw_address: '0000000000000000',
+    pinNr: 10,
+    hwAddress: '0000000000000000',
     connected: true,
     name: undefined,
+    offset: 0.0,
+    deviceOffset: 0.5,
   },
   {
     type: 1,
-    pin_nr: '11',
-    hw_address: '0000000000000000',
+    pinNr: 11,
+    hwAddress: '0000000000000000',
     connected: true,
     name: undefined,
+    offset: 0.0,
+    deviceOffset: 0.0,
   },
   {
     type: 1,
-    pin_nr: '16',
-    hw_address: '0000000000000000',
+    pinNr: 16,
+    hwAddress: '0000000000000000',
     connected: true,
     name: undefined,
+    offset: 0.0,
+    deviceOffset: 0.0,
   },
   {
     type: 1,
-    pin_nr: '17',
-    hw_address: '0000000000000000',
+    pinNr: 17,
+    hwAddress: '0000000000000000',
     connected: true,
     name: undefined,
+    offset: 0.0,
+    deviceOffset: 0.0,
   },
 ];
 
 const savedConnectedDevicesExisting = [
-  { type: 1, pin_nr: '10', connected: true, hw_address: '0000000000000000' },
-  { type: 1, pin_nr: '11', connected: true, hw_address: '0000000000000000' },
-  { type: 1, pin_nr: '16', connected: true, hw_address: '0000000000000000' },
-  { type: 1, pin_nr: '17', connected: true, hw_address: '0000000000000000' },
+  {
+    type: 1,
+    pinNr: 10,
+    connected: true,
+    hwAddress: '0000000000000000',
+    offset: 0.5,
+  },
+  { type: 1, pinNr: 11, connected: true, hwAddress: '0000000000000000' },
+  { type: 1, pinNr: 16, connected: true, hwAddress: '0000000000000000' },
+  { type: 1, pinNr: 17, connected: true, hwAddress: '0000000000000000' },
   {
     name: 'HWT In',
     type: 3,
-    pin_nr: '0',
+    pinNr: 0,
     connected: true,
-    hw_address: '2886927306000083',
+    hwAddress: '2886927306000083',
   },
 ];
 const connectedDevicesExisting =
-  '[{"type":1,"pin_nr":"10","hw_address":"0000000000000000"},{"type":1,"pin_nr":"11","hw_address":"0000000000000000"},{"type":1,"pin_nr":"16","hw_address":"0000000000000000"},{"type":1,"pin_nr":"17","hw_address":"0000000000000000"}]';
+  '[{"type":1,"pinNr":10,"hwAddress":"0000000000000000","deviceOffset":0.5},{"type":1,"pinNr":11,"hwAddress":"0000000000000000"},{"type":1,"pinNr":16,"hwAddress":"0000000000000000"},{"type":1,"pinNr":17,"hwAddress":"0000000000000000"}]';
 const expectedConnectedDevicesExisting = [
   {
     type: 1,
-    pin_nr: '10',
-    hw_address: '0000000000000000',
+    pinNr: 10,
+    hwAddress: '0000000000000000',
     connected: true,
     name: undefined,
+    offset: 0.5,
+    deviceOffset: 0.5,
   },
   {
     type: 1,
-    pin_nr: '11',
-    hw_address: '0000000000000000',
+    pinNr: 11,
+    hwAddress: '0000000000000000',
     connected: true,
     name: undefined,
+    offset: 0.0,
+    deviceOffset: 0.0,
   },
   {
     type: 1,
-    pin_nr: '16',
-    hw_address: '0000000000000000',
+    pinNr: 16,
+    hwAddress: '0000000000000000',
     connected: true,
     name: undefined,
+    offset: 0.0,
+    deviceOffset: 0.0,
   },
   {
     type: 1,
-    pin_nr: '17',
-    hw_address: '0000000000000000',
+    pinNr: 17,
+    hwAddress: '0000000000000000',
     connected: true,
     name: undefined,
+    offset: 0.0,
+    deviceOffset: 0.0,
   },
   {
     name: 'HWT In',
     type: 3,
-    pin_nr: '0',
+    pinNr: 0,
     connected: false,
-    hw_address: '2886927306000083',
+    hwAddress: '2886927306000083',
+    offset: 0.0,
+    deviceOffset: 0.0,
   },
 ];

@@ -9,6 +9,7 @@ import {
   Logger,
   OnApplicationBootstrap,
   Param,
+  ParseIntPipe,
   Post,
   Put,
   UseGuards,
@@ -17,7 +18,7 @@ import { Device } from '@prisma/client';
 import { Queue } from 'bull';
 import { DevicesEventListener } from './devices-event.listener';
 import { DevicesService } from './devices.service';
-import { DeviceNameGuard } from './guards';
+import { DeviceConnectedDeviceGuard, DeviceNameGuard } from './guards';
 
 @Controller('devices')
 export class DevicesController implements OnApplicationBootstrap {
@@ -45,6 +46,25 @@ export class DevicesController implements OnApplicationBootstrap {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+
+  @Post('/:id/:hwAddress/:pinNr')
+  @UseGuards(DeviceConnectedDeviceGuard)
+  @HttpCode(HttpStatus.OK)
+  async updateConnectedDevice(
+    @Param('id') id: string,
+    @Param('pinNr', ParseIntPipe) pinNr: number,
+    @Param('hwAddress') hwAddress: string,
+    @Body('name') name: string,
+    @Body('offset') offset: number,
+  ): Promise<Device | null> {
+    return this.devices.updateConnectedDeviceWithNameAndOffset(
+      id,
+      pinNr,
+      hwAddress,
+      name,
+      offset,
+    );
   }
 
   @Post('/:id')

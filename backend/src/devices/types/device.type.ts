@@ -9,16 +9,18 @@ export enum ConnectedDeviceType {
 
 export class ConnectedDevice {
   type: ConnectedDeviceType;
-  pin_nr: string;
-  hw_address: string;
+  pinNr: number;
+  hwAddress: string;
   name?: string;
   connected: boolean;
+  offset = 0.0;
+  deviceOffset = 0.0;
 
   equals(cDevice: ConnectedDevice): boolean {
     return (
       cDevice.type === this.type &&
-      cDevice.pin_nr === this.pin_nr &&
-      cDevice.hw_address === this.hw_address
+      cDevice.pinNr === this.pinNr &&
+      cDevice.hwAddress === this.hwAddress
     );
   }
 
@@ -48,9 +50,11 @@ export class ConnectedDevice {
     const cDevice = new ConnectedDevice();
 
     cDevice.type = data.type;
-    cDevice.pin_nr = data.pin_nr;
-    cDevice.hw_address = data.hw_address;
+    cDevice.pinNr = data.pinNr;
+    cDevice.hwAddress = data.hwAddress;
     cDevice.name = data.name;
+    cDevice.offset = data.offset ?? 0.0;
+    cDevice.deviceOffset = data.deviceOffset ?? 0.0;
     cDevice.connected = data.connected;
 
     return cDevice;

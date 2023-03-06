@@ -112,13 +112,94 @@ describe('ParticleService', () => {
       });
     });
 
-    it('should any error received', async () => {
-      Particle.mockUpdateDevice.mockRejectedValue(new Error('API error'));
+    it('should return update response with isSuccessful true', async () => {
+      Particle.mockUpdateDevice.mockResolvedValue({});
       const testSubject = testModule.get<ParticleService>(ParticleService);
 
-      await expect(
-        testSubject.updateDevice('aaa', 'new name', 'my notes'),
-      ).rejects.toEqual(new Error('API error'));
+      const response = await testSubject.updateDevice(
+        'aaa',
+        'new name',
+        'my notes',
+      );
+
+      expect(response.isSuccessful).toBe(true);
+    });
+
+    it('should return update response with isSuccessful false and error returned', async () => {
+      Particle.mockUpdateDevice.mockRejectedValue({
+        statusCode: 403,
+        body: { info: 'Device update error' },
+      });
+      const testSubject = testModule.get<ParticleService>(ParticleService);
+
+      const response = await testSubject.updateDevice(
+        'aaa',
+        'new name',
+        'my notes',
+      );
+
+      expect(response.isSuccessful).toBe(false);
+      expect(response.errorCode).toBe(403);
+      expect(response.info).toBe('Device update error');
+    });
+  });
+
+  describe('updateConnectedDeviceOffset', () => {
+    it('should send new offset to device', async () => {
+      const testSubject = testModule.get<ParticleService>(ParticleService);
+
+      await testSubject.updateConnectedDeviceOffset('aaa', 17, '00000000', 0.7);
+
+      expect(Particle.mockCallFunction).toHaveBeenCalledWith({
+        auth: '123456',
+        deviceId: 'aaa',
+        name: 'setConfig',
+        argument: JSON.stringify({
+          command: 1,
+          data: {
+            pinNr: 17,
+            hwAddress: '00000000',
+            offset: 0.7,
+          },
+        }),
+      });
+    });
+
+    it('should return UpdateResponse with isSuccessful false and error code', async () => {
+      Particle.mockCallFunction.mockRejectedValue({
+        statusCode: 403,
+        body: { info: 'Device not found' },
+      });
+      const testSubject = testModule.get<ParticleService>(ParticleService);
+
+      const updateResponse = await testSubject.updateConnectedDeviceOffset(
+        'aaa',
+        17,
+        '00000000',
+        0.7,
+      );
+
+      expect(updateResponse).toEqual({
+        isSuccessful: false,
+        errorCode: 403,
+        info: 'Device not found',
+      });
+    });
+
+    it('should return UpdateResponse with isSuccessful true', async () => {
+      Particle.mockCallFunction.mockResolvedValue({});
+      const testSubject = testModule.get<ParticleService>(ParticleService);
+
+      const updateResponse = await testSubject.updateConnectedDeviceOffset(
+        'aaa',
+        17,
+        '00000000',
+        0.7,
+      );
+
+      expect(updateResponse).toEqual({
+        isSuccessful: true,
+      });
     });
   });
 

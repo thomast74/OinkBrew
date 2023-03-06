@@ -1,7 +1,8 @@
-import { Device } from '@prisma/client';
+import { Device, Prisma } from '@prisma/client';
 import * as argon2 from 'argon2';
 import { authenticator } from 'otplib';
 import { ARGON_OPTIONS } from '../src/constants';
+import { ConnectedDeviceType } from '../src/devices/types';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { User } from '../src/users/types';
 import { userDto } from './helper.fn';
@@ -66,4 +67,107 @@ export async function findDeviceById(
   });
 
   return device;
+}
+
+export const deviceMockInDatabaseOffline = {
+  id: 'bbb',
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  name: 'Test Device',
+  last_ip_address: '',
+  last_heard: new Date(),
+  last_handshake_at: new Date(),
+  product_id: 1,
+  online: false,
+  connected: false,
+  platform_id: 1,
+  cellular: false,
+  notes: null,
+  firmware_updates_enabled: true,
+  firmware_updates_forced: false,
+  status: '',
+  serial_number: '',
+  system_firmware_version: '',
+  current_build_target: '',
+  pinned_build_target: null,
+  default_build_target: '',
+  functions: [],
+  variables: [] as Prisma.JsonArray,
+  shieldVersion: null,
+  firmwareVersion: null,
+  connectedDevices: [
+    {
+      type: ConnectedDeviceType.DEVICE_HARDWARE_ACTUATOR_DIGITAL,
+      pinNr: 8,
+      hwAddress: '00000000',
+      name: 'new sensor name',
+      offset: 0.8,
+      deviceOffset: 0.0,
+      connected: false,
+    },
+  ] as Prisma.JsonArray,
+};
+
+export const deviceMockInDatabaseOfflineExpected = {
+  ...deviceMockInDatabaseOffline,
+  createdAt: expect.any(String),
+  updatedAt: expect.any(String),
+  last_handshake_at: expect.any(String),
+  last_heard: expect.any(String),
+};
+
+export const deviceMockInDatabaseOnline = {
+  id: 'ccc',
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  name: 'Test Device',
+  last_ip_address: '',
+  last_heard: new Date(),
+  last_handshake_at: new Date(),
+  product_id: 1,
+  online: true,
+  connected: false,
+  platform_id: 1,
+  cellular: false,
+  notes: null,
+  firmware_updates_enabled: true,
+  firmware_updates_forced: false,
+  status: '',
+  serial_number: '',
+  system_firmware_version: '',
+  current_build_target: '',
+  pinned_build_target: null,
+  default_build_target: '',
+  functions: [],
+  variables: [] as Prisma.JsonArray,
+  shieldVersion: null,
+  firmwareVersion: null,
+  connectedDevices: [
+    {
+      type: ConnectedDeviceType.DEVICE_HARDWARE_ACTUATOR_DIGITAL,
+      pinNr: 8,
+      hwAddress: '00000000',
+      name: 'new sensor name',
+      offset: 0.8,
+      deviceOffset: 0.0,
+      connected: false,
+    },
+  ] as Prisma.JsonArray,
+};
+
+export const deviceMockInDatabaseOnlineExpected = {
+  ...deviceMockInDatabaseOnline,
+  createdAt: expect.any(String),
+  updatedAt: expect.any(String),
+  last_handshake_at: expect.any(String),
+  last_heard: expect.any(String),
+};
+
+export async function createDevice(prisma: PrismaService) {
+  await prisma.client.device.create({
+    data: deviceMockInDatabaseOffline,
+  });
+  await prisma.client.device.create({
+    data: deviceMockInDatabaseOnline,
+  });
 }

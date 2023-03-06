@@ -11,8 +11,8 @@
 
 ```
 {
-  "pin_nr": int,
-  "hw_address": string,
+  "pinNr": int,
+  "hwAddress": string,
   "offset": signed double
 }
 ```
@@ -27,24 +27,24 @@
   "type": int (1-TYPE_BREW),
   "temperature": double,
   "heatActuator": {
-    "pin_nr": int,
-    "hw_address": string,
+    "pinNr": int,
+    "hwAddress": string,
   },
   "tempSensor": {
-    "pin_nr": int,
-    "hw_address": string,
+    "pinNr": int,
+    "hwAddress": string,
   },
   "heatingPeriod": int,
   "p": double,
   "i": double,
   "d": double,
   "pump1Actuator": {
-    "pin_nr": int,
-    "hw_address": string,
+    "pinNr": int,
+    "hwAddress": string,
   },
   "pump2Actuator": {
-    "pin_nr": int,
-    "hw_address": string,
+    "pinNr": int,
+    "hwAddress": string,
   },
   "heaterPwm": double,
   "pump1Pwm": double,
@@ -60,24 +60,24 @@
   "type": int (2-TYPE_FRIDGE),
   "temperature": double,
   "heatActuator": {
-    "pin_nr": int,
-    "hw_address": string,
+    "pinNr": int,
+    "hwAddress": string,
   },
   "tempSensor": {
-    "pin_nr": int,
-    "hw_address": string,
+    "pinNr": int,
+    "hwAddress": string,
   },
   "heatingPeriod": int,
   "p": double,
   "i": double,
   "d": double,
   "coolActuator": {
-    "pin_nr": int,
-    "hw_address": string,
+    "pinNr": int,
+    "hwAddress": string,
   },
   fanActuator: {
-    "pin_nr": int,
-    "hw_address": string,
+    "pinNr": int,
+    "hwAddress": string,
   },
   "fanPwm": double,
   "coolingPeriod": int,
