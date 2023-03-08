@@ -7,9 +7,10 @@
 //    oinkbrew/devices/values
 
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
+import { Device } from '@prisma/client';
 import { ParticleService } from '../common/particle.service';
 import { DevicesService } from './devices.service';
-import { ConnectedDevice, EventData } from './types';
+import { ConnectedDevice, ConnectedDeviceType, EventData } from './types';
 
 @Injectable()
 export class DevicesEventListener implements OnApplicationBootstrap {
@@ -49,10 +50,10 @@ export class DevicesEventListener implements OnApplicationBootstrap {
         this.oinkbrewStart(eventData);
         break;
       case 'oinkbrew/devices/new':
-        this.oinkbrewNewDevice(eventData);
+        this.oinkbrewNewConnectedDevice(eventData);
         break;
       case 'oinkbrew/devices/remove':
-        this.oinkbrewRemoveDevice(eventData);
+        this.oinkbrewRemoveConnectedDevice(eventData);
         break;
       case 'oinkbrew/devices/values':
         // TODO: add new sensor data values to cofiguration
@@ -65,19 +66,62 @@ export class DevicesEventListener implements OnApplicationBootstrap {
     // TODO: send active configuration to device
   }
 
-  private oinkbrewNewDevice(eventData: EventData) {
-    this.devices.updateConnectedDeviceWithConnectStatus(
+  private async oinkbrewNewConnectedDevice(
+    eventData: EventData,
+  ): Promise<void> {
+    const data = ConnectedDevice.parseData(JSON.parse(eventData.data));
+    const device = await this.devices.updateConnectedDeviceWithConnectStatus(
       eventData.coreid,
-      ConnectedDevice.parseData(JSON.parse(eventData.data)),
+      data,
       true,
     );
+
+    console.error(device);
+    if (device) {
+      this.updateConnectedDeviceOffsetIfNeeded(
+        device,
+        data.pinNr,
+        data.hwAddress,
+      );
+    }
   }
 
-  private oinkbrewRemoveDevice(eventData: EventData) {
+  private oinkbrewRemoveConnectedDevice(eventData: EventData) {
     this.devices.updateConnectedDeviceWithConnectStatus(
       eventData.coreid,
       ConnectedDevice.parseData(JSON.parse(eventData.data)),
       false,
     );
+  }
+
+  private async updateConnectedDeviceOffsetIfNeeded(
+    device: Device,
+    pinNr: number,
+    hwAddress: string,
+  ): Promise<void> {
+    const cDevice = this.devices.findConnectedDeviceFromDevice(
+      device,
+      pinNr,
+      hwAddress,
+    );
+    console.error(cDevice);
+    if (!cDevice) {
+      return;
+    }
+
+    if (
+      cDevice.type === ConnectedDeviceType.DEVICE_HARDWARE_ONEWIRE_TEMP &&
+      cDevice.connected &&
+      cDevice.offset !== 0.0
+    ) {
+      console.error('dddddd');
+
+      this.particle.updateConnectedDeviceOffset(
+        device.id,
+        pinNr,
+        hwAddress,
+        cDevice.offset,
+      );
+    }
   }
 }

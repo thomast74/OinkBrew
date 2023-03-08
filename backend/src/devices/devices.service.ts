@@ -141,13 +141,13 @@ export class DevicesService {
     deviceId: string,
     connectedDevice: ConnectedDevice,
     connectStatus: boolean,
-  ): Promise<void> {
+  ): Promise<Device | null> {
     let device = await this.findById(deviceId);
     if (!device) {
       this.logger.warn(
         `Device ${deviceId} was not found, can't remove connected device`,
       );
-      return;
+      return null;
     }
 
     device = this.markOrAddConnectedDevice(
@@ -157,10 +157,12 @@ export class DevicesService {
     );
     if (!device) {
       this.logger.warn(`Connected Device not found, so nothing to do`);
-      return;
+      return null;
     }
 
     await this.save(device);
+
+    return device;
   }
 
   public async restart(deviceId: string): Promise<boolean> {
@@ -206,6 +208,18 @@ export class DevicesService {
     device.connectedDevices = ConnectedDevice.toJsonArray(cDevices);
 
     return device;
+  }
+
+  public findConnectedDeviceFromDevice(
+    device: Device,
+    pinNr: number,
+    hwAddress: string,
+  ): ConnectedDevice | undefined {
+    const cDevices = ConnectedDevice.parseArray(
+      (device.connectedDevices as any[]) ?? [],
+    );
+
+    return this.findConnectedDevice(cDevices, pinNr, hwAddress);
   }
 
   private findConnectedDevice(

@@ -1,10 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { Device, Prisma } from '@prisma/client';
 import { Subject } from 'rxjs';
 import { sleep } from '../../test/helper.fn';
 import { ParticleService } from '../common/particle.service';
 import { DevicesEventListener } from './devices-event.listener';
 import { DevicesService } from './devices.service';
-import { EventData } from './types';
+import { ConnectedDevice, ConnectedDeviceType, EventData } from './types';
 
 describe('DevicesEventListener', () => {
   let module: TestingModule;
@@ -12,11 +13,13 @@ describe('DevicesEventListener', () => {
 
   let mockEventStream = new Subject<EventData>();
   const mockParticleService = {
+    updateConnectedDeviceOffset: jest.fn(),
     eventStream: jest.fn(),
   };
   mockParticleService.eventStream.mockReturnValue(mockEventStream);
 
   const mockDevicesService = {
+    findConnectedDeviceFromDevice: jest.fn(),
     updateConnectedDeviceWithConnectStatus: jest.fn(),
   };
 
@@ -26,8 +29,6 @@ describe('DevicesEventListener', () => {
   };
 
   beforeEach(async () => {
-    mockParticleService.eventStream.mockClear();
-
     module = await Test.createTestingModule({
       providers: [DevicesEventListener, ParticleService, DevicesService],
     })
@@ -38,6 +39,9 @@ describe('DevicesEventListener', () => {
       .compile();
 
     listener = module.get<DevicesEventListener>(DevicesEventListener);
+
+    mockParticleService.eventStream.mockClear();
+    mockParticleService.updateConnectedDeviceOffset.mockClear();
   });
 
   afterAll(async () => await module.close());
@@ -75,6 +79,107 @@ describe('DevicesEventListener', () => {
         mockDevicesService.updateConnectedDeviceWithConnectStatus,
       ).toHaveBeenCalledWith(event.coreid, expectedConnectedDevice, true);
     });
+
+    it('should send offset to Particle if sensor is connected and a Temp Sensor', async () => {
+      const event = {
+        data: JSON.stringify(tempSensorWithOffset),
+        ttl: 60,
+        published_at: new Date('2022-12-09 09:34:31.056'),
+        coreid: '3b003d000747343232363230',
+        name: 'oinkbrew/devices/new',
+      };
+      mockDevicesService.updateConnectedDeviceWithConnectStatus.mockResolvedValue(
+        deviceWithTempSensorAndOffset,
+      );
+      mockDevicesService.findConnectedDeviceFromDevice.mockReturnValue(
+        tempSensorWithOffset,
+      );
+
+      listener.onApplicationBootstrap();
+      mockEventStream.next(event);
+      await sleep(1000);
+
+      expect(
+        mockParticleService.updateConnectedDeviceOffset,
+      ).toHaveBeenCalledWith(
+        deviceWithTempSensorAndOffset.id,
+        tempSensorWithOffset.pinNr,
+        tempSensorWithOffset.hwAddress,
+        tempSensorWithOffset.offset,
+      );
+    });
+
+    it('should not send offset to Particle if sensor is not connected and a Temp Sensor', async () => {
+      const event = {
+        data: JSON.stringify(tempSensorWithOffsetAndNotConnected),
+        ttl: 60,
+        published_at: new Date('2022-12-09 09:34:31.056'),
+        coreid: '3b003d000747343232363230',
+        name: 'oinkbrew/devices/new',
+      };
+      mockDevicesService.updateConnectedDeviceWithConnectStatus.mockResolvedValue(
+        deviceWithTempSensorAndOffsetAndNotConnected,
+      );
+      mockDevicesService.findConnectedDeviceFromDevice.mockReturnValue(
+        tempSensorWithOffsetAndNotConnected,
+      );
+
+      listener.onApplicationBootstrap();
+      mockEventStream.next(event);
+      await sleep(1000);
+
+      expect(
+        mockParticleService.updateConnectedDeviceOffset,
+      ).not.toHaveBeenCalled();
+    });
+
+    it('should not send offset to Particle if sensorhas offset of 0', async () => {
+      const event = {
+        data: JSON.stringify(tempSensorWithNoOffset),
+        ttl: 60,
+        published_at: new Date('2022-12-09 09:34:31.056'),
+        coreid: '3b003d000747343232363230',
+        name: 'oinkbrew/devices/new',
+      };
+      mockDevicesService.updateConnectedDeviceWithConnectStatus.mockResolvedValue(
+        deviceWithTempSensorAndNoOffset,
+      );
+      mockDevicesService.findConnectedDeviceFromDevice.mockReturnValue(
+        tempSensorWithNoOffset,
+      );
+
+      listener.onApplicationBootstrap();
+      mockEventStream.next(event);
+      await sleep(1000);
+
+      expect(
+        mockParticleService.updateConnectedDeviceOffset,
+      ).not.toHaveBeenCalled();
+    });
+
+    it('should not send offset to Particle if sensor if not temp sensor', async () => {
+      const event = {
+        data: JSON.stringify(noTempSensor),
+        ttl: 60,
+        published_at: new Date('2022-12-09 09:34:31.056'),
+        coreid: '3b003d000747343232363230',
+        name: 'oinkbrew/devices/new',
+      };
+      mockDevicesService.updateConnectedDeviceWithConnectStatus.mockResolvedValue(
+        deviceWithNoTempSensor,
+      );
+      mockDevicesService.findConnectedDeviceFromDevice.mockReturnValue(
+        noTempSensor,
+      );
+
+      listener.onApplicationBootstrap();
+      mockEventStream.next(event);
+      await sleep(1000);
+
+      expect(
+        mockParticleService.updateConnectedDeviceOffset,
+      ).not.toHaveBeenCalled();
+    });
   });
 
   describe('event data: oinkbrew/devices/remove', () => {
@@ -109,3 +214,65 @@ const expectedConnectedDevice = {
   offset: 0.0,
   deviceOffset: 0.0,
 };
+
+const tempSensorWithOffset = ConnectedDevice.parseData({
+  type: ConnectedDeviceType.DEVICE_HARDWARE_ONEWIRE_TEMP,
+  pinNr: 12,
+  hwAddress: '000000000000',
+  name: undefined,
+  offset: 0.8,
+  deviceOffset: 0.0,
+  connected: true,
+});
+
+const tempSensorWithOffsetAndNotConnected = ConnectedDevice.parseData({
+  type: ConnectedDeviceType.DEVICE_HARDWARE_ONEWIRE_TEMP,
+  pinNr: 12,
+  hwAddress: '000000000000',
+  name: undefined,
+  offset: 0.8,
+  deviceOffset: 0.0,
+  connected: false,
+});
+
+const tempSensorWithNoOffset = ConnectedDevice.parseData({
+  type: ConnectedDeviceType.DEVICE_HARDWARE_ONEWIRE_TEMP,
+  pinNr: 12,
+  hwAddress: '000000000000',
+  name: undefined,
+  offset: 0.0,
+  deviceOffset: 0.0,
+  connected: true,
+});
+
+const noTempSensor = ConnectedDevice.parseData({
+  type: ConnectedDeviceType.DEVICE_HARDWARE_ACTUATOR_DIGITAL,
+  pinNr: 12,
+  hwAddress: '000000000000',
+  name: undefined,
+  offset: 0.0,
+  deviceOffset: 0.0,
+  connected: true,
+});
+
+const deviceWithTempSensorAndOffset = {
+  id: 'bbb',
+  connectedDevices: [{ ...tempSensorWithOffset }] as Prisma.JsonArray,
+} as Device;
+
+const deviceWithTempSensorAndOffsetAndNotConnected = {
+  id: 'bbb',
+  connectedDevices: [
+    { ...tempSensorWithOffsetAndNotConnected },
+  ] as Prisma.JsonArray,
+} as Device;
+
+const deviceWithTempSensorAndNoOffset = {
+  id: 'bbb',
+  connectedDevices: [{ ...tempSensorWithNoOffset }] as Prisma.JsonArray,
+} as Device;
+
+const deviceWithNoTempSensor = {
+  id: 'bbb',
+  connectedDevices: [{ ...noTempSensor }] as Prisma.JsonArray,
+} as Device;

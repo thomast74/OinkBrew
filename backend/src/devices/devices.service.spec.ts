@@ -546,6 +546,28 @@ describe('DevicesService', () => {
       );
     });
   });
+
+  describe('findConnectedDeviceFromDevice', () => {
+    it('should return connected device of device', () => {
+      const cDevice = service.findConnectedDeviceFromDevice(
+        deviceWithConnectedDevicesConnected,
+        12,
+        '000000000000',
+      );
+
+      expect(cDevice).toBeDefined();
+    });
+
+    it('should return null if connected device was not found', () => {
+      const cDevice = service.findConnectedDeviceFromDevice(
+        deviceWithConnectedDevicesConnected,
+        2,
+        '00000000',
+      );
+
+      expect(cDevice).toBeUndefined();
+    });
+  });
 });
 
 const newConnectedDevice = ConnectedDevice.parseData({
