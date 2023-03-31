@@ -264,15 +264,15 @@ describe('AuthController', () => {
     });
 
     it('should call auth service with userId', async () => {
-      await controller.logout(6);
+      await controller.logout('6');
 
-      expect(service.logout).toHaveBeenCalledWith(6);
+      expect(service.logout).toHaveBeenCalledWith('6');
     });
 
     it('should return true', async () => {
       (service.logout as jest.Mock).mockResolvedValue(true);
 
-      const receivedResponse = await controller.logout(7);
+      const receivedResponse = await controller.logout('7');
 
       expect(receivedResponse).toBeTruthy();
     });
@@ -341,12 +341,12 @@ describe('AuthController', () => {
 });
 
 const otpDto = {
-  userId: 7,
+  userId: '7',
   otpPassword: '12345',
 } as OtpDto;
 
 const jwtUser = {
-  sub: 7,
+  sub: '7',
   email: 'testing@super.de',
   refreshToken: 'old refresh token',
 } as JwtPayloadWithRefreshToken;

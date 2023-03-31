@@ -2,7 +2,7 @@ export type Tokens = {
   otpToken?: string;
   otpUrl?: string;
   otpBarcode?: string;
-  userId?: number;
+  userId?: string;
   accessToken?: string;
   refreshToken?: string;
 };

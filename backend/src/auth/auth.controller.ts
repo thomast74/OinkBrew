@@ -6,7 +6,7 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { User } from '../users/types';
+import { User } from '@prisma/client';
 import { AuthService } from './auth.service';
 import { GetRequestUser, GetRequestUserId, Public } from './decorators';
 import { AuthDto, OtpDto } from './dtos';
@@ -54,7 +54,7 @@ export class AuthController {
 
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  logout(@GetRequestUserId() userId: number): Promise<boolean> {
+  logout(@GetRequestUserId() userId: string): Promise<boolean> {
     return this.authService.logout(userId);
   }
 

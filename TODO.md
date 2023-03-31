@@ -14,6 +14,7 @@
 | X)   | PUT /devices/refresh                    | To refresh devices from ParticleIO                                                                           |
 | X)   | POST /devices/{id}                      | Update Device Name and Notes, including updating ParticleIO                                                  |
 | X)   | POST /devices/{id}/{pinNr}/{hw_address} | Update certain properties of a sensor attached to a specific device                                          |
+|      | Change Database Backend                 | Change database backend from PostgreSQL to Mongo                                                             |
 |      | Configuration DB Backend                | Ability to create/update a Brew/Ferment configuration                                                        |
 |      | GET /configurations                     | Get a list of all configurations, option is active and non-active                                            |
 |      | PUT /configurations                     | Create a new configuration, wither Brew or Ferement                                                          |

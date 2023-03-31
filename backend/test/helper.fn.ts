@@ -15,7 +15,7 @@ export async function createDbdUser(
   otpSecret = otpSecret ?? authenticator.generateSecret();
 
   return {
-    id: 3,
+    id: '3',
     email: userDto.email,
     hash,
     otpConfirmed,
@@ -33,7 +33,7 @@ export const userDto = {
 
 export async function createOtpToken(
   jwt: JwtService,
-  id?: number,
+  id?: string,
   email?: string,
 ): Promise<string> {
   const jwtPayload = {
@@ -51,7 +51,7 @@ export async function createOtpToken(
 
 export async function createAccessToken(
   jwt: JwtService,
-  id?: number,
+  id?: string,
   email?: string,
 ): Promise<string> {
   const jwtPayload = {
@@ -69,7 +69,7 @@ export async function createAccessToken(
 
 export async function createRefreshToken(
   jwt: JwtService,
-  id?: number,
+  id?: string,
   email?: string,
 ): Promise<string> {
   const jwtPayload = {

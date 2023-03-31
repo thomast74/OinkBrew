@@ -1,11 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { Device, Prisma } from '@prisma/client';
+import { ConnectedDeviceType, Device } from '@prisma/client';
 import { Subject } from 'rxjs';
 import { sleep } from '../../test/helper.fn';
 import { ParticleService } from '../common/particle.service';
 import { DevicesEventListener } from './devices-event.listener';
 import { DevicesService } from './devices.service';
-import { ConnectedDevice, ConnectedDeviceType, EventData } from './types';
+import { ConnectedDeviceHelper } from './helpers';
+import { EventData } from './types';
 
 describe('DevicesEventListener', () => {
   let module: TestingModule;
@@ -211,12 +212,14 @@ const eventConnectedDevice = {
 const eventConnectedDeviceString = JSON.stringify(eventConnectedDevice);
 const expectedConnectedDevice = {
   ...eventConnectedDevice,
+  connected: false,
+  name: null,
   offset: 0.0,
   deviceOffset: 0.0,
 };
 
-const tempSensorWithOffset = ConnectedDevice.parseData({
-  type: ConnectedDeviceType.DEVICE_HARDWARE_ONEWIRE_TEMP,
+const tempSensorWithOffset = ConnectedDeviceHelper.parseData({
+  type: ConnectedDeviceType.ONEWIRE_TEMP,
   pinNr: 12,
   hwAddress: '000000000000',
   name: undefined,
@@ -225,8 +228,8 @@ const tempSensorWithOffset = ConnectedDevice.parseData({
   connected: true,
 });
 
-const tempSensorWithOffsetAndNotConnected = ConnectedDevice.parseData({
-  type: ConnectedDeviceType.DEVICE_HARDWARE_ONEWIRE_TEMP,
+const tempSensorWithOffsetAndNotConnected = ConnectedDeviceHelper.parseData({
+  type: ConnectedDeviceType.ONEWIRE_TEMP,
   pinNr: 12,
   hwAddress: '000000000000',
   name: undefined,
@@ -235,8 +238,8 @@ const tempSensorWithOffsetAndNotConnected = ConnectedDevice.parseData({
   connected: false,
 });
 
-const tempSensorWithNoOffset = ConnectedDevice.parseData({
-  type: ConnectedDeviceType.DEVICE_HARDWARE_ONEWIRE_TEMP,
+const tempSensorWithNoOffset = ConnectedDeviceHelper.parseData({
+  type: ConnectedDeviceType.ONEWIRE_TEMP,
   pinNr: 12,
   hwAddress: '000000000000',
   name: undefined,
@@ -245,8 +248,8 @@ const tempSensorWithNoOffset = ConnectedDevice.parseData({
   connected: true,
 });
 
-const noTempSensor = ConnectedDevice.parseData({
-  type: ConnectedDeviceType.DEVICE_HARDWARE_ACTUATOR_DIGITAL,
+const noTempSensor = ConnectedDeviceHelper.parseData({
+  type: ConnectedDeviceType.ACTUATOR_DIGITAL,
   pinNr: 12,
   hwAddress: '000000000000',
   name: undefined,
@@ -257,22 +260,20 @@ const noTempSensor = ConnectedDevice.parseData({
 
 const deviceWithTempSensorAndOffset = {
   id: 'bbb',
-  connectedDevices: [{ ...tempSensorWithOffset }] as Prisma.JsonArray,
+  connectedDevices: [{ ...tempSensorWithOffset }],
 } as Device;
 
 const deviceWithTempSensorAndOffsetAndNotConnected = {
   id: 'bbb',
-  connectedDevices: [
-    { ...tempSensorWithOffsetAndNotConnected },
-  ] as Prisma.JsonArray,
+  connectedDevices: [{ ...tempSensorWithOffsetAndNotConnected }],
 } as Device;
 
 const deviceWithTempSensorAndNoOffset = {
   id: 'bbb',
-  connectedDevices: [{ ...tempSensorWithNoOffset }] as Prisma.JsonArray,
+  connectedDevices: [{ ...tempSensorWithNoOffset }],
 } as Device;
 
 const deviceWithNoTempSensor = {
   id: 'bbb',
-  connectedDevices: [{ ...noTempSensor }] as Prisma.JsonArray,
+  connectedDevices: [{ ...noTempSensor }],
 } as Device;

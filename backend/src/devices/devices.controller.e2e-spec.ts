@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { faker } from '@faker-js/faker';
+import { User } from '@prisma/client';
 import * as argon2 from 'argon2';
 import 'jest-extended';
 import * as request from 'supertest';
@@ -23,7 +24,6 @@ import { getParticleDevice } from '../../test/particle-helper.fn';
 import { AppModule } from '../app.module';
 import { ARGON_OPTIONS } from '../constants';
 import { PrismaService } from '../prisma/prisma.service';
-import { User } from '../users/types';
 
 describe('DevicesController (e2e)', () => {
   let app: INestApplication;
@@ -88,10 +88,10 @@ describe('DevicesController (e2e)', () => {
 
       expect(response.body).toHaveLength(4);
       expect(response.body).toEqual([
-        deviceMockInDatabaseOfflineExpected,
-        deviceMockInDatabaseOnlineExpected,
         expectedDevice1,
         expectedDevice2,
+        deviceMockInDatabaseOfflineExpected,
+        deviceMockInDatabaseOnlineExpected,
       ]);
     });
   });

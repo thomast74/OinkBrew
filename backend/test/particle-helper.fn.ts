@@ -1,6 +1,6 @@
-import { Device } from '@prisma/client';
+import { ConnectedDevice, Device } from '@prisma/client';
 import * as Particle from 'particle-api-js';
-import { ConnectedDevice } from '../src/devices/types';
+import { ConnectedDeviceHelper } from '../src/devices/helpers';
 
 declare const process: any;
 let particle: Particle;
@@ -50,7 +50,9 @@ export async function getParticleConnectedDevices(
     auth: access_token,
   });
 
-  const cDevices = ConnectedDevice.parseArray(JSON.parse(response.body.result));
+  const cDevices = ConnectedDeviceHelper.parseArray(
+    JSON.parse(response.body.result),
+  );
   const cDevice = findConnectedDevice(cDevices, pinNr, hwAddress);
 
   return cDevice;

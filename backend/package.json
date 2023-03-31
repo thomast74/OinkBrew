@@ -18,13 +18,11 @@
     "test:watch": "export $(cat .env | xargs) && jest --watch",
     "test:cov": "export $(cat .env | xargs) && jest --coverage",
     "test:debug": "export $(cat .env | xargs) && node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "npm-run-all --continue-on-error env:test e2e:up e2e:db:deploy e2e:run e2e:down",
+    "test:e2e": "npm-run-all --continue-on-error e2e:up e2e:run e2e:down",
     "env": "export $(cat .env | xargs)",
-    "env:test": "export $(cat .env.test | xargs)",
-    "e2e:up": "docker-compose -f ../docker-compose-e2e.yml up -d && sleep 3 ",
-    "e2e:down": "docker-compose -f ../docker-compose-e2e.yml down",
-    "e2e:run": "jest --ci --config ./test/jest-e2e.json --forceExit --detectOpenHandles",
-    "e2e:db:deploy": "npx prisma migrate reset --force"
+    "e2e:up": "docker-compose -f ../docker-compose-e2e.yml up -d && sleep 20",
+    "e2e:down": "docker-compose -f ../docker-compose-e2e.yml down --volumes",
+    "e2e:run": "jest --ci --config ./test/jest-e2e.json --forceExit --detectOpenHandles"
   },
   "dependencies": {
     "@nestjs/bull": "0.6.2",

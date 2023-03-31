@@ -1,13 +1,12 @@
 version: '3.8'
+name: oinkbrew
 
 services:
   backend:
     container_name: oinkbrew-api
     build: backend/.
     command: npm run start:dev
-    depends_on:
-      - database
-      - cache
+    depends_on: [ cache, mongo1, mongo2, mongo3 ]
     ports:
       - "3000:3000"
     environment:
@@ -22,20 +21,115 @@ services:
       - ./backend/.:/opt/app
       - /opt/app/node_modules
 
-  database:
-    image: postgres:15.1-alpine
-    container_name: oinkbrew-db
-    restart: 'unless-stopped'
+  mongo1:
+    image: mongo:6.0.4
+    container_name: oinkbrew-db-1
+    hostname: mongo1
+    restart: "always"
+    networks:
+      - mongo-cluster-network
     ports:
-      - 5432:5432
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 123
-      POSTGRES_DB: oinkbrew
-      PGDATA: '/var/lib/postgresql/data/pgdata'
+      - 27021:27021
     volumes:
-      - database:/var/lib/postgresql/data # This is where the database data is stored - a docker volume
-      - ./backup:/backup
+      - mongo1-db:/data/db
+      - mongo1-config:/data/configdb
+      - $PWD/.docker/mongo/replica.key:/data/replica.key.devel
+    links:
+      - mongo2
+      - mongo3
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongoroot
+      MONGO_INITDB_ROOT_PASSWORD: secretpwd
+      MONGO_INITDB_DATABASE: oinkbrew
+    entrypoint:
+      - bash
+      - -c
+      - |
+        cp /data/replica.key.devel /data/replica.key
+        chmod 400 /data/replica.key
+        chown 999:999 /data/replica.key      
+        exec docker-entrypoint.sh $$@
+    command: mongod --port 27021 --replSet oinkbrewReplSet --keyFile /data/replica.key --bind_ip localhost,mongo1
+
+  mongo2:
+    image: mongo:6.0.4
+    container_name: oinkbrew-db-2
+    hostname: mongo2
+    restart: "always"
+    networks:
+      - mongo-cluster-network
+    ports:
+      - 27022:27022
+    volumes:
+      - mongo2-db:/data/db
+      - mongo2-config:/data/configdb
+      - $PWD/.docker/mongo/replica.key:/data/replica.key.devel
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongoroot
+      MONGO_INITDB_ROOT_PASSWORD: secretpwd
+      MONGO_USERNAME: thomast74
+      MONGO_PASSWORD: YUOHvihS4C2GtEG7
+      MONGO_INITDB_DATABASE: oinkbrew
+    entrypoint:
+      - bash
+      - -c
+      - |
+        cp /data/replica.key.devel /data/replica.key
+        chmod 400 /data/replica.key
+        chown 999:999 /data/replica.key       
+        exec docker-entrypoint.sh $$@
+    command: mongod --port 27022 --replSet oinkbrewReplSet --keyFile /data/replica.key --bind_ip localhost,mongo2
+
+  mongo3:
+    image: mongo:6.0.4
+    container_name: oinkbrew-db-3
+    hostname: mongo3
+    restart: "always"
+    networks:
+      - mongo-cluster-network
+    ports:
+      - 27023:27023
+    volumes:
+      - mongo3-db:/data/db
+      - mongo3-config:/data/configdb
+      - $PWD/.docker/mongo/replica.key:/data/replica.key.devel
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongoroot
+      MONGO_INITDB_ROOT_PASSWORD: secretpwd
+      MONGO_USERNAME: thomast74
+      MONGO_PASSWORD: YUOHvihS4C2GtEG7
+      MONGO_INITDB_DATABASE: oinkbrew
+    entrypoint:
+      - bash
+      - -c
+      - |
+        cp /data/replica.key.devel /data/replica.key
+        chmod 400 /data/replica.key
+        chown 999:999 /data/replica.key       
+        exec docker-entrypoint.sh $$@
+    command: mongod --port 27023 --replSet oinkbrewReplSet --keyFile /data/replica.key --bind_ip localhost,mongo3
+
+  mongoinit:
+    image: mongo:6.0.4
+    container_name: oinkbrew-mongoinit
+    restart: "no"
+    networks:
+      - mongo-cluster-network
+    volumes:
+      - $PWD/.docker/mongo/docker_init.sh:/data/docker_init.devel.sh
+    depends_on: [ mongo1, mongo2, mongo3 ]
+    environment:
+      ROOT_USERNAME: mongoroot
+      ROOT_PASSWORD: secretpwd
+    entrypoint:
+      - bash
+      - -c
+      - |
+        cp /data/docker_init.devel.sh /data/docker_init.sh
+        chmod 700 /data/docker_init.sh
+        chown 999:999 /data/docker_init.sh    
+        exec docker-entrypoint.sh $$@
+    command: "exec bash -c /data/docker_init.sh"
 
   cache:
     image: redis:7.0.5-alpine
@@ -43,13 +137,33 @@ services:
     restart: always
     ports:
       - '6379:6379'
-    command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
     volumes:
       - cache:/data
+    command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+
+networks:
+  mongo-cluster-network:
+    driver: bridge
 
 volumes:
-  database:
-    name: oinkbrew-db
+  mongo1-db:
+    name: oinkbrew-mongo-db-1
+    driver: local
+  mongo1-config:
+    name: oinkbrew-mongo-config-1
+    driver: local
+  mongo2-db:
+    name: oinkbrew-mongo-db-2
+    driver: local
+  mongo2-config:
+    name: oinkbrew-mongo-config-2
+    driver: local
+  mongo3-db:
+    name: oinkbrew-mongo-db-3
+    driver: local
+  mongo3-config:
+    name: oinkbrew-mongo-config-3
+    driver: local
   cache:
     name: oinkbrew-cache
     driver: local

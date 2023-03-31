@@ -1,6 +1,7 @@
 import { HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
+import { User } from '@prisma/client';
 import * as argon2 from 'argon2';
 import { authenticator } from 'otplib';
 import * as request from 'supertest';
@@ -18,7 +19,6 @@ import {
 import { AppModule } from '../app.module';
 import { ARGON_OPTIONS } from '../constants';
 import { PrismaService } from '../prisma/prisma.service';
-import { User } from '../users/types';
 
 describe('AuthController (e2e)', () => {
   let app: INestApplication;
@@ -416,7 +416,7 @@ describe('AuthController (e2e)', () => {
     it('should return FORBIDDEN if user not found', async () => {
       const validToken = await createRefreshToken(
         jwt,
-        12345,
+        '12345',
         'test@tester.org',
       );
 
@@ -489,14 +489,14 @@ describe('AuthController (e2e)', () => {
 
 const expectedOtpTokens = {
   otpToken: expect.any(String),
-  userId: expect.any(Number),
+  userId: expect.any(String),
 };
 
 const expectedOtpBarcodeTokens = {
   otpToken: expect.any(String),
   otpBarcode: expect.any(String),
   otpUrl: expect.any(String),
-  userId: expect.any(Number),
+  userId: expect.any(String),
 };
 
 const expectedAccessTokens = {
@@ -507,7 +507,7 @@ const expectedAccessTokens = {
 };
 
 const userFreshlyCreated = {
-  id: expect.any(Number),
+  id: expect.any(String),
   email: userDto.email,
   otpConfirmed: false,
   otpSecret: expect.any(String),

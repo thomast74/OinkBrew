@@ -2,6 +2,7 @@
   "rootDir": "../src",
   "moduleFileExtensions": ["js", "json", "ts"],
   "modulePathIgnorePatterns": ["<rootDir>/__mocks__"],
+  "setupFiles": ["../test/setup-e2e-env.js"],
   "setupFilesAfterEnv": ["../test/matcher-extensions"],
   "testEnvironment": "node",
   "testRegex": ".e2e-spec.ts$",

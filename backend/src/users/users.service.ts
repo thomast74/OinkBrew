@@ -1,11 +1,11 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
+import { User } from '@prisma/client';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 import * as argon2 from 'argon2';
 import { authenticator } from 'otplib';
 import { AuthDto } from '../auth/dtos';
 import { ARGON_OPTIONS } from '../constants';
 import { PrismaService } from '../prisma/prisma.service';
-import { User } from './types/user.type';
 
 @Injectable()
 export class UsersService {
@@ -36,7 +36,7 @@ export class UsersService {
   }
 
   async updateRefreshToken(
-    userId: number,
+    userId: string,
     refreshToken?: string,
     confirmOtp?: boolean,
   ): Promise<void> {
@@ -58,7 +58,7 @@ export class UsersService {
     });
   }
 
-  async findById(userId: number): Promise<User | undefined> {
+  async findById(userId: string): Promise<User | undefined> {
     try {
       const user = await this.prisma.client.user.findUnique({
         where: {

@@ -1,34 +1,150 @@
 version: '3.8'
+name: oinkbrew-e2e
 
 services:
-  database:
-    image: postgres:15.1-alpine
-    container_name: oinkbrew-e2e-db
-    restart: 'unless-stopped'
+  mongo1-e2e:
+    image: mongo:6.0.4
+    container_name: oinkbrew-e2e-db-1
+    hostname: mongo1-e2e
+    restart: "always"
+    networks:
+      - mongo-e2e-cluster-network
     ports:
-      - 5432:5432
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 123
-      POSTGRES_DB: oinkbrew
-      PGDATA: '/var/lib/postgresql/data/pgdata'
+      - 27026:27026
     volumes:
-      - database:/var/lib/postgresql/data # This is where the database data is stored - a docker volume
-      - ./backup:/backup
+      - mongo1-e2e-db:/data/db
+      - mongo1-e2e-config:/data/configdb
+      - $PWD/../.docker/mongo/replica.key:/data/replica.key.devel
+    links:
+      - mongo2-e2e
+      - mongo3-e2e
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongoroot
+      MONGO_INITDB_ROOT_PASSWORD: secretpwd
+      MONGO_INITDB_DATABASE: oinkbrew
+    entrypoint:
+      - bash
+      - -c
+      - |
+        cp /data/replica.key.devel /data/replica.key
+        chmod 400 /data/replica.key
+        chown 999:999 /data/replica.key      
+        exec docker-entrypoint.sh $$@
+    command: mongod --port 27026 --replSet oinkbrewReplSet --keyFile /data/replica.key --bind_ip localhost,mongo1-e2e
 
-  cache:
+  mongo2-e2e:
+    image: mongo:6.0.4
+    container_name: oinkbrew-e2e-db-2
+    hostname: mongo2-e2e
+    restart: "always"
+    networks:
+      - mongo-e2e-cluster-network
+    ports:
+      - 27027:27027
+    volumes:
+      - mongo2-e2e-db:/data/db
+      - mongo2-e2e-config:/data/configdb
+      - $PWD/../.docker/mongo/replica.key:/data/replica.key.devel
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongoroot
+      MONGO_INITDB_ROOT_PASSWORD: secretpwd
+      MONGO_USERNAME: thomast74
+      MONGO_PASSWORD: YUOHvihS4C2GtEG7
+      MONGO_INITDB_DATABASE: oinkbrew
+    entrypoint:
+      - bash
+      - -c
+      - |
+        cp /data/replica.key.devel /data/replica.key
+        chmod 400 /data/replica.key
+        chown 999:999 /data/replica.key       
+        exec docker-entrypoint.sh $$@
+    command: mongod --port 27027 --replSet oinkbrewReplSet --keyFile /data/replica.key --bind_ip localhost,mongo2-e2e
+
+  mongo3-e2e:
+    image: mongo:6.0.4
+    container_name: oinkbrew-e2e-db-3
+    hostname: mongo3-e2e
+    restart: "always"
+    networks:
+      - mongo-e2e-cluster-network
+    ports:
+      - 27028:27028
+    volumes:
+      - mongo3-e2e-db:/data/db
+      - mongo3-e2e-config:/data/configdb
+      - $PWD/../.docker/mongo/replica.key:/data/replica.key.devel
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongoroot
+      MONGO_INITDB_ROOT_PASSWORD: secretpwd
+      MONGO_USERNAME: thomast74
+      MONGO_PASSWORD: YUOHvihS4C2GtEG7
+      MONGO_INITDB_DATABASE: oinkbrew
+    entrypoint:
+      - bash
+      - -c
+      - |
+        cp /data/replica.key.devel /data/replica.key
+        chmod 400 /data/replica.key
+        chown 999:999 /data/replica.key       
+        exec docker-entrypoint.sh $$@
+    command: mongod --port 27028 --replSet oinkbrewReplSet --keyFile /data/replica.key --bind_ip localhost,mongo3-e2e
+
+  mongoinit-e2e:
+    image: mongo:6.0.4
+    container_name: oinkbrew-e2e-mongoinit
+    restart: "no"
+    networks:
+      - mongo-e2e-cluster-network
+    volumes:
+      - $PWD/../.docker/mongo/docker_e2e_init.sh:/data/docker_e2e_init.devel.sh
+    depends_on: [ mongo1-e2e, mongo2-e2e, mongo3-e2e ]
+    environment:
+      ROOT_USERNAME: mongoroot
+      ROOT_PASSWORD: secretpwd
+    entrypoint:
+      - bash
+      - -c
+      - |
+        cp /data/docker_e2e_init.devel.sh /data/docker_init.sh
+        chmod 700 /data/docker_init.sh
+        chown 999:999 /data/docker_init.sh    
+        exec docker-entrypoint.sh $$@
+    command: "exec bash -c /data/docker_init.sh"
+
+  cache-e2e:
     image: redis:7.0.5-alpine
     container_name: oinkbrew-e2e-cache
     restart: always
     ports:
       - '6379:6379'
-    command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
     volumes:
-      - cache:/data
+      - cache-e2e:/data
+    command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+
+networks:
+  mongo-e2e-cluster-network:
+    driver: bridge
 
 volumes:
-  database:
-    name: oinkbrew-e2e-db
-  cache:
+  mongo1-e2e-db:
+    name: oinkbrew-e2e-mongo-db-1
+    driver: local
+  mongo1-e2e-config:
+    name: oinkbrew-e2e-mongo-config-1
+    driver: local
+  mongo2-e2e-db:
+    name: oinkbrew-e2e-mongo-db-2
+    driver: local
+  mongo2-e2e-config:
+    name: oinkbrew-e2e-mongo-config-2
+    driver: local
+  mongo3-e2e-db:
+    name: oinkbrew-e2e-mongo-db-3
+    driver: local
+  mongo3-e2e-config:
+    name: oinkbrew-e2e-mongo-config-3
+    driver: local
+  cache-e2e:
     name: oinkbrew-e2e-cache
     driver: local

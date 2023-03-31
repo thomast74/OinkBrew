@@ -77,11 +77,11 @@ describe('UsersService', () => {
       const refreshToken = 'new refreh token';
       const hash = await argon2.hash(refreshToken, ARGON_OPTIONS);
 
-      await service.updateRefreshToken(1, refreshToken);
+      await service.updateRefreshToken('1', refreshToken);
 
       expect(prismaMock.user.update).toHaveBeenCalledWith({
         where: {
-          id: 1,
+          id: '1',
         },
         data: {
           hashedRt: hash,
@@ -90,11 +90,11 @@ describe('UsersService', () => {
     });
 
     it('should update user with null refresh token if no token provided', async () => {
-      await service.updateRefreshToken(2);
+      await service.updateRefreshToken('2');
 
       expect(prismaMock.user.update).toHaveBeenCalledWith({
         where: {
-          id: 2,
+          id: '2',
         },
         data: {
           hashedRt: null,
@@ -106,11 +106,11 @@ describe('UsersService', () => {
       const refreshToken = 'new refreh token';
       const hash = await argon2.hash(refreshToken, ARGON_OPTIONS);
 
-      await service.updateRefreshToken(1, refreshToken, true);
+      await service.updateRefreshToken('1', refreshToken, true);
 
       expect(prismaMock.user.update).toHaveBeenCalledWith({
         where: {
-          id: 1,
+          id: '1',
         },
         data: {
           otpConfirmed: true,
@@ -124,14 +124,14 @@ describe('UsersService', () => {
     it('should find user by id', async () => {
       const expectedUser = await createDbdUser(userDto);
       prismaMock.user.findUnique.mockImplementation((call) => {
-        if (call?.where?.id === 3) {
+        if (call?.where?.id === '3') {
           return expectedUser;
         } else {
           return null as any;
         }
       });
 
-      const receivedUser = await service.findById(3);
+      const receivedUser = await service.findById('3');
 
       expect(receivedUser).toBe(expectedUser);
     });
@@ -139,14 +139,14 @@ describe('UsersService', () => {
     it('should return undefined if user not found', async () => {
       const expectedUser = await createDbdUser(userDto);
       prismaMock.user.findUnique.mockImplementation((call) => {
-        if (call?.where?.id === 3) {
+        if (call?.where?.id === '3') {
           return expectedUser;
         } else {
           return undefined as any;
         }
       });
 
-      const receivedUser = await service.findById(4);
+      const receivedUser = await service.findById('4');
 
       expect(receivedUser).toBeUndefined();
     });
@@ -155,7 +155,7 @@ describe('UsersService', () => {
       const error = 'not found error';
       prismaMock.user.findUnique.mockRejectedValue(error);
 
-      const receivedUser = await service.findById(4);
+      const receivedUser = await service.findById('4');
 
       expect(receivedUser).toBeUndefined();
     });

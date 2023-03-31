@@ -81,7 +81,7 @@ describe('AuthService', () => {
       );
 
       expect(response).toEqual({
-        id: 3,
+        id: '3',
         email: 'test@user.de',
         otpConfirmed: false,
         otpSecret: expect.any(String),
@@ -147,7 +147,7 @@ describe('AuthService', () => {
           /otpauth:\/\/totp\/OinkBrew:test%40user\.de\?secret=.*&period=30&digits=6&algorithm=SHA1&issuer=OinkBrew/,
         ),
         otpBarcode: expect.any(String),
-        userId: 3,
+        userId: '3',
       });
     });
   });
@@ -293,16 +293,16 @@ describe('AuthService', () => {
       expect(response).toEqual({
         otpToken: 'new_otp_token',
         otpBarcode: undefined,
-        userId: 3,
+        userId: '3',
       });
     });
   });
 
   describe('logout', () => {
     it('should call updateRefreshToken on user service', async () => {
-      await service.logout(5);
+      await service.logout('5');
 
-      expect(userService.updateRefreshToken).toHaveBeenCalledWith(5);
+      expect(userService.updateRefreshToken).toHaveBeenCalledWith('5');
     });
   });
 
@@ -325,7 +325,7 @@ describe('AuthService', () => {
       );
 
       await expect(
-        service.refreshTokens(1, 'my_refresh_token'),
+        service.refreshTokens('1', 'my_refresh_token'),
       ).rejects.toEqual(new ForbiddenException('Access Denied'));
     });
 

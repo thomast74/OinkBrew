@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { Device } from '@prisma/client';
 import { when } from 'jest-when';
 import { prismaMock } from '../../prisma-singleton';
 import { ParticleService } from '../common/particle.service';
@@ -51,7 +52,8 @@ describe('DevicesProcessor', () => {
         moveToFailed: jest.fn(),
       } as any;
       mockParticleService.listDevices.mockResolvedValue(devices);
-
+      const { id: _id0, ...deviceUpdate0 } = devices[0];
+      const { id: _id1, ...deviceUpdate1 } = devices[1];
       await processor.refresh(mockJob);
 
       expect(prismaMock.device.upsert).toHaveBeenCalledTimes(2);
@@ -59,14 +61,14 @@ describe('DevicesProcessor', () => {
         where: {
           id: devices[0].id,
         },
-        update: { ...devices[0], connectedDevices: [] },
+        update: { ...deviceUpdate0, connectedDevices: [] },
         create: { ...devices[0], connectedDevices: [] },
       });
       expect(prismaMock.device.upsert).toHaveBeenCalledWith({
         where: {
           id: devices[1].id,
         },
-        update: { ...devices[1], connectedDevices: [] },
+        update: { ...deviceUpdate1, connectedDevices: [] },
         create: { ...devices[1], connectedDevices: [] },
       });
     });
@@ -120,15 +122,16 @@ describe('DevicesProcessor', () => {
       const expectedDevice = {
         ...devices[0],
         shieldVersion: 2,
-        firmwareVersion: 1.0,
+        firmwareVersion: 1,
         connectedDevices: expectedConnectedDevicesNew,
       };
+      const { id: _id, ...expectedDeviceUpdate } = expectedDevice;
 
       expect(prismaMock.device.upsert).toHaveBeenCalledWith({
         where: {
           id: devices[0].id,
         },
-        update: expectedDevice,
+        update: expectedDeviceUpdate,
         create: expectedDevice,
       });
     });
@@ -139,15 +142,15 @@ describe('DevicesProcessor', () => {
           id: 'a',
           name: 'aa',
           connected: true,
-          shieldVersion: 2,
-          firmwareVersion: 1.0,
-          connectedDevices: savedConnectedDevicesExisting,
         },
         { id: 'b', name: 'bb' },
       ];
       const mockJob = {
         moveToFailed: jest.fn(),
       } as any;
+      prismaMock.device.findUnique
+        .mockResolvedValueOnce(savedDevice as Device)
+        .mockResolvedValueOnce(devices[1] as Device);
       mockParticleService.listDevices.mockResolvedValue(devices);
       when(mockParticleService.getVariable)
         .calledWith(devices[0].id, 'ShieldVersion')
@@ -161,14 +164,17 @@ describe('DevicesProcessor', () => {
 
       const expectedDevice = {
         ...devices[0],
+        firmwareVersion: 1,
+        shieldVersion: 2,
         connectedDevices: expectedConnectedDevicesExisting,
       };
+      const { id: _id, ...expectedDeviceUpdate } = expectedDevice;
 
       expect(prismaMock.device.upsert).toHaveBeenCalledWith({
         where: {
           id: devices[0].id,
         },
-        update: expectedDevice,
+        update: expectedDeviceUpdate,
         create: expectedDevice,
       });
     });
@@ -195,7 +201,7 @@ const expectedConnectedDevicesNew = [
     pinNr: 10,
     hwAddress: '0000000000000000',
     connected: true,
-    name: undefined,
+    name: null,
     offset: 0.0,
     deviceOffset: 0.5,
   },
@@ -204,7 +210,7 @@ const expectedConnectedDevicesNew = [
     pinNr: 11,
     hwAddress: '0000000000000000',
     connected: true,
-    name: undefined,
+    name: null,
     offset: 0.0,
     deviceOffset: 0.0,
   },
@@ -213,7 +219,7 @@ const expectedConnectedDevicesNew = [
     pinNr: 16,
     hwAddress: '0000000000000000',
     connected: true,
-    name: undefined,
+    name: null,
     offset: 0.0,
     deviceOffset: 0.0,
   },
@@ -222,7 +228,7 @@ const expectedConnectedDevicesNew = [
     pinNr: 17,
     hwAddress: '0000000000000000',
     connected: true,
-    name: undefined,
+    name: null,
     offset: 0.0,
     deviceOffset: 0.0,
   },
@@ -232,48 +238,27 @@ const savedConnectedDevicesExisting = [
   {
     type: 1,
     pinNr: 10,
-    connected: true,
-    hwAddress: '0000000000000000',
-    offset: 0.5,
-  },
-  { type: 1, pinNr: 11, connected: true, hwAddress: '0000000000000000' },
-  { type: 1, pinNr: 16, connected: true, hwAddress: '0000000000000000' },
-  { type: 1, pinNr: 17, connected: true, hwAddress: '0000000000000000' },
-  {
-    name: 'HWT In',
-    type: 3,
-    pinNr: 0,
-    connected: true,
-    hwAddress: '2886927306000083',
-  },
-];
-const connectedDevicesExisting =
-  '[{"type":1,"pinNr":10,"hwAddress":"0000000000000000","deviceOffset":0.5},{"type":1,"pinNr":11,"hwAddress":"0000000000000000"},{"type":1,"pinNr":16,"hwAddress":"0000000000000000"},{"type":1,"pinNr":17,"hwAddress":"0000000000000000"}]';
-const expectedConnectedDevicesExisting = [
-  {
-    type: 1,
-    pinNr: 10,
     hwAddress: '0000000000000000',
     connected: true,
-    name: undefined,
+    name: null,
     offset: 0.5,
-    deviceOffset: 0.5,
+    deviceOffset: 0.0,
   },
   {
     type: 1,
     pinNr: 11,
-    hwAddress: '0000000000000000',
     connected: true,
-    name: undefined,
+    hwAddress: '0000000000000000',
+    name: null,
     offset: 0.0,
     deviceOffset: 0.0,
   },
   {
     type: 1,
     pinNr: 16,
-    hwAddress: '0000000000000000',
     connected: true,
-    name: undefined,
+    hwAddress: '0000000000000000',
+    name: null,
     offset: 0.0,
     deviceOffset: 0.0,
   },
@@ -282,16 +267,71 @@ const expectedConnectedDevicesExisting = [
     pinNr: 17,
     hwAddress: '0000000000000000',
     connected: true,
-    name: undefined,
+    name: null,
     offset: 0.0,
     deviceOffset: 0.0,
   },
   {
-    name: 'HWT In',
     type: 3,
     pinNr: 0,
-    connected: false,
     hwAddress: '2886927306000083',
+    connected: true,
+    name: 'HWT In',
+    offset: 0.0,
+    deviceOffset: 0.0,
+  },
+];
+const savedDevice = {
+  id: 'a',
+  name: 'aa',
+  connectedDevices: savedConnectedDevicesExisting,
+} as unknown as Device;
+
+const connectedDevicesExisting =
+  '[{"type":1,"pinNr":10,"hwAddress":"0000000000000000","deviceOffset":0.5},{"type":1,"pinNr":11,"hwAddress":"0000000000000000"},{"type":1,"pinNr":16,"hwAddress":"0000000000000000"},{"type":1,"pinNr":17,"hwAddress":"0000000000000000"}]';
+const expectedConnectedDevicesExisting = [
+  {
+    type: 1,
+    pinNr: 10,
+    hwAddress: '0000000000000000',
+    connected: true,
+    name: null,
+    offset: 0.5,
+    deviceOffset: 0.5,
+  },
+  {
+    type: 1,
+    pinNr: 11,
+    hwAddress: '0000000000000000',
+    connected: true,
+    name: null,
+    offset: 0.0,
+    deviceOffset: 0.0,
+  },
+  {
+    type: 1,
+    pinNr: 16,
+    hwAddress: '0000000000000000',
+    connected: true,
+    name: null,
+    offset: 0.0,
+    deviceOffset: 0.0,
+  },
+  {
+    type: 1,
+    pinNr: 17,
+    hwAddress: '0000000000000000',
+    connected: true,
+    name: null,
+    offset: 0.0,
+    deviceOffset: 0.0,
+  },
+  {
+    type: 3,
+    pinNr: 0,
+    hwAddress: '2886927306000083',
+    connected: false,
+    name: 'HWT In',
     offset: 0.0,
     deviceOffset: 0.0,
   },

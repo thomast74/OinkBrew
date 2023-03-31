@@ -1,10 +1,10 @@
 import { Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
-import { Device, Prisma } from '@prisma/client';
+import { ConnectedDevice, Device } from '@prisma/client';
 import { Job } from 'bull';
 import { ParticleService } from '../common/particle.service';
 import { DevicesService } from './devices.service';
-import { ConnectedDevice } from './types';
+import { ConnectedDeviceHelper } from './helpers';
 
 @Processor('devices')
 export class DevicesProcessor {
@@ -39,15 +39,12 @@ export class DevicesProcessor {
             'Version',
           ));
 
-          const connectedDevices = ConnectedDevice.parseArray(
+          const connectedDevices = ConnectedDeviceHelper.parseArray(
             JSON.parse(
               await this.particle.getVariable(storedDevice.id, 'Devices'),
             ),
           );
-          storedDevice.connectedDevices = this.updateConnectedDevices(
-            storedDevice,
-            connectedDevices,
-          );
+          this.updateConnectedDevices(storedDevice, connectedDevices);
         } else if (!storedDevice.connectedDevices) {
           storedDevice.connectedDevices = [];
         }
@@ -64,28 +61,29 @@ export class DevicesProcessor {
 
   private updateConnectedDevices(
     device: Device,
-    connectedDevices: ConnectedDevice[],
-  ): Prisma.JsonArray {
-    const cDevices = ConnectedDevice.parseArray(
-      (device.connectedDevices as any[]) ?? [],
-    ).map((cDevice) => {
-      cDevice.connected = false;
-      return cDevice;
+    rConnectedDevices: ConnectedDevice[],
+  ) {
+    if (!device.connectedDevices) {
+      device.connectedDevices = [];
+    }
+
+    device.connectedDevices.forEach((sConnectedDevice) => {
+      sConnectedDevice.connected = false;
     });
 
-    connectedDevices.forEach((connectedDevice) => {
-      const index = cDevices.findIndex((cDevice) =>
-        connectedDevice.equals(cDevice),
+    rConnectedDevices.forEach((rConnectedDevice) => {
+      const index = device.connectedDevices.findIndex((sConnectedDevice) =>
+        ConnectedDeviceHelper.equals(rConnectedDevice, sConnectedDevice),
       );
+
       if (index >= 0) {
-        cDevices[index].connected = true;
-        cDevices[index].deviceOffset = connectedDevice.deviceOffset;
+        device.connectedDevices[index].connected = true;
+        device.connectedDevices[index].deviceOffset =
+          rConnectedDevice.deviceOffset;
       } else {
-        connectedDevice.connected = true;
-        cDevices.push(connectedDevice);
+        rConnectedDevice.connected = true;
+        device.connectedDevices.push(rConnectedDevice);
       }
     });
-
-    return ConnectedDevice.toJsonArray(cDevices);
   }
 }

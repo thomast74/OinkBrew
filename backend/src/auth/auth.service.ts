@@ -7,11 +7,11 @@ import {
 } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { User } from '@prisma/client';
 import * as argon2 from 'argon2';
 import { authenticator } from 'otplib';
 import * as qrcode from 'qrcode';
 import { ARGON_OPTIONS } from '../constants';
-import { User } from '../users/types/user.type';
 import { UsersService } from '../users/users.service';
 import jwtConfig from './config/jwt.config';
 import { AuthDto, OtpDto } from './dtos';
@@ -101,12 +101,12 @@ export class AuthService {
     return await this.getOtpToken(user.id, user.email);
   }
 
-  async logout(userId: number): Promise<boolean> {
+  async logout(userId: string): Promise<boolean> {
     await this.usersService.updateRefreshToken(userId);
     return true;
   }
 
-  async refreshTokens(userId: number, refreshToken: string): Promise<Tokens> {
+  async refreshTokens(userId: string, refreshToken: string): Promise<Tokens> {
     const user = await this.usersService.findById(userId);
 
     if (!user || !user.hashedRt) throw new ForbiddenException('Access Denied');
@@ -134,7 +134,7 @@ export class AuthService {
     return tokens;
   }
 
-  private async getOtpToken(userId: number, email: string): Promise<Tokens> {
+  private async getOtpToken(userId: string, email: string): Promise<Tokens> {
     const jwtPayload: JwtPayload = {
       sub: userId,
       email: email,
@@ -160,7 +160,7 @@ export class AuthService {
   }
 
   private async getAccessTokensAndUpdateUser(
-    userId: number,
+    userId: string,
     email: string,
     confirmOtp?: boolean,
   ): Promise<Tokens> {
@@ -175,7 +175,7 @@ export class AuthService {
   }
 
   private async getAccessTokens(
-    userId: number,
+    userId: string,
     email: string,
   ): Promise<Tokens> {
     const jwtPayload: JwtPayload = {

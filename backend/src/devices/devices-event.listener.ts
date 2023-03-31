@@ -7,10 +7,11 @@
 //    oinkbrew/devices/values
 
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
-import { Device } from '@prisma/client';
+import { ConnectedDeviceType, Device } from '@prisma/client';
 import { ParticleService } from '../common/particle.service';
 import { DevicesService } from './devices.service';
-import { ConnectedDevice, ConnectedDeviceType, EventData } from './types';
+import { ConnectedDeviceHelper } from './helpers';
+import { EventData } from './types';
 
 @Injectable()
 export class DevicesEventListener implements OnApplicationBootstrap {
@@ -69,14 +70,13 @@ export class DevicesEventListener implements OnApplicationBootstrap {
   private async oinkbrewNewConnectedDevice(
     eventData: EventData,
   ): Promise<void> {
-    const data = ConnectedDevice.parseData(JSON.parse(eventData.data));
+    const data = ConnectedDeviceHelper.parseData(JSON.parse(eventData.data));
     const device = await this.devices.updateConnectedDeviceWithConnectStatus(
       eventData.coreid,
       data,
       true,
     );
 
-    console.error(device);
     if (device) {
       this.updateConnectedDeviceOffsetIfNeeded(
         device,
@@ -89,7 +89,7 @@ export class DevicesEventListener implements OnApplicationBootstrap {
   private oinkbrewRemoveConnectedDevice(eventData: EventData) {
     this.devices.updateConnectedDeviceWithConnectStatus(
       eventData.coreid,
-      ConnectedDevice.parseData(JSON.parse(eventData.data)),
+      ConnectedDeviceHelper.parseData(JSON.parse(eventData.data)),
       false,
     );
   }
@@ -104,18 +104,16 @@ export class DevicesEventListener implements OnApplicationBootstrap {
       pinNr,
       hwAddress,
     );
-    console.error(cDevice);
+
     if (!cDevice) {
       return;
     }
 
     if (
-      cDevice.type === ConnectedDeviceType.DEVICE_HARDWARE_ONEWIRE_TEMP &&
+      cDevice.type === ConnectedDeviceType.ONEWIRE_TEMP &&
       cDevice.connected &&
       cDevice.offset !== 0.0
     ) {
-      console.error('dddddd');
-
       this.particle.updateConnectedDeviceOffset(
         device.id,
         pinNr,

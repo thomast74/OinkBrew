@@ -4,10 +4,10 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { Device } from '@prisma/client';
+import { ConnectedDevice, Device } from '@prisma/client';
 import { ParticleService } from '../common/particle.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { ConnectedDevice } from './types';
+import { ConnectedDeviceHelper } from './helpers';
 
 @Injectable()
 export class DevicesService {
@@ -65,12 +65,14 @@ export class DevicesService {
   }
 
   public async save(device: Device): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { id: _, ...deviceUpdate } = device;
     await this.prisma.client.device.upsert({
       where: {
         id: device.id,
       },
-      update: device as any,
-      create: device as any,
+      update: deviceUpdate,
+      create: device,
     });
     this.logger.debug(`Saved ${device.id} to database`);
   }
@@ -101,11 +103,11 @@ export class DevicesService {
       throw new NotFoundException('Device not found');
     }
 
-    const cDevices = ConnectedDevice.parseArray(
-      (device.connectedDevices as any[]) ?? [],
+    const cDevice = this.findConnectedDevice(
+      device.connectedDevices,
+      pinNr,
+      hwAddress,
     );
-
-    const cDevice = this.findConnectedDevice(cDevices, pinNr, hwAddress);
     if (!cDevice) {
       this.logger.error(
         'updateConnectedDeviceWithNameAndOffset => Connected device not found',
@@ -115,8 +117,7 @@ export class DevicesService {
 
     cDevice.name = name;
     cDevice.offset = offset;
-    this.replaceConnectedDevice(cDevices, cDevice);
-    device.connectedDevices = ConnectedDevice.toJsonArray(cDevices);
+    this.replaceConnectedDevice(device, cDevice);
     await this.save(device);
 
     if (device.online) {
@@ -182,12 +183,12 @@ export class DevicesService {
     connectedDevice: ConnectedDevice,
     connectStatus: boolean,
   ): Device | null {
-    const cDevices = ConnectedDevice.parseArray(
-      (device.connectedDevices as any[]) ?? [],
-    );
+    if (!device.connectedDevices) {
+      device.connectedDevices = [];
+    }
 
     const cDevice = this.findConnectedDevice(
-      cDevices,
+      device.connectedDevices,
       connectedDevice.pinNr,
       connectedDevice.hwAddress,
     );
@@ -195,17 +196,15 @@ export class DevicesService {
     if (cDevice) {
       cDevice.connected = connectStatus;
       cDevice.deviceOffset = connectedDevice.deviceOffset;
-      this.replaceConnectedDevice(cDevices, cDevice);
+      this.replaceConnectedDevice(device, cDevice);
     } else {
       if (connectStatus) {
         connectedDevice.connected = connectStatus;
-        cDevices.push(connectedDevice);
+        device.connectedDevices.push(connectedDevice);
       } else {
         return null;
       }
     }
-
-    device.connectedDevices = ConnectedDevice.toJsonArray(cDevices);
 
     return device;
   }
@@ -215,7 +214,7 @@ export class DevicesService {
     pinNr: number,
     hwAddress: string,
   ): ConnectedDevice | undefined {
-    const cDevices = ConnectedDevice.parseArray(
+    const cDevices = ConnectedDeviceHelper.parseArray(
       (device.connectedDevices as any[]) ?? [],
     );
 
@@ -234,15 +233,12 @@ export class DevicesService {
     return connectedDevice;
   }
 
-  private replaceConnectedDevice(
-    cDevices: ConnectedDevice[],
-    cDevice: ConnectedDevice,
-  ) {
-    const index = cDevices.findIndex(
+  private replaceConnectedDevice(device: Device, cDevice: ConnectedDevice) {
+    const index = device.connectedDevices.findIndex(
       (connectedDevice) =>
         connectedDevice.pinNr === cDevice.pinNr &&
         connectedDevice.hwAddress === cDevice.hwAddress,
     );
-    cDevices.splice(index, 1, cDevice);
+    device.connectedDevices.splice(index, 1, cDevice);
   }
 }

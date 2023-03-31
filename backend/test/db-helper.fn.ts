@@ -1,10 +1,8 @@
-import { Device, Prisma } from '@prisma/client';
+import { ConnectedDeviceType, Device, User } from '@prisma/client';
 import * as argon2 from 'argon2';
 import { authenticator } from 'otplib';
 import { ARGON_OPTIONS } from '../src/constants';
-import { ConnectedDeviceType } from '../src/devices/types';
 import { PrismaService } from '../src/prisma/prisma.service';
-import { User } from '../src/users/types';
 import { userDto } from './helper.fn';
 
 export async function createUser(
@@ -28,7 +26,7 @@ export async function createUser(
 
 export async function updateUser(
   prisma: PrismaService,
-  userId?: number,
+  userId?: string,
   data?: any,
 ): Promise<void> {
   if (!userId) {
@@ -92,20 +90,20 @@ export const deviceMockInDatabaseOffline = {
   pinned_build_target: null,
   default_build_target: '',
   functions: [],
-  variables: [] as Prisma.JsonArray,
+  variables: {},
   shieldVersion: null,
   firmwareVersion: null,
   connectedDevices: [
     {
-      type: ConnectedDeviceType.DEVICE_HARDWARE_ACTUATOR_DIGITAL,
+      type: ConnectedDeviceType.ACTUATOR_DIGITAL,
       pinNr: 8,
       hwAddress: '00000000',
+      connected: false,
       name: 'new sensor name',
       offset: 0.8,
       deviceOffset: 0.0,
-      connected: false,
     },
-  ] as Prisma.JsonArray,
+  ],
 };
 
 export const deviceMockInDatabaseOfflineExpected = {
@@ -139,12 +137,12 @@ export const deviceMockInDatabaseOnline = {
   pinned_build_target: null,
   default_build_target: '',
   functions: [],
-  variables: [] as Prisma.JsonArray,
+  variables: {},
   shieldVersion: null,
   firmwareVersion: null,
   connectedDevices: [
     {
-      type: ConnectedDeviceType.DEVICE_HARDWARE_ACTUATOR_DIGITAL,
+      type: ConnectedDeviceType.ACTUATOR_DIGITAL,
       pinNr: 8,
       hwAddress: '00000000',
       name: 'new sensor name',
@@ -152,7 +150,7 @@ export const deviceMockInDatabaseOnline = {
       deviceOffset: 0.0,
       connected: false,
     },
-  ] as Prisma.JsonArray,
+  ],
 };
 
 export const deviceMockInDatabaseOnlineExpected = {

@@ -3,12 +3,12 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { Device, Prisma } from '@prisma/client';
+import { ConnectedDevice, ConnectedDeviceType, Device } from '@prisma/client';
 import { prismaMock } from '../../prisma-singleton';
 import { ParticleService } from '../common/particle.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { DevicesService } from './devices.service';
-import { ConnectedDevice, ConnectedDeviceType } from './types';
+import { ConnectedDeviceHelper } from './helpers';
 
 describe('DevicesService', () => {
   let service: DevicesService;
@@ -129,6 +129,7 @@ describe('DevicesService', () => {
         notes: 'my notes',
       } as Device;
       prismaMock.device.findUnique.mockResolvedValue(dbDevice);
+      const { id: _id, ...newDeviceUpdate } = newDevice;
 
       await service.update('aaa', 'new name', 'my notes');
 
@@ -136,7 +137,7 @@ describe('DevicesService', () => {
         where: {
           id: 'aaa',
         },
-        update: newDevice,
+        update: newDeviceUpdate,
         create: newDevice,
       });
     });
@@ -186,6 +187,7 @@ describe('DevicesService', () => {
   describe('save', () => {
     it('should call prisma tp upsert a device', async () => {
       const expectedDevice = { id: 'aaa', name: 'bb bcccddd' } as Device;
+      const { id: _, ...expectedDeviceUpdate } = expectedDevice;
 
       await service.save(expectedDevice);
 
@@ -193,7 +195,7 @@ describe('DevicesService', () => {
         where: {
           id: 'aaa',
         },
-        update: expectedDevice,
+        update: expectedDeviceUpdate,
         create: expectedDevice,
       });
     });
@@ -214,7 +216,7 @@ describe('DevicesService', () => {
   describe('addConnectedDeviceWithConnectStatus', () => {
     it('should find the device', async () => {
       const expectedConnectedDevice = {
-        type: ConnectedDeviceType.DEVICE_HARDWARE_ACTUATOR_DIGITAL,
+        type: ConnectedDeviceType.ACTUATOR_DIGITAL,
       } as ConnectedDevice;
 
       await service.addConnectedDeviceWithConnectStatus(
@@ -242,6 +244,8 @@ describe('DevicesService', () => {
       prismaMock.device.findUnique.mockResolvedValue(
         deviceWithNoConnectedDevice,
       );
+      const { id: _, ...expectedDeviceWithNewConnectedDeviceUpdate } =
+        expectedDeviceWithNewConnectedDevice;
 
       await service.addConnectedDeviceWithConnectStatus(
         'bbb',
@@ -252,7 +256,7 @@ describe('DevicesService', () => {
         where: {
           id: expectedDeviceWithNewConnectedDevice.id,
         },
-        update: expectedDeviceWithNewConnectedDevice,
+        update: expectedDeviceWithNewConnectedDeviceUpdate,
         create: expectedDeviceWithNewConnectedDevice,
       });
     });
@@ -324,6 +328,8 @@ describe('DevicesService', () => {
       prismaMock.device.findUnique.mockResolvedValue(
         deviceWithConnectedDeviceDb,
       );
+      const { id: _, ...expectedDeviceWithConnectedDeviceDbUpdate } =
+        expectedDeviceWithConnectedDeviceDb;
 
       await service.updateConnectedDeviceWithNameAndOffset(
         'bbb',
@@ -337,7 +343,7 @@ describe('DevicesService', () => {
         where: {
           id: 'bbb',
         },
-        update: expectedDeviceWithConnectedDeviceDb,
+        update: expectedDeviceWithConnectedDeviceDbUpdate,
         create: expectedDeviceWithConnectedDeviceDb,
       });
     });
@@ -421,7 +427,7 @@ describe('DevicesService', () => {
   describe('updateConnectedDeviceWithConnectStatus', () => {
     it('should find the device', async () => {
       const expectedConnectedDevice = {
-        type: ConnectedDeviceType.DEVICE_HARDWARE_ACTUATOR_DIGITAL,
+        type: ConnectedDeviceType.ACTUATOR_DIGITAL,
       } as ConnectedDevice;
 
       await service.updateConnectedDeviceWithConnectStatus(
@@ -451,6 +457,8 @@ describe('DevicesService', () => {
       prismaMock.device.findUnique.mockResolvedValue(
         deviceWithConnectedDevicesDisconnect,
       );
+      const { id: _, ...expectedDeviceWithConnectedDeviceConnectedUpdate } =
+        expectedDeviceWithConnectedDeviceConnected;
 
       await service.updateConnectedDeviceWithConnectStatus(
         'bbb',
@@ -462,7 +470,7 @@ describe('DevicesService', () => {
         where: {
           id: expectedDeviceWithConnectedDeviceConnected.id,
         },
-        update: expectedDeviceWithConnectedDeviceConnected,
+        update: expectedDeviceWithConnectedDeviceConnectedUpdate,
         create: expectedDeviceWithConnectedDeviceConnected,
       });
     });
@@ -471,6 +479,8 @@ describe('DevicesService', () => {
       prismaMock.device.findUnique.mockResolvedValue(
         deviceWithConnectedDevicesConnected,
       );
+      const { id: _, ...expectedDeviceWithConnectedDeviceDisconnectedUpdate } =
+        expectedDeviceWithConnectedDeviceDisconnected;
 
       await service.updateConnectedDeviceWithConnectStatus(
         'bbb',
@@ -482,7 +492,7 @@ describe('DevicesService', () => {
         where: {
           id: expectedDeviceWithConnectedDeviceDisconnected.id,
         },
-        update: expectedDeviceWithConnectedDeviceDisconnected,
+        update: expectedDeviceWithConnectedDeviceDisconnectedUpdate,
         create: expectedDeviceWithConnectedDeviceDisconnected,
       });
     });
@@ -570,8 +580,8 @@ describe('DevicesService', () => {
   });
 });
 
-const newConnectedDevice = ConnectedDevice.parseData({
-  type: ConnectedDeviceType.DEVICE_HARDWARE_ACTUATOR_DIGITAL,
+const newConnectedDevice = ConnectedDeviceHelper.parseData({
+  type: ConnectedDeviceType.ACTUATOR_DIGITAL,
   pinNr: 11,
   hwAddress: '000000000000',
   name: undefined,
@@ -580,8 +590,8 @@ const newConnectedDevice = ConnectedDevice.parseData({
   connected: false,
 });
 
-const secondConnectedDevice = ConnectedDevice.parseData({
-  type: ConnectedDeviceType.DEVICE_HARDWARE_ACTUATOR_DIGITAL,
+const secondConnectedDevice = ConnectedDeviceHelper.parseData({
+  type: ConnectedDeviceType.ACTUATOR_DIGITAL,
   pinNr: 12,
   hwAddress: '000000000000',
   name: undefined,
@@ -592,15 +602,12 @@ const secondConnectedDevice = ConnectedDevice.parseData({
 
 const deviceWithNoConnectedDevice = {
   id: 'bbb',
-  connectedDevices: [] as Prisma.JsonArray,
+  connectedDevices: [] as ConnectedDevice[],
 } as Device;
 
 const deviceWithConnectedDevicesDisconnect = {
   id: 'bbb',
-  connectedDevices: [
-    { ...secondConnectedDevice },
-    { ...newConnectedDevice },
-  ] as Prisma.JsonArray,
+  connectedDevices: [{ ...secondConnectedDevice }, { ...newConnectedDevice }],
 } as Device;
 
 const deviceWithConnectedDevicesConnected = {
@@ -608,7 +615,7 @@ const deviceWithConnectedDevicesConnected = {
   connectedDevices: [
     { ...secondConnectedDevice },
     { ...newConnectedDevice, connected: true },
-  ] as Prisma.JsonArray,
+  ],
 } as Device;
 
 const expectedDeviceWithNewConnectedDevice = {
@@ -618,7 +625,7 @@ const expectedDeviceWithNewConnectedDevice = {
       ...newConnectedDevice,
       connected: true,
     },
-  ] as Prisma.JsonArray,
+  ],
 } as Device;
 
 const expectedDeviceWithConnectedDeviceConnected = {
@@ -629,7 +636,7 @@ const expectedDeviceWithConnectedDeviceConnected = {
       ...newConnectedDevice,
       connected: true,
     },
-  ] as Prisma.JsonArray,
+  ],
 } as Device;
 
 const expectedDeviceWithConnectedDeviceDisconnected = {
@@ -640,43 +647,43 @@ const expectedDeviceWithConnectedDeviceDisconnected = {
       ...newConnectedDevice,
       connected: false,
     },
-  ] as Prisma.JsonArray,
+  ],
 } as Device;
 
 const dbConnectedDevice = {
-  type: ConnectedDeviceType.DEVICE_HARDWARE_ACTUATOR_DIGITAL,
+  type: ConnectedDeviceType.ACTUATOR_DIGITAL,
   pinNr: 18,
   hwAddress: '000000000000',
-  name: undefined,
+  name: null,
   offset: 0.0,
   deviceOffset: 0.0,
   connected: false,
-};
+} as ConnectedDevice;
 
 const dbConnectedDeviceUpdated = {
-  type: ConnectedDeviceType.DEVICE_HARDWARE_ACTUATOR_DIGITAL,
+  type: ConnectedDeviceType.ACTUATOR_DIGITAL,
   pinNr: 18,
   hwAddress: '000000000000',
   name: 'new sensor name',
   offset: 0.8,
   deviceOffset: 0.0,
   connected: false,
-};
+} as ConnectedDevice;
 
 const deviceWithConnectedDeviceDb = {
   id: 'bbb',
   online: false,
-  connectedDevices: [dbConnectedDevice] as Prisma.JsonArray,
+  connectedDevices: [dbConnectedDevice],
 } as Device;
 
 const expectedDeviceWithConnectedDeviceDb = {
   id: 'bbb',
   online: false,
-  connectedDevices: [dbConnectedDeviceUpdated] as Prisma.JsonArray,
+  connectedDevices: [dbConnectedDeviceUpdated],
 } as Device;
 
 const expectedDeviceWithConnectedDeviceDbOnline = {
   id: 'bbb',
   online: true,
-  connectedDevices: [dbConnectedDeviceUpdated] as Prisma.JsonArray,
+  connectedDevices: [dbConnectedDeviceUpdated],
 } as Device;
