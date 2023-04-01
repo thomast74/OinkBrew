@@ -76,6 +76,7 @@ model Configuration {
   fanPwm         Float?
   pump1Pwm       Float?
   pump2Pwm       Float?
+  archived       Boolean           @default(false)
 
   @@map("configurations")
 }
@@ -97,10 +98,10 @@ type ConnectedDevice {
   type         ConnectedDeviceType
   pinNr        Int
   hwAddress    String
-  connected    Boolean
+  connected    Boolean?            @default(false)
   name         String?
-  offset       Float               @default(0.0)
-  deviceOffset Float               @default(0.0)
+  offset       Float?              @default(0.0)
+  deviceOffset Float?              @default(0.0)
 }
 
 type PID {

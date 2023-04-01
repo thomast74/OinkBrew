@@ -118,14 +118,14 @@ export class ParticleService {
     deviceId: string,
     pinNr: number,
     hwAddress: string,
-    offset: number,
+    offset: number | null,
   ): Promise<UpdateResponse> {
     const data = {
       command: 1,
       data: {
         pinNr: pinNr,
         hwAddress: hwAddress,
-        offset,
+        offset: offset || 0.0,
       },
     };
 

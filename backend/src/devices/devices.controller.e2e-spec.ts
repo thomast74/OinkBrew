@@ -86,8 +86,8 @@ describe('DevicesController (e2e)', () => {
         .set('Authorization', `Bearer ${validAccessToken}`)
         .send();
 
-      expect(response.body).toHaveLength(4);
-      expect(response.body).toEqual([
+      expect(response.body).toBeArrayOfSize(4);
+      expect(response.body).toIncludeAllMembers([
         expectedDevice1,
         expectedDevice2,
         deviceMockInDatabaseOfflineExpected,

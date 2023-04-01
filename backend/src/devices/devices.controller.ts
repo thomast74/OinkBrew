@@ -38,8 +38,7 @@ export class DevicesController implements OnApplicationBootstrap {
   @HttpCode(HttpStatus.OK)
   async getListOfDevices(): Promise<Device[]> {
     try {
-      const devices = await this.devices.findAll();
-      return devices;
+      return await this.devices.findAll();
     } catch (error) {
       throw new HttpException(
         error.message ?? error,
