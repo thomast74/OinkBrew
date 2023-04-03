@@ -1,10 +1,12 @@
 import { Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
-import { ConnectedDevice, Device } from '@prisma/client';
+
 import { Job } from 'bull';
+
 import { ParticleService } from '../common/particle.service';
 import { DevicesService } from './devices.service';
 import { ConnectedDeviceHelper } from './helpers';
+import { ConnectedDevice, Device } from './schemas';
 
 @Processor('devices')
 export class DevicesProcessor {
@@ -12,7 +14,7 @@ export class DevicesProcessor {
 
   constructor(
     private particle: ParticleService,
-    private devices: DevicesService,
+    private devicesSvc: DevicesService,
   ) {}
 
   @Process('refresh')
@@ -22,7 +24,16 @@ export class DevicesProcessor {
       const devices = await this.particle.listDevices();
       this.logger.log(`Retrieved ${devices.length} devices`);
       for (const device of devices) {
-        let storedDevice = await this.devices.findById(device.id);
+        let storedDevice: Device;
+        try {
+          storedDevice = (await this.devicesSvc.findById(device.id)) as Device;
+        } catch {
+          storedDevice = {
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          } as Device;
+        }
+
         storedDevice = {
           ...storedDevice,
           ...device,
@@ -49,7 +60,7 @@ export class DevicesProcessor {
           storedDevice.connectedDevices = [];
         }
 
-        await this.devices.save(storedDevice);
+        await this.devicesSvc.save(storedDevice);
       }
     } catch (error) {
       this.logger.error(error);

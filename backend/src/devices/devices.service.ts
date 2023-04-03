@@ -4,46 +4,56 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { ConnectedDevice, Device } from '@prisma/client';
+import { InjectModel } from '@nestjs/mongoose';
+
+import { Model } from 'mongoose';
+
 import { ParticleService } from '../common/particle.service';
-import { PrismaService } from '../prisma/prisma.service';
 import { ConnectedDeviceHelper } from './helpers';
+import { ConnectedDevice, Device, DeviceDocument } from './schemas';
 
 @Injectable()
 export class DevicesService {
   private readonly logger = new Logger(DevicesService.name);
 
   constructor(
-    private prisma: PrismaService,
+    @InjectModel(Device.name) private deviceModel: Model<Device>,
     private particle: ParticleService,
   ) {}
 
-  public async findAll(): Promise<Device[]> {
-    return await this.prisma.client.device.findMany();
+  public async findAll(): Promise<DeviceDocument[]> {
+    try {
+      return await this.deviceModel.find().exec();
+    } catch {
+      return [];
+    }
   }
 
-  public async findById(deviceId: string): Promise<Device | null> {
-    return await this.prisma.client.device.findUnique({
-      where: {
-        id: deviceId,
-      },
-    });
+  public async findById(deviceId: string): Promise<DeviceDocument> {
+    let device: DeviceDocument | null = null;
+    try {
+      device = await this.deviceModel.findOne({ id: deviceId }).exec();
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+
+    if (!device) {
+      throw new NotFoundException('Device not found');
+    }
+
+    return device;
   }
 
   public async update(
     deviceId: string,
     name: string,
     notes?: string,
-  ): Promise<Device> {
+  ): Promise<DeviceDocument> {
     const device = await this.findById(deviceId);
-    if (!device) {
-      this.logger.error('Update => Device not found');
-      throw new NotFoundException('Device not found');
-    }
 
     try {
       device.name = name;
-      device.notes = notes ?? null;
+      device.notes = notes;
       await this.save(device);
     } catch (error) {
       this.logger.error(`Update => General error: ${error}`);
@@ -65,16 +75,14 @@ export class DevicesService {
   }
 
   public async save(device: Device): Promise<void> {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { id: _, ...deviceUpdate } = device;
-    await this.prisma.client.device.upsert({
-      where: {
-        id: device.id,
-      },
-      update: deviceUpdate,
-      create: device,
-    });
-    this.logger.debug(`Saved ${device.id} to database`);
+    try {
+      await this.deviceModel
+        .findOneAndUpdate({ id: device.id }, device, { upsert: true })
+        .exec();
+      this.logger.debug(`Saved ${device.id} to database`);
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
   }
 
   public async addConnectedDeviceWithConnectStatus(
@@ -94,7 +102,7 @@ export class DevicesService {
     hwAddress: string,
     name: string,
     offset: number,
-  ): Promise<Device | null> {
+  ): Promise<DeviceDocument> {
     const device = await this.findById(deviceId);
     if (!device) {
       this.logger.error(
@@ -121,17 +129,21 @@ export class DevicesService {
     await this.save(device);
 
     if (device.online) {
-      const updateResponse = await this.particle.updateConnectedDeviceOffset(
-        deviceId,
-        pinNr,
-        hwAddress,
-        offset,
-      );
-
-      if (!updateResponse.isSuccessful) {
-        throw new InternalServerErrorException(
-          `${updateResponse.errorCode}: ${updateResponse.info}`,
+      try {
+        const updateResponse = await this.particle.updateConnectedDeviceOffset(
+          deviceId,
+          pinNr,
+          hwAddress,
+          offset,
         );
+
+        if (!updateResponse.isSuccessful) {
+          throw new InternalServerErrorException(
+            `${updateResponse.errorCode}: ${updateResponse.info}`,
+          );
+        }
+      } catch (error) {
+        throw new InternalServerErrorException(error.message);
       }
     }
 
@@ -142,14 +154,8 @@ export class DevicesService {
     deviceId: string,
     connectedDevice: ConnectedDevice,
     connectStatus: boolean,
-  ): Promise<Device | null> {
+  ): Promise<DeviceDocument> {
     let device = await this.findById(deviceId);
-    if (!device) {
-      this.logger.warn(
-        `Device ${deviceId} was not found, can't remove connected device`,
-      );
-      return null;
-    }
 
     device = this.markOrAddConnectedDevice(
       device,
@@ -158,7 +164,7 @@ export class DevicesService {
     );
     if (!device) {
       this.logger.warn(`Connected Device not found, so nothing to do`);
-      return null;
+      return device;
     }
 
     await this.save(device);
@@ -179,10 +185,10 @@ export class DevicesService {
   }
 
   private markOrAddConnectedDevice(
-    device: Device,
+    device: DeviceDocument,
     connectedDevice: ConnectedDevice,
     connectStatus: boolean,
-  ): Device | null {
+  ): DeviceDocument {
     if (!device.connectedDevices) {
       device.connectedDevices = [];
     }
@@ -201,8 +207,6 @@ export class DevicesService {
       if (connectStatus) {
         connectedDevice.connected = connectStatus;
         device.connectedDevices.push(connectedDevice);
-      } else {
-        return null;
       }
     }
 
@@ -233,7 +237,10 @@ export class DevicesService {
     return connectedDevice;
   }
 
-  private replaceConnectedDevice(device: Device, cDevice: ConnectedDevice) {
+  private replaceConnectedDevice(
+    device: DeviceDocument,
+    cDevice: ConnectedDevice,
+  ) {
     const index = device.connectedDevices.findIndex(
       (connectedDevice) =>
         connectedDevice.pinNr === cDevice.pinNr &&

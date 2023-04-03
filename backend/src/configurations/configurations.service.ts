@@ -1,20 +1,26 @@
 import { Injectable } from '@nestjs/common';
-import { Configuration } from '@prisma/client';
-import { ParticleService } from '../common/particle.service';
-import { PrismaService } from '../prisma/prisma.service';
+import { InjectModel } from '@nestjs/mongoose';
+
+import { Model } from 'mongoose';
+
+import { Configuration, ConfigurationDocument } from './schemas';
 
 @Injectable()
 export class ConfigurationsService {
   constructor(
-    private prisma: PrismaService,
-    private particle: ParticleService,
+    @InjectModel(Configuration.name)
+    private configurationModel: Model<Configuration>,
   ) {}
 
-  public async findAll(archived: boolean): Promise<Configuration[]> {
-    return await this.prisma.client.configuration.findMany({
-      where: {
-        archived,
-      },
-    });
+  public async findAll(archived: boolean): Promise<ConfigurationDocument[]> {
+    try {
+      return await this.configurationModel
+        .find({
+          archived,
+        })
+        .exec();
+    } catch (error) {
+      return [];
+    }
   }
 }

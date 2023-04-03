@@ -1,88 +1,75 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
-import { User } from '@prisma/client';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+
 import * as argon2 from 'argon2';
+import { Model } from 'mongoose';
 import { authenticator } from 'otplib';
+
 import { AuthDto } from '../auth/dtos';
 import { ARGON_OPTIONS } from '../constants';
-import { PrismaService } from '../prisma/prisma.service';
+import { UserAlreadyExists, UserNotFoundException } from './exceptions';
+import { User, UserDocument } from './schemas';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
 
-  async create(userDto: AuthDto): Promise<User> {
+  async create(userDto: AuthDto): Promise<UserDocument> {
     const hash = await argon2.hash(userDto.password, ARGON_OPTIONS);
     const otpSecret = authenticator.generateSecret();
 
-    const user = await this.prisma.client.user
-      .create({
-        data: {
-          email: userDto.email,
-          hash,
-          otpSecret,
-        },
-      })
-      .catch((error) => {
-        if (error instanceof PrismaClientKnownRequestError) {
-          if (error.code === 'P2002') {
-            throw new ForbiddenException('Credentials incorrect');
-          }
-        }
-        throw error;
-      });
+    const newUser = {
+      email: userDto.email,
+      hash,
+      otpSecret,
+    };
+    const createdUser = new this.userModel(newUser);
 
-    return user as User;
+    try {
+      return await createdUser.save();
+    } catch (error) {
+      if (error.toString().includes('duplicate key error')) {
+        throw new UserAlreadyExists();
+      }
+
+      throw new BadRequestException(error.code);
+    }
   }
 
   async updateRefreshToken(
     userId: string,
     refreshToken?: string,
     confirmOtp?: boolean,
-  ): Promise<void> {
-    const data = {} as any;
+  ): Promise<UserDocument> {
+    const user = await this.findById(userId);
+    if (!user) {
+      throw new UserNotFoundException();
+    }
 
-    data.hashedRt = refreshToken
+    user.hashedRt = refreshToken
       ? await argon2.hash(refreshToken, ARGON_OPTIONS)
-      : null;
+      : undefined;
 
     if (confirmOtp) {
-      data.otpConfirmed = true;
+      user.otpConfirmed = true;
     }
 
-    await this.prisma.client.user.update({
-      where: {
-        id: userId,
-      },
-      data,
-    });
+    return await user.save();
   }
 
-  async findById(userId: string): Promise<User | undefined> {
+  async findById(userId: string): Promise<UserDocument | null> {
     try {
-      const user = await this.prisma.client.user.findUnique({
-        where: {
-          id: userId,
-        },
-      });
-
-      return user as User;
+      return await this.userModel.findById(userId).exec();
     } catch (error) {
-      return undefined;
+      return null;
     }
   }
 
-  async findByEmail(email: string): Promise<User | undefined> {
+  async findByEmail(email: string): Promise<UserDocument | null> {
     try {
-      const user = await this.prisma.client.user.findUnique({
-        where: {
-          email: email,
-        },
-      });
-
-      return user as User;
+      return await this.userModel.findOne({ email }).exec();
     } catch (error) {
-      return undefined;
+      return null;
     }
   }
 }

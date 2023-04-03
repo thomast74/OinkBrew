@@ -9,8 +9,9 @@ import {
   ParseBoolPipe,
   Query,
 } from '@nestjs/common';
-import { Configuration } from '@prisma/client';
+
 import { ConfigurationsService } from './configurations.service';
+import { ConfigurationDocument } from './schemas';
 
 @Controller('configurations')
 export class ConfigurationsController {
@@ -23,9 +24,9 @@ export class ConfigurationsController {
   async getListOfConfigurations(
     @Query('archived', new DefaultValuePipe(false), ParseBoolPipe)
     archived = false,
-  ): Promise<Configuration[]> {
+  ): Promise<ConfigurationDocument[]> {
     try {
-      return await this.configurations.findAll(archived);
+      return (await this.configurations.findAll(archived)) ?? [];
     } catch (error) {
       throw new HttpException(
         error.message ?? error,

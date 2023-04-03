@@ -1,34 +1,43 @@
 import { HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
-import { User } from '@prisma/client';
+
 import * as argon2 from 'argon2';
+import { Model } from 'mongoose';
 import { authenticator } from 'otplib';
 import * as request from 'supertest';
+
 import {
-  createUser,
-  findUserByEmail,
-  updateUser,
+  clearDatabase,
+  closeDatabaseE2E,
+  connectDatabaseE2E,
+  getUserModel,
 } from '../../test/db-helper.fn';
 import {
   createAccessToken,
   createOtpToken,
   createRefreshToken,
-  userDto,
+  TestingLogger,
 } from '../../test/helper.fn';
 import { AppModule } from '../app.module';
 import { ARGON_OPTIONS } from '../constants';
-import { PrismaService } from '../prisma/prisma.service';
+import { User, UserDocument } from '../users/schemas';
+import { createUserInDb, userDto } from '../users/tests/users-helper.mock';
 
 describe('AuthController (e2e)', () => {
   let app: INestApplication;
-  let prisma: PrismaService;
   let jwt: JwtService;
+  let userModel: Model<User>;
 
   beforeAll(async () => {
+    await connectDatabaseE2E();
+    userModel = getUserModel();
+
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      .setLogger(new TestingLogger())
+      .compile();
 
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(
@@ -38,18 +47,15 @@ describe('AuthController (e2e)', () => {
     );
     await app.init();
 
-    prisma = moduleFixture.get<PrismaService>(PrismaService);
     jwt = moduleFixture.get<JwtService>(JwtService);
   });
 
   afterEach(async () => {
-    const deleteUsers = prisma.client.user.deleteMany();
-    await prisma.client.$transaction([deleteUsers]);
-    await prisma.client.$disconnect();
+    await clearDatabase();
   });
 
   afterAll(async () => {
-    await prisma.client.$disconnect();
+    await closeDatabaseE2E();
     await app.close();
   });
 
@@ -82,18 +88,18 @@ describe('AuthController (e2e)', () => {
     it('should create user in database', async () => {
       await request(app.getHttpServer()).post('/auth/signup').send(userDto);
 
-      const user = await findUserByEmail(prisma, userDto.email);
+      const userDb = await userModel.findOne({ email: userDto.email }).exec();
 
-      expect(user).toBeDefined();
-      expect(user).toEqual(userFreshlyCreated);
+      expect(userDb).toBeDefined();
+      expect(userDb?.toJSON()).toMatchObject(userFreshlyCreated);
     });
   });
 
   describe('POST /auth/signupOtp', () => {
-    let user: User | null;
+    let user: User | undefined;
 
     beforeEach(async () => {
-      user = await createUser(prisma);
+      user = (await createUserInDb(userModel, false))?.toJSON();
     });
 
     it('should return UNAUTHORIZED if no/wrong otp token provided', async () => {
@@ -159,7 +165,9 @@ describe('AuthController (e2e)', () => {
         .set('Authorization', `Bearer ${otpToken}`)
         .send({ userId: user?.id, otpPassword });
 
-      const updatedUser = await findUserByEmail(prisma, user?.email ?? '');
+      const updatedUser = await userModel
+        .findOne({ email: user?.email ?? '' })
+        .exec();
 
       expect(updatedUser?.hashedRt).toBeDefined();
     });
@@ -173,9 +181,11 @@ describe('AuthController (e2e)', () => {
         .set('Authorization', `Bearer ${otpToken}`)
         .send({ userId: user?.id, otpPassword });
 
-      const updatedUser = await findUserByEmail(prisma, user?.email ?? '');
+      const updatedUser = await userModel
+        .findOne({ email: user?.email ?? '' })
+        .exec();
 
-      expect(updatedUser?.otpConfirmed).toBeTruthy();
+      expect(updatedUser?.otpConfirmed).toBeTrue();
     });
   });
 
@@ -189,7 +199,7 @@ describe('AuthController (e2e)', () => {
     });
 
     it('should return UNAUTHORIZED if no password provided', async () => {
-      const user = await createUser(prisma, true);
+      const user = await createUserInDb(userModel, true);
 
       const response = await request(app.getHttpServer())
         .post('/auth/signin')
@@ -201,7 +211,7 @@ describe('AuthController (e2e)', () => {
     });
 
     it('should return FORBIDDEN if password not matches', async () => {
-      const user = await createUser(prisma, true);
+      const user = await createUserInDb(userModel, true);
 
       const response = await request(app.getHttpServer())
         .post('/auth/signin')
@@ -214,7 +224,7 @@ describe('AuthController (e2e)', () => {
     });
 
     it('should return BAD_REQUEST if otp is not confirmed', async () => {
-      const user = await createUser(prisma, false);
+      const user = await createUserInDb(userModel, false);
 
       const response = await request(app.getHttpServer())
         .post('/auth/signin')
@@ -230,13 +240,13 @@ describe('AuthController (e2e)', () => {
     });
 
     it('should return OK and otp token if successful', async () => {
-      const user = await createUser(prisma, true);
+      await createUserInDb(userModel, true);
 
       const response = await request(app.getHttpServer())
         .post('/auth/signin')
         .send({
-          email: user?.email,
-          password: '12345',
+          email: userDto.email,
+          password: userDto.password,
         });
 
       expect(response.status).toEqual(HttpStatus.OK);
@@ -248,7 +258,7 @@ describe('AuthController (e2e)', () => {
     let user: User | null;
 
     beforeEach(async () => {
-      user = await createUser(prisma, true);
+      user = await createUserInDb(userModel, true);
     });
 
     it('should return UNAUTHORIZED if no/wrong otp token provided', async () => {
@@ -314,7 +324,9 @@ describe('AuthController (e2e)', () => {
         .set('Authorization', `Bearer ${otpToken}`)
         .send({ userId: user?.id, otpPassword });
 
-      const updatedUser = await findUserByEmail(prisma, user?.email ?? '');
+      const updatedUser = await userModel
+        .findOne({ email: user?.email ?? '' })
+        .exec();
 
       expect(updatedUser?.hashedRt).toBeDefined();
       expect(updatedUser?.otpConfirmed).toBeTruthy();
@@ -322,14 +334,18 @@ describe('AuthController (e2e)', () => {
   });
 
   describe('POST /auth/logout', () => {
-    let user: User | null;
+    let user: UserDocument | null;
     let refreshToken: string;
 
     beforeEach(async () => {
-      user = await createUser(prisma, true);
+      user = await createUserInDb(userModel, true);
       refreshToken = await createRefreshToken(jwt, user?.id, user?.email);
       const hashedRt = await argon2.hash(refreshToken, ARGON_OPTIONS);
-      await updateUser(prisma, user?.id, { hashedRt });
+
+      if (user) {
+        user.hashedRt = hashedRt;
+        await user?.save();
+      }
     });
 
     it('should return UNAUTHORIZED if no access token provided', async () => {
@@ -376,22 +392,26 @@ describe('AuthController (e2e)', () => {
         .set('Authorization', `Bearer ${validAccessToken}`)
         .send({});
 
-      const dbUser = await findUserByEmail(prisma, userDto.email);
+      const dbUser = await userModel.findOne({ email: userDto.email }).exec();
 
-      expect(dbUser?.hashedRt).toBeNull();
+      expect(dbUser?.hashedRt).toBeUndefined();
     });
   });
 
   describe('POST /auth/refresh', () => {
-    let user: User | null;
+    let user: UserDocument | null;
     let refreshToken: string;
     let hashedRt: string;
 
     beforeEach(async () => {
-      user = await createUser(prisma, true);
+      user = await createUserInDb(userModel, true);
       refreshToken = await createRefreshToken(jwt, user?.id, user?.email);
       hashedRt = await argon2.hash(refreshToken, ARGON_OPTIONS);
-      await updateUser(prisma, user?.id, { hashedRt });
+
+      if (user) {
+        user.hashedRt = hashedRt;
+        await user.save();
+      }
     });
 
     it('should return UNAUTHORIZED when no refresh token provided', async () => {
@@ -429,7 +449,10 @@ describe('AuthController (e2e)', () => {
     });
 
     it('should return FORBIDDEN if user has no hashed refresh token', async () => {
-      await updateUser(prisma, user?.id, { hashedRt: null });
+      if (user) {
+        user.hashedRt = undefined;
+        await user?.save();
+      }
 
       const response = await request(app.getHttpServer())
         .post('/auth/refresh')
@@ -440,7 +463,10 @@ describe('AuthController (e2e)', () => {
     });
 
     it('should return FORBIDDEN if refresh token and hashedRT do not match', async () => {
-      await updateUser(prisma, user?.id, { hashedRt: 'asdasdasd' });
+      if (user) {
+        user.hashedRt = 'asdasdasd';
+        await user?.save();
+      }
 
       const response = await request(app.getHttpServer())
         .post('/auth/refresh')
@@ -475,7 +501,7 @@ describe('AuthController (e2e)', () => {
         .send({});
 
       const newRefreshToken = response.body.refreshToken;
-      const dbUser = await findUserByEmail(prisma, userDto.email);
+      const dbUser = await userModel.findOne({ email: userDto.email }).exec();
       const rtMatches = await argon2.verify(
         dbUser?.hashedRt ?? '',
         newRefreshToken,
@@ -512,7 +538,6 @@ const userFreshlyCreated = {
   otpConfirmed: false,
   otpSecret: expect.any(String),
   hash: expect.any(String),
-  hashedRt: null,
   createdAt: expect.any(Date),
   updatedAt: expect.any(Date),
 };

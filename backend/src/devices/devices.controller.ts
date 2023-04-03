@@ -14,11 +14,12 @@ import {
   Put,
   UseGuards,
 } from '@nestjs/common';
-import { Device } from '@prisma/client';
+
 import { Queue } from 'bull';
-import { DevicesEventListener } from './devices-event.listener';
+
 import { DevicesService } from './devices.service';
 import { DeviceConnectedDeviceGuard, DeviceNameGuard } from './guards';
+import { Device, DeviceDocument } from './schemas';
 
 @Controller('devices')
 export class DevicesController implements OnApplicationBootstrap {
@@ -27,7 +28,6 @@ export class DevicesController implements OnApplicationBootstrap {
   constructor(
     @InjectQueue('devices') private readonly devicesQueue: Queue,
     private devices: DevicesService,
-    private eventListener: DevicesEventListener,
   ) {}
 
   onApplicationBootstrap() {
@@ -36,7 +36,7 @@ export class DevicesController implements OnApplicationBootstrap {
 
   @Get('/')
   @HttpCode(HttpStatus.OK)
-  async getListOfDevices(): Promise<Device[]> {
+  async getListOfDevices(): Promise<DeviceDocument[]> {
     try {
       return await this.devices.findAll();
     } catch (error) {

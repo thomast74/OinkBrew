@@ -5,13 +5,12 @@ import {
   PATH_METADATA,
 } from '@nestjs/common/constants';
 import { Test, TestingModule } from '@nestjs/testing';
-import {
-  dbConfigurationBrew,
-  dbConfigurationFridge,
-} from '../../test/db-helper.fn';
+
 import { IS_PUBLIC_KEY } from '../auth/decorators';
 import { ConfigurationsController } from './configurations.controller';
 import { ConfigurationsService } from './configurations.service';
+import { mockBrewNotArchived } from './tests/brew-configurations.mock';
+import { mockFridgeNotArchived } from './tests/fridge-configurations.mock';
 
 describe('ConfigurationsController', () => {
   let module: TestingModule;
@@ -97,8 +96,8 @@ describe('ConfigurationsController', () => {
 
     it('should return an array of configurations', async () => {
       const expectedConfigurations = [
-        dbConfigurationBrew,
-        dbConfigurationFridge,
+        mockBrewNotArchived,
+        mockFridgeNotArchived,
       ];
       const controller = module.get<ConfigurationsController>(
         ConfigurationsController,

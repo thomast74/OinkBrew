@@ -1,35 +1,56 @@
-import { ForbiddenException } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
+import { getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
+
 import * as argon2 from 'argon2';
-import { prismaMock } from '../../prisma-singleton';
-import { createDbdUser, userDto } from '../../test/helper.fn';
+import { Model, Types } from 'mongoose';
+
+import {
+  clearDatabase,
+  clearDatabaseCollections,
+  closeDatabase,
+  connectDatabase,
+  getUserModel,
+} from '../../test/db-helper.fn';
 import { ARGON_OPTIONS } from '../constants';
-import { PrismaService } from '../prisma/prisma.service';
+import { UserAlreadyExists, UserNotFoundException } from './exceptions';
+import { User } from './schemas';
+import { createUser, createUserInDb, userDto } from './tests/users-helper.mock';
 import { UsersService } from './users.service';
 
 describe('UsersService', () => {
   let service: UsersService;
-  beforeEach(() => {
-    ARGON_OPTIONS.salt = Buffer.from('test salt');
-  });
+  let userModel: Model<User>;
 
-  afterEach(() => {
-    ARGON_OPTIONS.salt = undefined;
+  beforeAll(async () => {
+    await connectDatabase();
+
+    userModel = getUserModel();
+
+    const app: TestingModule = await Test.createTestingModule({
+      providers: [
+        UsersService,
+        { provide: getModelToken(User.name), useValue: userModel },
+      ],
+    }).compile();
+
+    service = app.get<UsersService>(UsersService);
   });
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [UsersService],
-    })
-      .useMocker((token) => {
-        if (token === PrismaService) {
-          return { client: prismaMock };
-        }
-      })
-      .compile();
+    ARGON_OPTIONS.salt = Buffer.from('test salt');
 
-    service = module.get<UsersService>(UsersService);
+    await connectDatabase();
+  });
+
+  afterEach(async () => {
+    ARGON_OPTIONS.salt = undefined;
+
+    await clearDatabase();
+  });
+
+  afterAll(async () => {
+    await closeDatabase();
   });
 
   it('should be defined', () => {
@@ -38,172 +59,156 @@ describe('UsersService', () => {
 
   describe('create', () => {
     it('should create a user from AuthDto', async () => {
-      const expectedUser = await createDbdUser(userDto);
-      prismaMock.user.create.mockResolvedValue(expectedUser);
+      const newUser = await createUser(false);
+      const expectedUser = {
+        ...newUser,
+        __v: 0,
+        _id: expect.any(Types.ObjectId),
+        id: expect.any(String),
+        otpSecret: expect.any(String),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+      };
 
-      const user = await service.create(userDto);
+      const user = (await service.create(userDto)).toJSON();
 
-      expect(prismaMock.user.create).toHaveBeenCalledWith({
-        data: {
-          email: userDto.email,
-          hash: expectedUser.hash,
-          otpSecret: expect.any(String),
-        },
-      });
-      expect(user).toBe(expectedUser);
+      expect(user).toEqual(expectedUser);
     });
 
-    it('should return forbidden exception for db connection errors', async () => {
-      prismaMock.user.create.mockRejectedValue(
-        new PrismaClientKnownRequestError('', 'P2002', '2'),
-      );
+    it('should return UserAlreadyExists if email is already in use', async () => {
+      await createUserInDb(userModel, false);
 
       await expect(service.create(userDto)).rejects.toEqual(
-        new ForbiddenException('Credentials incorrect'),
+        new UserAlreadyExists(),
       );
     });
 
-    it('should return error for every non connection errors', async () => {
-      prismaMock.user.create.mockRejectedValue(new Error('something'));
+    it('should return BadRequestException in case of database error', async () => {
+      await closeDatabase();
 
       await expect(service.create(userDto)).rejects.toEqual(
-        new Error('something'),
+        new BadRequestException(),
       );
+
+      await connectDatabase();
     });
   });
 
   describe('updateRefreshToken', () => {
+    it('should return UserNotFoundException if user not found', async () => {
+      await expect(service.updateRefreshToken('anyString')).rejects.toEqual(
+        new UserNotFoundException(),
+      );
+    });
+
     it('should update user with new hashed refresh token', async () => {
       const refreshToken = 'new refreh token';
       const hash = await argon2.hash(refreshToken, ARGON_OPTIONS);
+      const newUser = await createUserInDb(userModel, false);
+      const createdUser = {
+        ...newUser?.toJSON(),
+        hashedRt: hash,
+        updatedAt: expect.any(Date),
+      };
 
-      await service.updateRefreshToken('1', refreshToken);
+      const updatedUser = (
+        await service.updateRefreshToken(
+          newUser?.id.toString() ?? '',
+          refreshToken,
+        )
+      ).toJSON();
 
-      expect(prismaMock.user.update).toHaveBeenCalledWith({
-        where: {
-          id: '1',
-        },
-        data: {
-          hashedRt: hash,
-        },
-      });
+      expect(updatedUser).toEqual(createdUser);
     });
 
     it('should update user with null refresh token if no token provided', async () => {
-      await service.updateRefreshToken('2');
+      const newUser = await createUserInDb(userModel, false);
+      const createdUser = {
+        ...newUser?.toJSON(),
+        updatedAt: expect.any(Date),
+      };
+      delete createdUser.hashedRt;
 
-      expect(prismaMock.user.update).toHaveBeenCalledWith({
-        where: {
-          id: '2',
-        },
-        data: {
-          hashedRt: null,
-        },
-      });
+      const updatedUser = (
+        await service.updateRefreshToken(newUser?.id.toString() ?? '')
+      ).toJSON();
+
+      expect(updatedUser).toEqual(createdUser);
     });
 
     it('should also update otpConfirmed if provided', async () => {
       const refreshToken = 'new refreh token';
       const hash = await argon2.hash(refreshToken, ARGON_OPTIONS);
+      const newUser = await createUserInDb(userModel, false);
+      const createdUser = {
+        ...newUser?.toJSON(),
+        hashedRt: hash,
+        otpConfirmed: true,
+        updatedAt: expect.any(Date),
+      };
 
-      await service.updateRefreshToken('1', refreshToken, true);
+      const updatedUser = (
+        await service.updateRefreshToken(
+          newUser?.id.toString() ?? '',
+          refreshToken,
+          true,
+        )
+      ).toJSON();
 
-      expect(prismaMock.user.update).toHaveBeenCalledWith({
-        where: {
-          id: '1',
-        },
-        data: {
-          otpConfirmed: true,
-          hashedRt: hash,
-        },
-      });
+      expect(updatedUser).toEqual(createdUser);
     });
   });
 
   describe('findById', () => {
     it('should find user by id', async () => {
-      const expectedUser = await createDbdUser(userDto);
-      prismaMock.user.findUnique.mockImplementation((call) => {
-        if (call?.where?.id === '3') {
-          return expectedUser;
-        } else {
-          return null as any;
-        }
-      });
+      const expectedUser = await createUserInDb(userModel, false);
 
-      const receivedUser = await service.findById('3');
+      const receivedUser = await service.findById(expectedUser?.id ?? '');
 
-      expect(receivedUser).toBe(expectedUser);
+      expect(receivedUser).toBeDefined();
+      expect(receivedUser).toEqual(expectedUser);
     });
 
-    it('should return undefined if user not found', async () => {
-      const expectedUser = await createDbdUser(userDto);
-      prismaMock.user.findUnique.mockImplementation((call) => {
-        if (call?.where?.id === '3') {
-          return expectedUser;
-        } else {
-          return undefined as any;
-        }
-      });
+    it('should return null if user not found', async () => {
+      await createUserInDb(userModel, false);
 
-      const receivedUser = await service.findById('4');
+      const receivedUser = await service.findById('anyString');
 
-      expect(receivedUser).toBeUndefined();
+      expect(receivedUser).toBeNull();
     });
 
-    it('should return undefined if error', async () => {
-      const error = 'not found error';
-      prismaMock.user.findUnique.mockRejectedValue(error);
+    it('should return null if error', async () => {
+      const createdUser = await createUserInDb(userModel, false);
+      await clearDatabaseCollections();
 
-      const receivedUser = await service.findById('4');
+      const receivedUser = await service.findById(createdUser?.id ?? '');
 
-      expect(receivedUser).toBeUndefined();
+      expect(receivedUser).toBeNull();
     });
   });
 
   describe('findByEmail', () => {
     it('should find user by email', async () => {
-      const expectedUser = await createDbdUser(userDto);
-      prismaMock.user.findUnique.mockImplementation((call) => {
-        if (call?.where?.email === userDto.email) {
-          return expectedUser;
-        } else {
-          return null as any;
-        }
-      });
+      const expectedUser = await createUserInDb(userModel, false);
 
-      const receivedUser = await service.findByEmail(userDto.email);
+      const receivedUser = await service.findByEmail(expectedUser?.email ?? '');
 
-      expect(prismaMock.user.findUnique).toHaveBeenCalledWith({
-        where: {
-          email: userDto.email,
-        },
-      });
-      expect(receivedUser).toBe(expectedUser);
+      expect(receivedUser).toEqual(expectedUser);
     });
 
-    it('should return undefined if user not found', async () => {
-      const expectedUser = await createDbdUser(userDto);
-      prismaMock.user.findUnique.mockImplementation((call) => {
-        if (call?.where?.email === userDto.email) {
-          return expectedUser;
-        } else {
-          return undefined as any;
-        }
-      });
-
+    it('should return null if user not found', async () => {
       const receivedUser = await service.findByEmail('thisisme@test.de');
 
-      expect(receivedUser).toBeUndefined();
+      expect(receivedUser).toBeNull();
     });
 
-    it('should return undefined if error', async () => {
-      const error = 'not found error';
-      prismaMock.user.findUnique.mockRejectedValue(error);
+    it('should return null if error', async () => {
+      const expectedUser = await createUserInDb(userModel, false);
+      await clearDatabaseCollections();
 
-      const receivedUser = await service.findByEmail('thisisme@test.de');
+      const receivedUser = await service.findByEmail(expectedUser?.email ?? '');
 
-      expect(receivedUser).toBeUndefined();
+      expect(receivedUser).toBeNull();
     });
   });
 });

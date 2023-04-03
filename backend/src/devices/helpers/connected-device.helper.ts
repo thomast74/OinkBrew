@@ -1,4 +1,4 @@
-import { ConnectedDevice } from '@prisma/client';
+import { ConnectedDevice } from '../schemas';
 
 export class ConnectedDeviceHelper {
   static equals(cDevice1: ConnectedDevice, cDevice2: ConnectedDevice): boolean {

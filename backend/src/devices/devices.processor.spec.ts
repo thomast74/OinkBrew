@@ -1,14 +1,20 @@
+import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { Device } from '@prisma/client';
+
 import { when } from 'jest-when';
-import { prismaMock } from '../../prisma-singleton';
+
 import { ParticleService } from '../common/particle.service';
-import { PrismaService } from '../prisma/prisma.service';
 import { DevicesProcessor } from './devices.processor';
 import { DevicesService } from './devices.service';
+import { Device } from './schemas';
 
 describe('DevicesProcessor', () => {
   let processor: DevicesProcessor;
+
+  const mockDevicesService = {
+    findById: jest.fn(),
+    save: jest.fn(),
+  };
 
   const mockParticleService = {
     listDevices: jest.fn(),
@@ -19,16 +25,18 @@ describe('DevicesProcessor', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [DevicesProcessor, ParticleService, DevicesService],
     })
-      .useMocker((token) => {
-        if (token === PrismaService) {
-          return { client: prismaMock };
-        }
-      })
+      .overrideProvider(DevicesService)
+      .useValue(mockDevicesService)
       .overrideProvider(ParticleService)
       .useValue(mockParticleService)
       .compile();
 
     processor = module.get<DevicesProcessor>(DevicesProcessor);
+
+    mockParticleService.listDevices.mockReset();
+    mockParticleService.getVariable.mockReset();
+    mockDevicesService.findById.mockReset();
+    mockDevicesService.save.mockReset();
   });
 
   describe('refresh', () => {
@@ -43,33 +51,60 @@ describe('DevicesProcessor', () => {
       expect(mockParticleService.listDevices).toHaveBeenCalled();
     });
 
+    it('should find whether device already exists', async () => {
+      const devices = [{ id: 'a', name: 'aa' }];
+      mockParticleService.listDevices.mockResolvedValue(devices);
+
+      await processor.refresh(mockJob);
+
+      expect(mockDevicesService.findById).toHaveBeenCalledOnce();
+      expect(mockDevicesService.findById).toHaveBeenCalledWith('a');
+    });
+
     it('should save devices to database', async () => {
       const devices = [
         { id: 'a', name: 'aa' },
         { id: 'b', name: 'bb' },
       ];
-      const mockJob = {
-        moveToFailed: jest.fn(),
-      } as any;
       mockParticleService.listDevices.mockResolvedValue(devices);
-      const { id: _id0, ...deviceUpdate0 } = devices[0];
-      const { id: _id1, ...deviceUpdate1 } = devices[1];
+
       await processor.refresh(mockJob);
 
-      expect(prismaMock.device.upsert).toHaveBeenCalledTimes(2);
-      expect(prismaMock.device.upsert).toHaveBeenCalledWith({
-        where: {
-          id: devices[0].id,
-        },
-        update: { ...deviceUpdate0, connectedDevices: [] },
-        create: { ...devices[0], connectedDevices: [] },
+      expect(mockDevicesService.save).toHaveBeenCalledTimes(2);
+      expect(mockDevicesService.save).toHaveBeenCalledWith({
+        ...devices[0],
+        connectedDevices: [],
       });
-      expect(prismaMock.device.upsert).toHaveBeenCalledWith({
-        where: {
-          id: devices[1].id,
-        },
-        update: { ...deviceUpdate1, connectedDevices: [] },
-        create: { ...devices[1], connectedDevices: [] },
+      expect(mockDevicesService.save).toHaveBeenCalledWith({
+        ...devices[1],
+        connectedDevices: [],
+      });
+    });
+
+    it('should save devices to database if device was not found', async () => {
+      const devices = [
+        { id: 'a', name: 'aa' },
+        { id: 'b', name: 'bb' },
+      ];
+      mockParticleService.listDevices.mockResolvedValue(devices);
+      mockDevicesService.findById.mockImplementation(() => {
+        throw new NotFoundException();
+      });
+
+      await processor.refresh(mockJob);
+
+      expect(mockDevicesService.save).toHaveBeenCalledTimes(2);
+      expect(mockDevicesService.save).toHaveBeenCalledWith({
+        ...devices[0],
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        connectedDevices: [],
+      });
+      expect(mockDevicesService.save).toHaveBeenCalledWith({
+        ...devices[1],
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        connectedDevices: [],
       });
     });
 
@@ -78,9 +113,6 @@ describe('DevicesProcessor', () => {
         { id: 'a', name: 'aa', connected: true },
         { id: 'b', name: 'bb' },
       ];
-      const mockJob = {
-        moveToFailed: jest.fn(),
-      } as any;
       mockParticleService.listDevices.mockResolvedValue(devices);
 
       await processor.refresh(mockJob);
@@ -105,9 +137,6 @@ describe('DevicesProcessor', () => {
         { id: 'a', name: 'aa', connected: true },
         { id: 'b', name: 'bb' },
       ];
-      const mockJob = {
-        moveToFailed: jest.fn(),
-      } as any;
       mockParticleService.listDevices.mockResolvedValue(devices);
       when(mockParticleService.getVariable)
         .calledWith(devices[0].id, 'ShieldVersion')
@@ -116,39 +145,24 @@ describe('DevicesProcessor', () => {
         .mockResolvedValue('1.0')
         .calledWith(devices[0].id, 'Devices')
         .mockResolvedValue(connectedDevicesNew);
-
-      await processor.refresh(mockJob);
-
       const expectedDevice = {
         ...devices[0],
         shieldVersion: 2,
         firmwareVersion: 1,
         connectedDevices: expectedConnectedDevicesNew,
       };
-      const { id: _id, ...expectedDeviceUpdate } = expectedDevice;
 
-      expect(prismaMock.device.upsert).toHaveBeenCalledWith({
-        where: {
-          id: devices[0].id,
-        },
-        update: expectedDeviceUpdate,
-        create: expectedDevice,
-      });
+      await processor.refresh(mockJob);
+
+      expect(mockDevicesService.save).toHaveBeenCalledWith(expectedDevice);
     });
 
     it('should save variables to device with previous connected devices', async () => {
       const devices = [
-        {
-          id: 'a',
-          name: 'aa',
-          connected: true,
-        },
+        { id: 'a', name: 'aa', connected: true },
         { id: 'b', name: 'bb' },
       ];
-      const mockJob = {
-        moveToFailed: jest.fn(),
-      } as any;
-      prismaMock.device.findUnique
+      mockDevicesService.findById
         .mockResolvedValueOnce(savedDevice as Device)
         .mockResolvedValueOnce(devices[1] as Device);
       mockParticleService.listDevices.mockResolvedValue(devices);
@@ -159,31 +173,19 @@ describe('DevicesProcessor', () => {
         .mockResolvedValue('1.0')
         .calledWith(devices[0].id, 'Devices')
         .mockResolvedValue(connectedDevicesExisting);
-
-      await processor.refresh(mockJob);
-
       const expectedDevice = {
         ...devices[0],
         firmwareVersion: 1,
         shieldVersion: 2,
         connectedDevices: expectedConnectedDevicesExisting,
       };
-      const { id: _id, ...expectedDeviceUpdate } = expectedDevice;
 
-      expect(prismaMock.device.upsert).toHaveBeenCalledWith({
-        where: {
-          id: devices[0].id,
-        },
-        update: expectedDeviceUpdate,
-        create: expectedDevice,
-      });
+      await processor.refresh(mockJob);
+
+      expect(mockDevicesService.save).toHaveBeenCalledWith(expectedDevice);
     });
 
     it('should call job.moveToFailed when particle has an error', async () => {
-      const mockJob = {
-        finished: jest.fn(),
-        moveToFailed: jest.fn(),
-      } as any;
       mockParticleService.listDevices.mockRejectedValue('funny error');
 
       await processor.refresh(mockJob);
@@ -192,6 +194,11 @@ describe('DevicesProcessor', () => {
     });
   });
 });
+
+const mockJob = {
+  finished: jest.fn(),
+  moveToFailed: jest.fn(),
+} as any;
 
 const connectedDevicesNew =
   '[{"type":1,"pinNr":10,"hwAddress":"0000000000000000","deviceOffset":0.5},{"type":1,"pinNr":11,"hwAddress":"0000000000000000"},{"type":1,"pinNr":16,"hwAddress":"0000000000000000"},{"type":1,"pinNr":17,"hwAddress":"0000000000000000"}]';
@@ -285,7 +292,7 @@ const savedDevice = {
   id: 'a',
   name: 'aa',
   connectedDevices: savedConnectedDevicesExisting,
-} as unknown as Device;
+} as Device;
 
 const connectedDevicesExisting =
   '[{"type":1,"pinNr":10,"hwAddress":"0000000000000000","deviceOffset":0.5},{"type":1,"pinNr":11,"hwAddress":"0000000000000000"},{"type":1,"pinNr":16,"hwAddress":"0000000000000000"},{"type":1,"pinNr":17,"hwAddress":"0000000000000000"}]';

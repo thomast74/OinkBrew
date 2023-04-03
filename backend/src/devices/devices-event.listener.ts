@@ -5,13 +5,13 @@
 //    oinkbrew/devices/new
 //    oinkbrew/devices/remove
 //    oinkbrew/devices/values
-
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
-import { ConnectedDeviceType, Device } from '@prisma/client';
+
 import { ParticleService } from '../common/particle.service';
 import { DevicesService } from './devices.service';
 import { ConnectedDeviceHelper } from './helpers';
-import { EventData } from './types';
+import { Device } from './schemas';
+import { ConnectedDeviceType, EventData } from './types';
 
 @Injectable()
 export class DevicesEventListener implements OnApplicationBootstrap {

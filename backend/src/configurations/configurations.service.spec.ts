@@ -1,32 +1,65 @@
-import { Test } from '@nestjs/testing';
-import { prismaMock } from '../../prisma-singleton';
+import { getModelToken } from '@nestjs/mongoose';
+import { Test, TestingModule } from '@nestjs/testing';
+
+import { Model } from 'mongoose';
+
 import {
-  dbConfigurationBrew,
-  dbConfigurationFridge,
+  clearDatabase,
+  clearDatabaseCollections,
+  closeDatabase,
+  connectDatabase,
+  getConfigurationModel,
+  getDeviceModel,
 } from '../../test/db-helper.fn';
 import { ParticleService } from '../common/particle.service';
-import { PrismaService } from '../prisma/prisma.service';
+import { Device } from '../devices/schemas';
 import { ConfigurationsService } from './configurations.service';
+import { Configuration } from './schemas';
+import {
+  mockBrewArchived,
+  mockBrewNotArchived,
+} from './tests/brew-configurations.mock';
+import { createConfInDb } from './tests/configuration-helper.mock';
+import { mockFridgeNotArchived } from './tests/fridge-configurations.mock';
 
 describe('ConfigurationsService', () => {
   let service: ConfigurationsService;
+  let confModel: Model<Configuration>;
+  let deviceModel: Model<Device>;
 
-  const mockParticleService = {};
+  beforeAll(async () => {
+    await connectDatabase();
 
-  beforeEach(async () => {
-    const module = await Test.createTestingModule({
-      providers: [ConfigurationsService, ParticleService],
+    deviceModel = getDeviceModel();
+    confModel = getConfigurationModel();
+
+    const app: TestingModule = await Test.createTestingModule({
+      providers: [
+        ConfigurationsService,
+        ParticleService,
+        {
+          provide: getModelToken(Configuration.name),
+          useValue: confModel,
+        },
+      ],
     })
-      .useMocker((token) => {
-        if (token === PrismaService) {
-          return { client: prismaMock };
-        }
-      })
-      .overrideProvider(ParticleService)
-      .useValue(mockParticleService)
+      // .overrideProvider(ParticleService)
+      // .useValue(mockParticleService)
       .compile();
 
-    service = module.get<ConfigurationsService>(ConfigurationsService);
+    service = app.get<ConfigurationsService>(ConfigurationsService);
+  });
+
+  beforeEach(async () => {
+    await connectDatabase();
+  });
+
+  afterEach(async () => {
+    await clearDatabase();
+  });
+
+  afterAll(async () => {
+    await closeDatabase();
   });
 
   it('should be defined', () => {
@@ -34,48 +67,44 @@ describe('ConfigurationsService', () => {
   });
 
   describe('findAll', () => {
-    it('should call prisma to get all active configurations', async () => {
-      await service.findAll(false);
+    it('should call db to get all active configurations', async () => {
+      await createConfInDb(deviceModel, confModel, mockBrewNotArchived);
+      await createConfInDb(deviceModel, confModel, mockBrewArchived);
+      await createConfInDb(deviceModel, confModel, mockFridgeNotArchived);
 
-      expect(prismaMock.configuration.findMany).toHaveBeenCalledWith({
-        where: {
-          archived: false,
-        },
-      });
+      const response = await service.findAll(false);
+
+      expect(response).toHaveLength(2);
+      expect(response[0].name).toEqual('aaa');
+      expect(response[1].name).toEqual('ccc');
     });
 
     it('should call prisma to get all archived configurations', async () => {
-      await service.findAll(true);
+      await createConfInDb(deviceModel, confModel, mockBrewNotArchived);
+      await createConfInDb(deviceModel, confModel, mockBrewArchived);
+      await createConfInDb(deviceModel, confModel, mockFridgeNotArchived);
 
-      expect(prismaMock.configuration.findMany).toHaveBeenCalledWith({
-        where: {
-          archived: true,
-        },
-      });
+      const response = await service.findAll(true);
+
+      expect(response).toHaveLength(1);
+      expect(response[0].name).toEqual('bbb');
     });
 
-    it('should return found devices', async () => {
-      const expectedConfigurations = [
-        dbConfigurationBrew,
-        dbConfigurationFridge,
-      ];
-      prismaMock.configuration.findMany.mockResolvedValue(
-        expectedConfigurations,
-      );
+    it('should return empty array in case no configurations found', async () => {
+      await createConfInDb(deviceModel, confModel, mockBrewNotArchived);
+      await createConfInDb(deviceModel, confModel, mockFridgeNotArchived);
 
-      const receivedDevices = await service.findAll(false);
+      const response = await service.findAll(true);
 
-      expect(receivedDevices).toEqual(expectedConfigurations);
+      expect(response).toHaveLength(0);
     });
 
-    it('should return error from prisma client', async () => {
-      prismaMock.configuration.findMany.mockRejectedValue(
-        new Error('db error'),
-      );
+    it('should return empty array in case mongo error', async () => {
+      await clearDatabaseCollections();
 
-      await expect(service.findAll(false)).rejects.toEqual(
-        new Error('db error'),
-      );
+      const response = await service.findAll(false);
+
+      expect(response).toHaveLength(0);
     });
   });
 });

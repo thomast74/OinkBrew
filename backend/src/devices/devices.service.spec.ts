@@ -2,16 +2,35 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
+import { getModelToken } from '@nestjs/mongoose';
 import { Test } from '@nestjs/testing';
-import { ConnectedDevice, ConnectedDeviceType, Device } from '@prisma/client';
-import { prismaMock } from '../../prisma-singleton';
+
+import mongoose, { Model } from 'mongoose';
+
+import {
+  clearDatabase,
+  closeDatabase,
+  connectDatabase,
+  getDeviceModel,
+} from '../../test/db-helper.fn';
 import { ParticleService } from '../common/particle.service';
-import { PrismaService } from '../prisma/prisma.service';
 import { DevicesService } from './devices.service';
-import { ConnectedDeviceHelper } from './helpers';
+import { ConnectedDevice, Device, DeviceSchema } from './schemas';
+import { createDeviceInDb } from './tests/devices-helper.mock';
+import {
+  mockDeviceOffline,
+  mockDeviceOfflineWithConnectedDevice,
+  mockDeviceOfflineWithConnectedDeviceConnected,
+  mockDeviceOnline,
+  mockDeviceOnlineWithConnectedDevice,
+  mockDeviceWithConnectedDevicesConnected,
+  newConnectedDevice,
+} from './tests/devices.mock';
+import { ConnectedDeviceType } from './types';
 
 describe('DevicesService', () => {
   let service: DevicesService;
+  let deviceModel: Model<Device>;
 
   const mockParticleService = {
     updateDevice: jest.fn(),
@@ -19,20 +38,24 @@ describe('DevicesService', () => {
     restart: jest.fn(),
   };
 
-  beforeEach(async () => {
-    const module = await Test.createTestingModule({
-      providers: [DevicesService, ParticleService],
-    })
-      .useMocker((token) => {
-        if (token === PrismaService) {
-          return { client: prismaMock };
-        }
-      })
-      .overrideProvider(ParticleService)
-      .useValue(mockParticleService)
-      .compile();
+  beforeAll(async () => {
+    await connectDatabase();
 
-    service = module.get<DevicesService>(DevicesService);
+    deviceModel = getDeviceModel();
+
+    const app = await Test.createTestingModule({
+      providers: [
+        DevicesService,
+        { provide: getModelToken(Device.name), useValue: deviceModel },
+        { provide: ParticleService, useValue: mockParticleService },
+      ],
+    }).compile();
+
+    service = app.get<DevicesService>(DevicesService);
+  });
+
+  beforeEach(async () => {
+    await connectDatabase();
 
     mockParticleService.updateDevice.mockReset();
     mockParticleService.updateConnectedDeviceOffset.mockReset();
@@ -48,128 +71,117 @@ describe('DevicesService', () => {
     });
   });
 
+  afterEach(async () => {
+    jest.restoreAllMocks();
+
+    await clearDatabase();
+  });
+
+  afterAll(async () => {
+    await closeDatabase();
+  });
+
+  it('should be defined', () => {
+    expect(service).toBeDefined();
+  });
+
   describe('findAll', () => {
-    it('should call prisma to get all devices with sensors', async () => {
-      await service.findAll();
-
-      expect(prismaMock.device.findMany).toHaveBeenCalled();
-    });
-
     it('should return found devices', async () => {
-      const expectedDevices = [{ id: 'aaa', name: 'bb bcccddd' } as Device];
-      prismaMock.device.findMany.mockResolvedValue(expectedDevices);
+      const expectedDevice1 = await createDeviceInDb(
+        deviceModel,
+        mockDeviceOnline,
+      );
+      const expectedDevice2 = await createDeviceInDb(
+        deviceModel,
+        mockDeviceOffline,
+      );
 
       const receivedDevices = await service.findAll();
 
-      expect(receivedDevices).toEqual(expectedDevices);
+      expect(receivedDevices).toEqual([expectedDevice1, expectedDevice2]);
     });
 
     it('should return error from prisma client', async () => {
-      prismaMock.device.findMany.mockRejectedValue(new Error('db error'));
+      await createDeviceInDb(deviceModel, mockDeviceOnline);
+      await closeDatabase();
 
-      await expect(service.findAll()).rejects.toEqual(new Error('db error'));
+      const response = await service.findAll();
+
+      await expect(response).toEqual([]);
     });
   });
 
   describe('findById', () => {
-    it('should call prisma get single record by deviceId', async () => {
-      await service.findById('aaa');
-
-      expect(prismaMock.device.findUnique).toHaveBeenCalledWith({
-        where: {
-          id: 'aaa',
-        },
-      });
-    });
-
     it('should return found device', async () => {
-      const expectedDevice = { id: 'aaa', name: 'bb bcccddd' } as Device;
-      prismaMock.device.findUnique.mockResolvedValue(expectedDevice);
+      const expectedDevice = await createDeviceInDb(
+        deviceModel,
+        mockDeviceOffline,
+      );
+      await createDeviceInDb(deviceModel, mockDeviceOnline);
 
-      const device = await service.findById('aaa');
-
-      expect(device).toEqual(expectedDevice);
-    });
-
-    it('should return null if device was not found', async () => {
-      const expectedDevice = null;
-      prismaMock.device.findUnique.mockResolvedValue(expectedDevice);
-
-      const device = await service.findById('aaa');
+      const device = await service.findById(mockDeviceOffline.id);
 
       expect(device).toEqual(expectedDevice);
     });
 
-    it('should return error in case of prisma error', async () => {
-      prismaMock.device.findUnique.mockRejectedValue('bad');
+    it('should return NotFoundException if device was not found', async () => {
+      await createDeviceInDb(deviceModel, mockDeviceOnline);
 
-      try {
-        await service.findById('aaa');
-        fail();
-      } catch (error) {
-        expect(error).toEqual('bad');
-      }
+      await expect(service.findById(mockDeviceOffline.id)).rejects.toEqual(
+        new NotFoundException('Device not found'),
+      );
+    });
+
+    it('should return InternalServerErrorException in case of error', async () => {
+      await closeDatabase();
+
+      await expect(service.findById('aaa')).rejects.toEqual(
+        new InternalServerErrorException(
+          'Client must be connected before running operations',
+        ),
+      );
     });
   });
 
   describe('update', () => {
     it('should return NotFoundException when no device found', async () => {
-      prismaMock.device.findUnique.mockResolvedValue(null);
-
       await expect(service.update('aaa', 'bbb', 'ccc')).rejects.toEqual(
         new NotFoundException('Device not found'),
       );
     });
 
     it('should save updated device to database', async () => {
-      const dbDevice = { id: 'aaa', name: 'old name', notes: null } as Device;
       const newDevice = {
-        id: 'aaa',
+        ...(await createDeviceInDb(deviceModel, mockDeviceOffline))?.toObject(),
         name: 'new name',
         notes: 'my notes',
-      } as Device;
-      prismaMock.device.findUnique.mockResolvedValue(dbDevice);
-      const { id: _id, ...newDeviceUpdate } = newDevice;
+      };
 
-      await service.update('aaa', 'new name', 'my notes');
+      await service.update('ddd', 'new name', 'my notes');
 
-      expect(prismaMock.device.upsert).toHaveBeenCalledWith({
-        where: {
-          id: 'aaa',
-        },
-        update: newDeviceUpdate,
-        create: newDevice,
-      });
-    });
+      const dbDevice = (
+        await deviceModel.findOne({ id: mockDeviceOffline.id }).exec()
+      )?.toObject();
 
-    it('should return internal server error when save has an error', async () => {
-      const dbDevice = { id: 'aaa', name: 'old name', notes: null } as Device;
-      prismaMock.device.findUnique.mockResolvedValue(dbDevice);
-      prismaMock.device.upsert.mockRejectedValue(new Error('Save error'));
-
-      await expect(
-        service.update('aaa', 'new name', 'my notes'),
-      ).rejects.toEqual(new InternalServerErrorException('Save error'));
+      expect(dbDevice).toBeDefined();
+      expect(dbDevice).toEqual(newDevice);
     });
 
     it('should call ParticleService to update name and notes', async () => {
-      const dbDevice = { id: 'aaa', name: 'old name', notes: null } as Device;
-      prismaMock.device.findUnique.mockResolvedValue(dbDevice);
-      prismaMock.device.upsert.mockResolvedValue(dbDevice);
+      await createDeviceInDb(deviceModel, mockDeviceOnline);
 
-      await service.update('aaa', 'new name', 'my notes');
+      await service.update(mockDeviceOnline.id, 'new name', 'my notes');
 
       expect(mockParticleService.updateDevice).toHaveBeenCalledWith(
-        'aaa',
+        mockDeviceOnline.id,
         'new name',
         'my notes',
       );
     });
 
     it('should return internal server error when particle update fails', async () => {
-      const dbDevice = { id: 'aaa', name: 'old name', notes: null } as Device;
-      prismaMock.device.findUnique.mockResolvedValue(dbDevice);
-      prismaMock.device.upsert.mockResolvedValue(dbDevice);
+      await createDeviceInDb(deviceModel, mockDeviceOnline);
+
       mockParticleService.updateDevice.mockResolvedValue({
         isSuccessful: false,
         errorCode: 403,
@@ -177,7 +189,7 @@ describe('DevicesService', () => {
       });
 
       await expect(
-        service.update('aaa', 'new name', 'my notes'),
+        service.update(mockDeviceOnline.id, 'new name', 'my notes'),
       ).rejects.toEqual(
         new InternalServerErrorException('403: Particle device update failed'),
       );
@@ -185,118 +197,90 @@ describe('DevicesService', () => {
   });
 
   describe('save', () => {
-    it('should call prisma tp upsert a device', async () => {
-      const expectedDevice = { id: 'aaa', name: 'bb bcccddd' } as Device;
-      const { id: _, ...expectedDeviceUpdate } = expectedDevice;
+    it('should call save new device if not already in database', async () => {
+      const expectedDevice = { ...mockDeviceOnline };
 
       await service.save(expectedDevice);
 
-      expect(prismaMock.device.upsert).toHaveBeenCalledWith({
-        where: {
-          id: 'aaa',
-        },
-        update: expectedDeviceUpdate,
-        create: expectedDevice,
-      });
+      const dbDevice = (
+        await deviceModel.findOne({ id: mockDeviceOnline.id }).exec()
+      )?.toObject();
+
+      expect(dbDevice).toBeDefined();
+      expect(dbDevice).toMatchObject(mockDeviceOnline);
     });
 
-    it('should return error in case of prisma error', async () => {
-      const expectedDevice = { id: 'aaa', name: 'bb bcccddd' } as Device;
-      prismaMock.device.upsert.mockRejectedValue('bad');
+    it('should call update device if already in database', async () => {
+      const expectedDevice = { ...mockDeviceOnline };
+      await createDeviceInDb(deviceModel, expectedDevice);
+      expectedDevice.name = 'new device name';
 
-      try {
-        await service.save(expectedDevice);
-        fail();
-      } catch (error) {
-        expect(error).toEqual('bad');
-      }
+      await service.save(expectedDevice);
+
+      const dbDevice = (
+        await deviceModel.findOne({ id: expectedDevice.id }).exec()
+      )?.toObject();
+
+      expect(dbDevice).toBeDefined();
+      expect(dbDevice).toMatchObject(expectedDevice);
+    });
+
+    it('should return error in case of database error', async () => {
+      await closeDatabase();
+
+      await expect(service.save(mockDeviceOnline)).rejects.toEqual(
+        new InternalServerErrorException(
+          'Client must be connected before running operations',
+        ),
+      );
     });
   });
 
   describe('addConnectedDeviceWithConnectStatus', () => {
-    it('should find the device', async () => {
+    it('should return NotFoundException if device top update was not found', async () => {
       const expectedConnectedDevice = {
         type: ConnectedDeviceType.ACTUATOR_DIGITAL,
       } as ConnectedDevice;
 
-      await service.addConnectedDeviceWithConnectStatus(
-        'bbb',
-        expectedConnectedDevice,
-      );
-
-      expect(prismaMock.device.findUnique).toHaveBeenCalledWith({
-        where: { id: 'bbb' },
-      });
-    });
-
-    it('should not save document in case device not found', async () => {
-      prismaMock.device.findUnique.mockResolvedValue(null);
-
-      await service.addConnectedDeviceWithConnectStatus(
-        'bbb',
-        newConnectedDevice,
-      );
-
-      expect(prismaMock.device.upsert).not.toHaveBeenCalled();
+      await expect(
+        service.addConnectedDeviceWithConnectStatus(
+          'bbb',
+          expectedConnectedDevice,
+        ),
+      ).rejects.toEqual(new NotFoundException('Device not found'));
     });
 
     it('should add new connected device to device and save it', async () => {
-      prismaMock.device.findUnique.mockResolvedValue(
-        deviceWithNoConnectedDevice,
-      );
-      const { id: _, ...expectedDeviceWithNewConnectedDeviceUpdate } =
-        expectedDeviceWithNewConnectedDevice;
+      await createDeviceInDb(deviceModel, mockDeviceOffline);
 
       await service.addConnectedDeviceWithConnectStatus(
-        'bbb',
+        'ddd',
         newConnectedDevice,
       );
 
-      expect(prismaMock.device.upsert).toHaveBeenCalledWith({
-        where: {
-          id: expectedDeviceWithNewConnectedDevice.id,
-        },
-        update: expectedDeviceWithNewConnectedDeviceUpdate,
-        create: expectedDeviceWithNewConnectedDevice,
-      });
-    });
+      const dbDevice = (
+        await deviceModel.findOne({ id: mockDeviceOffline.id })
+      )?.toObject();
 
-    it('should return error from find device', async () => {
-      prismaMock.device.findUnique.mockRejectedValue('findUnique error');
-
-      try {
-        await service.addConnectedDeviceWithConnectStatus(
-          'bbb',
-          newConnectedDevice,
-        );
-        fail();
-      } catch (error) {
-        expect(error).toEqual('findUnique error');
-      }
+      expect(dbDevice?.connectedDevices).toEqual([newConnectedDevice]);
     });
 
     it('should return error from upsert', async () => {
-      prismaMock.device.findUnique.mockResolvedValue(
-        deviceWithNoConnectedDevice,
-      );
-      prismaMock.device.upsert.mockRejectedValue('upsert error');
+      await createDeviceInDb(deviceModel, mockDeviceOffline);
 
-      try {
-        await service.addConnectedDeviceWithConnectStatus(
-          'bbb',
-          newConnectedDevice,
-        );
-        fail();
-      } catch (error) {
-        expect(error).toEqual('upsert error');
-      }
+      const doc = { exec: jest.fn() };
+      doc.exec.mockRejectedValue(new Error('update error'));
+      const findOneAndUpdateSpy = jest.spyOn(deviceModel, 'findOneAndUpdate');
+      findOneAndUpdateSpy.mockReturnValue(doc as any);
+
+      await expect(
+        service.addConnectedDeviceWithConnectStatus('ddd', newConnectedDevice),
+      ).rejects.toEqual(new InternalServerErrorException('update error'));
     });
   });
 
   describe('updateConnectedDeviceWithNameAndOffset', () => {
     it('should return not found exception when device was not found', async () => {
-      prismaMock.device.findUnique.mockResolvedValue(null);
-
       await expect(
         service.updateConnectedDeviceWithNameAndOffset(
           'aaa',
@@ -309,13 +293,11 @@ describe('DevicesService', () => {
     });
 
     it('should return not found exception when connected device was not found', async () => {
-      prismaMock.device.findUnique.mockResolvedValue(
-        deviceWithNoConnectedDevice,
-      );
+      await createDeviceInDb(deviceModel, mockDeviceOffline);
 
       await expect(
         service.updateConnectedDeviceWithNameAndOffset(
-          'bbb',
+          'ddd',
           17,
           '000000',
           'new sensor name',
@@ -325,52 +307,51 @@ describe('DevicesService', () => {
     });
 
     it('should save updated device to database', async () => {
-      prismaMock.device.findUnique.mockResolvedValue(
-        deviceWithConnectedDeviceDb,
-      );
-      const { id: _, ...expectedDeviceWithConnectedDeviceDbUpdate } =
-        expectedDeviceWithConnectedDeviceDb;
+      await createDeviceInDb(deviceModel, mockDeviceOfflineWithConnectedDevice);
 
       await service.updateConnectedDeviceWithNameAndOffset(
-        'bbb',
+        'ddd',
         18,
         '000000000000',
         'new sensor name',
         0.8,
       );
 
-      expect(prismaMock.device.upsert).toHaveBeenCalledWith({
-        where: {
-          id: 'bbb',
-        },
-        update: expectedDeviceWithConnectedDeviceDbUpdate,
-        create: expectedDeviceWithConnectedDeviceDb,
-      });
+      const dbDevice = (
+        await deviceModel
+          .findOne({
+            id: mockDeviceOfflineWithConnectedDevice.id,
+          })
+          .exec()
+      )?.toObject();
+
+      expect(dbDevice?.connectedDevices[0].name).toEqual('new sensor name');
+      expect(dbDevice?.connectedDevices[0].offset).toEqual(0.8);
     });
 
     it('should return updated device', async () => {
-      prismaMock.device.findUnique.mockResolvedValue(
-        deviceWithConnectedDeviceDb,
-      );
+      await createDeviceInDb(deviceModel, mockDeviceOfflineWithConnectedDevice);
 
       const device = await service.updateConnectedDeviceWithNameAndOffset(
-        'bbb',
+        'ddd',
         18,
         '000000000000',
         'new sensor name',
         0.8,
       );
+      const updatedConnectedDevice = device?.toObject()?.connectedDevices[0];
 
-      expect(device).toEqual(expectedDeviceWithConnectedDeviceDb);
+      expect(updatedConnectedDevice).toMatchObject({
+        name: 'new sensor name',
+        offset: 0.8,
+      });
     });
 
     it('should send offset to Particle if device is online and sensor connected', async () => {
-      prismaMock.device.findUnique.mockResolvedValue(
-        expectedDeviceWithConnectedDeviceDbOnline,
-      );
+      await createDeviceInDb(deviceModel, mockDeviceOnlineWithConnectedDevice);
 
       await service.updateConnectedDeviceWithNameAndOffset(
-        'bbb',
+        'ccc',
         18,
         '000000000000',
         'new sensor name',
@@ -379,16 +360,14 @@ describe('DevicesService', () => {
 
       expect(
         mockParticleService.updateConnectedDeviceOffset,
-      ).toHaveBeenCalledWith('bbb', 18, '000000000000', 0.8);
+      ).toHaveBeenCalledWith('ccc', 18, '000000000000', 0.8);
     });
 
     it('should not send offset if device is not online', async () => {
-      prismaMock.device.findUnique.mockResolvedValue(
-        deviceWithConnectedDeviceDb,
-      );
+      await createDeviceInDb(deviceModel, mockDeviceOfflineWithConnectedDevice);
 
       await service.updateConnectedDeviceWithNameAndOffset(
-        'bbb',
+        'ddd',
         18,
         '000000000000',
         'new sensor name',
@@ -401,9 +380,7 @@ describe('DevicesService', () => {
     });
 
     it('should return 5xx error if offset to to device fails', async () => {
-      prismaMock.device.findUnique.mockResolvedValue(
-        expectedDeviceWithConnectedDeviceDbOnline,
-      );
+      await createDeviceInDb(deviceModel, mockDeviceOnlineWithConnectedDevice);
       mockParticleService.updateConnectedDeviceOffset.mockResolvedValue({
         isSuccessful: false,
         errorCode: 403,
@@ -412,7 +389,7 @@ describe('DevicesService', () => {
 
       await expect(
         service.updateConnectedDeviceWithNameAndOffset(
-          'bbb',
+          'ccc',
           18,
           '000000000000',
           'new sensor name',
@@ -425,108 +402,91 @@ describe('DevicesService', () => {
   });
 
   describe('updateConnectedDeviceWithConnectStatus', () => {
-    it('should find the device', async () => {
-      const expectedConnectedDevice = {
-        type: ConnectedDeviceType.ACTUATOR_DIGITAL,
-      } as ConnectedDevice;
-
-      await service.updateConnectedDeviceWithConnectStatus(
-        'bbb',
-        expectedConnectedDevice,
-        true,
-      );
-
-      expect(prismaMock.device.findUnique).toHaveBeenCalledWith({
-        where: { id: 'bbb' },
-      });
-    });
-
-    it('should not save document in case device not found', async () => {
-      prismaMock.device.findUnique.mockResolvedValue(null);
-
-      await service.updateConnectedDeviceWithConnectStatus(
-        'bbb',
-        newConnectedDevice,
-        true,
-      );
-
-      expect(prismaMock.device.upsert).not.toHaveBeenCalled();
+    it('should return Not Found exceotion if device is not found', async () => {
+      await expect(
+        service.updateConnectedDeviceWithConnectStatus(
+          'bbb',
+          {} as ConnectedDevice,
+          true,
+        ),
+      ).rejects.toEqual(new NotFoundException('Device not found'));
     });
 
     it('should mark connected device as connected device and save it', async () => {
-      prismaMock.device.findUnique.mockResolvedValue(
-        deviceWithConnectedDevicesDisconnect,
-      );
-      const { id: _, ...expectedDeviceWithConnectedDeviceConnectedUpdate } =
-        expectedDeviceWithConnectedDeviceConnected;
+      await createDeviceInDb(deviceModel, mockDeviceOffline);
+      const expectedConnectedDevice = {
+        ...newConnectedDevice,
+        connected: true,
+      };
 
       await service.updateConnectedDeviceWithConnectStatus(
-        'bbb',
+        'ddd',
         newConnectedDevice,
         true,
       );
 
-      expect(prismaMock.device.upsert).toHaveBeenCalledWith({
-        where: {
-          id: expectedDeviceWithConnectedDeviceConnected.id,
-        },
-        update: expectedDeviceWithConnectedDeviceConnectedUpdate,
-        create: expectedDeviceWithConnectedDeviceConnected,
-      });
+      const dbDevice = await deviceModel
+        .findOne({ id: mockDeviceOffline.id })
+        .exec();
+
+      expect(dbDevice?.connectedDevices[0]).toMatchObject(
+        expectedConnectedDevice,
+      );
     });
 
     it('should mark connected device as disconnected device and save it', async () => {
-      prismaMock.device.findUnique.mockResolvedValue(
-        deviceWithConnectedDevicesConnected,
+      await createDeviceInDb(
+        deviceModel,
+        mockDeviceOfflineWithConnectedDeviceConnected,
       );
-      const { id: _, ...expectedDeviceWithConnectedDeviceDisconnectedUpdate } =
-        expectedDeviceWithConnectedDeviceDisconnected;
 
       await service.updateConnectedDeviceWithConnectStatus(
-        'bbb',
-        newConnectedDevice,
+        'ddd',
+        mockDeviceOfflineWithConnectedDeviceConnected.connectedDevices[0],
         false,
       );
 
-      expect(prismaMock.device.upsert).toHaveBeenCalledWith({
-        where: {
-          id: expectedDeviceWithConnectedDeviceDisconnected.id,
-        },
-        update: expectedDeviceWithConnectedDeviceDisconnectedUpdate,
-        create: expectedDeviceWithConnectedDeviceDisconnected,
-      });
+      const dbDevice = await deviceModel
+        .findOne({
+          id: mockDeviceOfflineWithConnectedDeviceConnected.id,
+        })
+        .exec();
+
+      expect(dbDevice?.connectedDevices[0].connected).toBeFalse();
     });
 
     it('should return error from find device', async () => {
-      prismaMock.device.findUnique.mockRejectedValue('findUnique error');
+      await closeDatabase();
 
-      try {
-        await service.updateConnectedDeviceWithConnectStatus(
-          'bbb',
-          newConnectedDevice,
-          true,
-        );
-        fail();
-      } catch (error) {
-        expect(error).toEqual('findUnique error');
-      }
+      const response = { exec: jest.fn().mockRejectedValue('find error') };
+      jest.spyOn(deviceModel, 'findOne').mockReturnValue(response as any);
+
+      await expect(
+        service.updateConnectedDeviceWithConnectStatus(
+          'ddd',
+          mockDeviceOfflineWithConnectedDeviceConnected.connectedDevices[0],
+          false,
+        ),
+      ).rejects.toEqual(new InternalServerErrorException('find error'));
     });
 
     it('should return error from upsert', async () => {
-      prismaMock.device.findUnique.mockResolvedValue(
-        deviceWithNoConnectedDevice,
-      );
-      prismaMock.device.upsert.mockRejectedValue('upsert error');
+      await createDeviceInDb(deviceModel, mockDeviceOfflineWithConnectedDevice);
+
+      const response = { exec: jest.fn().mockRejectedValue('update error') };
+      jest
+        .spyOn(deviceModel, 'findOneAndUpdate')
+        .mockReturnValue(response as any);
 
       try {
         await service.updateConnectedDeviceWithConnectStatus(
-          'bbb',
+          'ddd',
           newConnectedDevice,
           true,
         );
         fail();
       } catch (error) {
-        expect(error).toEqual('upsert error');
+        expect(error).toEqual(new InternalServerErrorException('update error'));
       }
     });
   });
@@ -560,7 +520,7 @@ describe('DevicesService', () => {
   describe('findConnectedDeviceFromDevice', () => {
     it('should return connected device of device', () => {
       const cDevice = service.findConnectedDeviceFromDevice(
-        deviceWithConnectedDevicesConnected,
+        mockDeviceWithConnectedDevicesConnected,
         12,
         '000000000000',
       );
@@ -570,7 +530,7 @@ describe('DevicesService', () => {
 
     it('should return null if connected device was not found', () => {
       const cDevice = service.findConnectedDeviceFromDevice(
-        deviceWithConnectedDevicesConnected,
+        mockDeviceWithConnectedDevicesConnected,
         2,
         '00000000',
       );
@@ -579,111 +539,3 @@ describe('DevicesService', () => {
     });
   });
 });
-
-const newConnectedDevice = ConnectedDeviceHelper.parseData({
-  type: ConnectedDeviceType.ACTUATOR_DIGITAL,
-  pinNr: 11,
-  hwAddress: '000000000000',
-  name: undefined,
-  offset: 0.0,
-  deviceOffset: 0.0,
-  connected: false,
-});
-
-const secondConnectedDevice = ConnectedDeviceHelper.parseData({
-  type: ConnectedDeviceType.ACTUATOR_DIGITAL,
-  pinNr: 12,
-  hwAddress: '000000000000',
-  name: undefined,
-  offset: 0.0,
-  deviceOffset: 0.0,
-  connected: false,
-});
-
-const deviceWithNoConnectedDevice = {
-  id: 'bbb',
-  connectedDevices: [] as ConnectedDevice[],
-} as Device;
-
-const deviceWithConnectedDevicesDisconnect = {
-  id: 'bbb',
-  connectedDevices: [{ ...secondConnectedDevice }, { ...newConnectedDevice }],
-} as Device;
-
-const deviceWithConnectedDevicesConnected = {
-  id: 'bbb',
-  connectedDevices: [
-    { ...secondConnectedDevice },
-    { ...newConnectedDevice, connected: true },
-  ],
-} as Device;
-
-const expectedDeviceWithNewConnectedDevice = {
-  id: 'bbb',
-  connectedDevices: [
-    {
-      ...newConnectedDevice,
-      connected: true,
-    },
-  ],
-} as Device;
-
-const expectedDeviceWithConnectedDeviceConnected = {
-  id: 'bbb',
-  connectedDevices: [
-    { ...secondConnectedDevice },
-    {
-      ...newConnectedDevice,
-      connected: true,
-    },
-  ],
-} as Device;
-
-const expectedDeviceWithConnectedDeviceDisconnected = {
-  id: 'bbb',
-  connectedDevices: [
-    { ...secondConnectedDevice },
-    {
-      ...newConnectedDevice,
-      connected: false,
-    },
-  ],
-} as Device;
-
-const dbConnectedDevice = {
-  type: ConnectedDeviceType.ACTUATOR_DIGITAL,
-  pinNr: 18,
-  hwAddress: '000000000000',
-  name: null,
-  offset: 0.0,
-  deviceOffset: 0.0,
-  connected: false,
-} as ConnectedDevice;
-
-const dbConnectedDeviceUpdated = {
-  type: ConnectedDeviceType.ACTUATOR_DIGITAL,
-  pinNr: 18,
-  hwAddress: '000000000000',
-  name: 'new sensor name',
-  offset: 0.8,
-  deviceOffset: 0.0,
-  connected: false,
-} as ConnectedDevice;
-
-const deviceWithConnectedDeviceDb = {
-  id: 'bbb',
-  online: false,
-  connectedDevices: [dbConnectedDevice],
-} as Device;
-
-const expectedDeviceWithConnectedDeviceDb = {
-  id: 'bbb',
-  online: false,
-  connectedDevices: [dbConnectedDeviceUpdated],
-} as Device;
-
-const expectedDeviceWithConnectedDeviceDbOnline = {
-  id: 'bbb',
-  online: true,
-  connectedDevices: [dbConnectedDeviceUpdated],
-} as Device;

@@ -6,7 +6,8 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { User } from '@prisma/client';
+
+import { User } from '../users/schemas';
 import { AuthService } from './auth.service';
 import { GetRequestUser, GetRequestUserId, Public } from './decorators';
 import { AuthDto, OtpDto } from './dtos';

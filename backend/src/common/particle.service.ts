@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Device } from '@prisma/client';
+
 import { parseJSON } from 'date-fns';
 import * as Particle from 'particle-api-js';
 import {
@@ -14,7 +14,9 @@ import {
   switchMap,
   tap,
 } from 'rxjs';
-import { EventData } from 'src/devices/types';
+
+import { Device } from '../devices/schemas';
+import { EventData } from '../devices/types';
 import { TokenInfo, UpdateResponse } from './types';
 
 @Injectable()
@@ -66,10 +68,11 @@ export class ParticleService {
         return of([]);
       }),
       tap({
-        next: (devices) =>
+        next: (devices) => {
           this.logger.log(
             `Retrieved ${devices.length} devices from Particle Cloud`,
-          ),
+          );
+        },
       }),
     );
 
@@ -118,7 +121,7 @@ export class ParticleService {
     deviceId: string,
     pinNr: number,
     hwAddress: string,
-    offset: number | null,
+    offset?: number,
   ): Promise<UpdateResponse> {
     const data = {
       command: 1,

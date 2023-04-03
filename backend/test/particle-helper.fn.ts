@@ -1,6 +1,7 @@
-import { ConnectedDevice, Device } from '@prisma/client';
 import * as Particle from 'particle-api-js';
+
 import { ConnectedDeviceHelper } from '../src/devices/helpers';
+import { ConnectedDevice, Device } from '../src/devices/schemas';
 
 declare const process: any;
 let particle: Particle;

@@ -1,15 +1,16 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { ConnectedDeviceType, Device } from '@prisma/client';
+import { Test } from '@nestjs/testing';
+
 import { Subject } from 'rxjs';
+
 import { sleep } from '../../test/helper.fn';
 import { ParticleService } from '../common/particle.service';
 import { DevicesEventListener } from './devices-event.listener';
 import { DevicesService } from './devices.service';
 import { ConnectedDeviceHelper } from './helpers';
-import { EventData } from './types';
+import { Device } from './schemas';
+import { ConnectedDeviceType, EventData } from './types';
 
 describe('DevicesEventListener', () => {
-  let module: TestingModule;
   let listener: DevicesEventListener;
 
   let mockEventStream = new Subject<EventData>();
@@ -30,7 +31,7 @@ describe('DevicesEventListener', () => {
   };
 
   beforeEach(async () => {
-    module = await Test.createTestingModule({
+    const module = await Test.createTestingModule({
       providers: [DevicesEventListener, ParticleService, DevicesService],
     })
       .overrideProvider(ParticleService)
@@ -44,8 +45,6 @@ describe('DevicesEventListener', () => {
     mockParticleService.eventStream.mockClear();
     mockParticleService.updateConnectedDeviceOffset.mockClear();
   });
-
-  afterAll(async () => await module.close());
 
   describe('onApplicationBootstrap', () => {
     it('should start listening to particle event stream', () => {

@@ -1,6 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
+
 import { parseJSON } from 'date-fns';
 import * as Particle from 'particle-api-js';
+
 import { ParticleService } from './particle.service';
 
 describe('ParticleService', () => {

@@ -3,41 +3,57 @@ import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { faker } from '@faker-js/faker';
-import { User } from '@prisma/client';
 import * as argon2 from 'argon2';
 import 'jest-extended';
+import { Model } from 'mongoose';
 import * as request from 'supertest';
+
 import {
-  createDevice,
-  createUser,
-  deviceMockInDatabaseOfflineExpected,
-  deviceMockInDatabaseOnlineExpected,
-  findDeviceById,
-  updateUser,
+  closeDatabaseE2E,
+  connectDatabaseE2E,
+  getDeviceModel,
+  getUserModel,
 } from '../../test/db-helper.fn';
 import {
   createAccessToken,
   createRefreshToken,
   sleep,
+  TestingLogger,
 } from '../../test/helper.fn';
 import { getParticleDevice } from '../../test/particle-helper.fn';
 import { AppModule } from '../app.module';
 import { ARGON_OPTIONS } from '../constants';
-import { PrismaService } from '../prisma/prisma.service';
+import { User } from '../users/schemas';
+import { createUserInDb } from '../users/tests/users-helper.mock';
+import { Device } from './schemas';
+import { createDeviceInDb, createDevices } from './tests/devices-helper.mock';
+import {
+  expectedDevice1,
+  expectedDevice2,
+  expectedDeviceDatabaseOffline,
+  expectedDeviceDatabaseOnline,
+  mockDeviceWithConnectedDevicesConnected,
+} from './tests/devices.mock';
 
 describe('DevicesController (e2e)', () => {
   let app: INestApplication;
-  let prisma: PrismaService;
   let jwt: JwtService;
-  let user: User | null;
   let refreshToken: string;
   let hashedRt: string;
   let validAccessToken: string;
+  let userModel: Model<User>;
+  let deviceModel: Model<Device>;
 
   beforeAll(async () => {
+    await connectDatabaseE2E();
+    userModel = getUserModel();
+    deviceModel = getDeviceModel();
+
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      .setLogger(new TestingLogger())
+      .compile();
 
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(
@@ -47,7 +63,6 @@ describe('DevicesController (e2e)', () => {
     );
     await app.init();
 
-    prisma = moduleFixture.get<PrismaService>(PrismaService);
     jwt = moduleFixture.get<JwtService>(JwtService);
 
     await prepareUserInDb();
@@ -56,22 +71,32 @@ describe('DevicesController (e2e)', () => {
   });
 
   const prepareUserInDb = async () => {
-    user = await createUser(prisma, true);
-    refreshToken = await createRefreshToken(jwt, user?.id, user?.email);
+    const userDocument = await createUserInDb(userModel, true);
+    refreshToken = await createRefreshToken(
+      jwt,
+      userDocument?.id,
+      userDocument?.email,
+    );
     hashedRt = await argon2.hash(refreshToken, ARGON_OPTIONS);
-    await updateUser(prisma, user?.id, { hashedRt });
-    validAccessToken = await createAccessToken(jwt, user?.id, user?.email);
+
+    if (userDocument) {
+      userDocument.hashedRt = hashedRt;
+      await userDocument.save();
+    }
+
+    validAccessToken = await createAccessToken(
+      jwt,
+      userDocument?.id,
+      userDocument?.email,
+    );
   };
 
   const prepareDeviceInDb = async () => {
-    await createDevice(prisma);
+    await createDevices(deviceModel);
   };
 
   afterAll(async () => {
-    const deleteUsers = prisma.client.user.deleteMany();
-    const deleteDevices = prisma.client.device.deleteMany();
-    await prisma.client.$transaction([deleteUsers, deleteDevices]);
-
+    await closeDatabaseE2E();
     await app.close();
   });
 
@@ -88,19 +113,30 @@ describe('DevicesController (e2e)', () => {
 
       expect(response.body).toBeArrayOfSize(4);
       expect(response.body).toIncludeAllMembers([
+        expectedDeviceDatabaseOffline,
+        expectedDeviceDatabaseOnline,
         expectedDevice1,
         expectedDevice2,
-        deviceMockInDatabaseOfflineExpected,
-        deviceMockInDatabaseOnlineExpected,
       ]);
     });
   });
 
   describe('POST /devices/{id}/{hwAddress}/{pinNr}', () => {
+    beforeEach(async () => {
+      await createDeviceInDb(
+        deviceModel,
+        mockDeviceWithConnectedDevicesConnected,
+      );
+    });
+
+    afterEach(async () => {
+      deviceModel.deleteOne({ id: 'bbb' });
+    });
+
     it('should return not authenticated if no valid token provided', () => {
       const deviceId = 'bbb';
       return request(app.getHttpServer())
-        .post(`/devices/${deviceId}/0000000000000000/17`)
+        .post(`/devices/${deviceId}/000000000000/11`)
         .send({})
         .expect(401);
     });
@@ -108,7 +144,7 @@ describe('DevicesController (e2e)', () => {
     it('should return not found when pinNr missing', () => {
       const deviceId = 'bbb';
       return request(app.getHttpServer())
-        .post(`/devices/${deviceId}/0000000000000000`)
+        .post(`/devices/${deviceId}/000000000000`)
         .send({})
         .expect(404);
     });
@@ -116,7 +152,7 @@ describe('DevicesController (e2e)', () => {
     it('should return bad request when name is empty', async () => {
       const deviceId = 'bbb';
       return request(app.getHttpServer())
-        .post(`/devices/${deviceId}/00000000/8`)
+        .post(`/devices/${deviceId}/000000000000/11`)
         .set('Authorization', `Bearer ${validAccessToken}`)
         .send({
           name: '',
@@ -128,7 +164,7 @@ describe('DevicesController (e2e)', () => {
     it('should return bad request when offset is missing', async () => {
       const deviceId = 'bbb';
       return request(app.getHttpServer())
-        .post(`/devices/${deviceId}/00000000/8`)
+        .post(`/devices/${deviceId}/000000000000/11`)
         .set('Authorization', `Bearer ${validAccessToken}`)
         .send({
           name: 'sensor name',
@@ -139,7 +175,7 @@ describe('DevicesController (e2e)', () => {
     it('should return ok when offset is 0', async () => {
       const deviceId = 'bbb';
       const response = await request(app.getHttpServer())
-        .post(`/devices/${deviceId}/00000000/8`)
+        .post(`/devices/${deviceId}/000000000000/11`)
         .set('Authorization', `Bearer ${validAccessToken}`)
         .send({
           name: 'sensor name',
@@ -151,7 +187,7 @@ describe('DevicesController (e2e)', () => {
 
     it('should return not found device not found in database', async () => {
       return request(app.getHttpServer())
-        .post(`/devices/unknown/00000000/8`)
+        .post(`/devices/unknown/000000000000/11`)
         .set('Authorization', `Bearer ${validAccessToken}`)
         .send({
           name: 'sensor name',
@@ -163,7 +199,7 @@ describe('DevicesController (e2e)', () => {
     it('should return not found sensor not found in database', async () => {
       const deviceId = 'bbb';
       return request(app.getHttpServer())
-        .post(`/devices/${deviceId}/00000000/3`)
+        .post(`/devices/${deviceId}/000000000000/3`)
         .set('Authorization', `Bearer ${validAccessToken}`)
         .send({
           name: 'sensor name',
@@ -175,7 +211,7 @@ describe('DevicesController (e2e)', () => {
     it('should return ok when offset is set on offline device', async () => {
       const deviceId = 'bbb';
       return request(app.getHttpServer())
-        .post(`/devices/${deviceId}/00000000/8`)
+        .post(`/devices/${deviceId}/000000000000/11`)
         .set('Authorization', `Bearer ${validAccessToken}`)
         .send({
           name: 'sensor name',
@@ -310,11 +346,14 @@ describe('DevicesController (e2e)', () => {
           name,
           notes,
         });
-      const device = await findDeviceById(prisma, expectedDevice2.id);
+
+      const deviceDb = await deviceModel
+        .findOne({ id: expectedDevice2.id })
+        .exec();
 
       expect(response.statusCode).toEqual(200);
-      expect(device?.name).toEqual(name);
-      expect(device?.notes).toEqual(notes);
+      expect(deviceDb?.name).toEqual(name);
+      expect(deviceDb?.notes).toEqual(notes);
     });
 
     it('should update name and notes in ParticleIO', async () => {
@@ -337,9 +376,8 @@ describe('DevicesController (e2e)', () => {
 
   describe('PUT /devices/refresh', () => {
     beforeEach(async () => {
-      const deleteDevices = prisma.client.device.deleteMany();
-      await prisma.client.$transaction([deleteDevices]);
-      const deviceCount = await prisma.client.device.count();
+      await deviceModel.deleteMany().exec();
+      const deviceCount = await deviceModel.count().exec();
 
       expect(deviceCount).toEqual(0);
     });
@@ -354,73 +392,11 @@ describe('DevicesController (e2e)', () => {
         .set('Authorization', `Bearer ${validAccessToken}`)
         .send();
       await sleep(9000);
-      const deviceCount = await prisma.client.device.count();
+
+      const deviceCount = await deviceModel.count().exec();
 
       expect(response.statusCode).toEqual(200);
       expect(deviceCount).toEqual(2);
     });
   });
 });
-
-const expectedDevice1 = {
-  cellular: false,
-  connected: expect.any(Boolean),
-  connectedDevices: expect.any(Array),
-  createdAt: expect.any(String),
-  current_build_target: '3.3.1',
-  default_build_target: '2.3.1',
-  firmwareVersion: expect.toBeOneOf([null, expect.anything()]),
-  firmware_updates_enabled: true,
-  firmware_updates_forced: false,
-  functions: ['setConfig'],
-  id: '3b003d000747343232363230',
-  last_handshake_at: expect.any(String),
-  last_heard: expect.any(String),
-  last_ip_address: expect.any(String),
-  name: expect.any(String),
-  notes: expect.nullOrAny(String),
-  online: expect.any(Boolean),
-  pinned_build_target: '2.1.0',
-  platform_id: 6,
-  product_id: 6,
-  serial_number: 'PH-150624-K34T-0',
-  shieldVersion: expect.toBeOneOf([null, expect.anything()]),
-  status: 'normal',
-  system_firmware_version: '3.3.1',
-  updatedAt: expect.any(String),
-  variables: {
-    Configurations: 'string',
-    Devices: 'string',
-    ShieldVersion: 'int32',
-    Version: 'string',
-  },
-};
-
-const expectedDevice2 = {
-  cellular: false,
-  connected: expect.any(Boolean),
-  connectedDevices: expect.any(Array),
-  createdAt: expect.any(String),
-  current_build_target: '2.1.0',
-  default_build_target: '2.3.1',
-  firmwareVersion: expect.toBeOneOf([null, expect.anything()]),
-  firmware_updates_enabled: true,
-  firmware_updates_forced: false,
-  functions: [],
-  id: '280025000447343232363230',
-  last_handshake_at: expect.any(String),
-  last_heard: expect.any(String),
-  last_ip_address: expect.any(String),
-  name: expect.any(String),
-  notes: expect.nullOrAny(String),
-  online: expect.any(Boolean),
-  pinned_build_target: null,
-  platform_id: 6,
-  product_id: 6,
-  serial_number: 'PH-150623-YC2D-0',
-  shieldVersion: expect.toBeOneOf([null, expect.anything()]),
-  status: 'normal',
-  system_firmware_version: '2.1.0',
-  updatedAt: expect.any(String),
-  variables: {},
-};

@@ -6,7 +6,11 @@ import {
   PATH_METADATA,
 } from '@nestjs/common/constants';
 import { Test, TestingModule } from '@nestjs/testing';
-import { createDbdUser, userDto } from '../../test/helper.fn';
+
+import {
+  createUserFromAuthDto,
+  userDto,
+} from '../users/tests/users-helper.mock';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { IS_PUBLIC_KEY } from './decorators';
@@ -173,7 +177,7 @@ describe('AuthController', () => {
     });
 
     it('should call auth service signin', async () => {
-      const user = await createDbdUser(userDto);
+      const user = await createUserFromAuthDto(userDto);
       const expectedTokens = {
         otpToken: 'otp',
         otpBarcode: undefined,

@@ -7,11 +7,13 @@ import {
 } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { User } from '@prisma/client';
+
 import * as argon2 from 'argon2';
 import { authenticator } from 'otplib';
 import * as qrcode from 'qrcode';
+
 import { ARGON_OPTIONS } from '../constants';
+import { User } from '../users/schemas';
 import { UsersService } from '../users/users.service';
 import jwtConfig from './config/jwt.config';
 import { AuthDto, OtpDto } from './dtos';
@@ -27,12 +29,15 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async validateUser(email: string, password: string): Promise<any> {
+  async validateUser(
+    email: string,
+    password: string,
+  ): Promise<User | undefined> {
     const user = await this.usersService.findByEmail(email);
 
     if (!user) {
       Logger.log('user not found');
-      return null;
+      return undefined;
     }
 
     const passwordMatches = await argon2.verify(
@@ -44,12 +49,10 @@ export class AuthService {
     Logger.log(`passwordMatches: ${passwordMatches}`);
 
     if (passwordMatches) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { hash, hashedRt, ...result } = user;
-      return result;
+      return user;
     }
 
-    return null;
+    return undefined;
   }
 
   async signup(dto: AuthDto): Promise<Tokens> {

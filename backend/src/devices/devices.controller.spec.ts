@@ -1,4 +1,4 @@
-import { getQueueToken } from '@nestjs/bull';
+import { BullModule, getQueueToken } from '@nestjs/bull';
 import {
   HttpException,
   HttpStatus,
@@ -13,12 +13,15 @@ import {
   PATH_METADATA,
 } from '@nestjs/common/constants';
 import { Test, TestingModule } from '@nestjs/testing';
-import { Device } from '@prisma/client';
+
 import { IS_PUBLIC_KEY } from '../auth/decorators';
+import { ParticleService } from '../common/particle.service';
+import { DevicesEventListener } from './devices-event.listener';
 import { DevicesController } from './devices.controller';
 import { DevicesModule } from './devices.module';
 import { DevicesService } from './devices.service';
 import { DeviceConnectedDeviceGuard, DeviceNameGuard } from './guards';
+import { Device } from './schemas';
 
 describe('DevicesController', () => {
   let module: TestingModule;
@@ -37,7 +40,13 @@ describe('DevicesController', () => {
     };
 
     module = await Test.createTestingModule({
-      imports: [DevicesModule],
+      controllers: [DevicesController],
+      imports: [
+        BullModule.registerQueue({
+          name: 'devices',
+        }),
+      ],
+      providers: [DevicesService],
     })
       .overrideProvider(getQueueToken('devices'))
       .useValue(mockDevicesQueue)
@@ -45,8 +54,6 @@ describe('DevicesController', () => {
       .useValue(mockDevicesService)
       .compile();
   });
-
-  afterAll(async () => await module.close());
 
   describe('onApplicationBootstrap', () => {
     it('should add queue devices.refresh', async () => {

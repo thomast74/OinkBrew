@@ -2,8 +2,13 @@ import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
+
 import { authenticator } from 'otplib';
-import { createDbdUser, userDto } from '../../test/helper.fn';
+
+import {
+  createUserFromAuthDto,
+  userDto,
+} from '../users/tests/users-helper.mock';
 import { UsersService } from '../users/users.service';
 import { AuthService } from './auth.service';
 import jwtConfig from './config/jwt.config';
@@ -59,20 +64,20 @@ describe('AuthService', () => {
     it('should return null if user not found', async () => {
       const response = await service.validateUser(userDto.email, '123456');
 
-      expect(response).toBe(null);
+      expect(response).toBeUndefined();
     });
 
     it('should return null if password does not match', async () => {
-      const dbUser = await createDbdUser(userDto);
+      const dbUser = await createUserFromAuthDto(userDto);
       (userService.findByEmail as jest.Mock).mockResolvedValue(dbUser);
 
       const response = await service.validateUser(userDto.email, '123456');
 
-      expect(response).toBe(null);
+      expect(response).toBeUndefined();
     });
 
     it('should return user if password matches', async () => {
-      const dbUser = await createDbdUser(userDto);
+      const dbUser = await createUserFromAuthDto(userDto);
       (userService.findByEmail as jest.Mock).mockResolvedValue(dbUser);
 
       const response = await service.validateUser(
@@ -83,6 +88,8 @@ describe('AuthService', () => {
       expect(response).toEqual({
         id: '3',
         email: 'test@user.de',
+        hash: expect.any(String),
+        hashedRt: expect.any(String),
         otpConfirmed: false,
         otpSecret: expect.any(String),
         createdAt: expect.any(Date),
@@ -93,7 +100,7 @@ describe('AuthService', () => {
 
   describe('signup', () => {
     it('should call user service to create user', async () => {
-      const dbUser = await createDbdUser(userDto);
+      const dbUser = await createUserFromAuthDto(userDto);
       (userService.create as jest.Mock).mockResolvedValue(dbUser);
 
       await service.signup(userDto);
@@ -108,7 +115,7 @@ describe('AuthService', () => {
     });
 
     it('should create otp token', async () => {
-      const dbUser = await createDbdUser(userDto);
+      const dbUser = await createUserFromAuthDto(userDto);
       (userService.create as jest.Mock).mockResolvedValue(dbUser);
 
       await service.signup(userDto);
@@ -127,7 +134,7 @@ describe('AuthService', () => {
     });
 
     it('should not update user with refresh token', async () => {
-      const dbUser = await createDbdUser(userDto);
+      const dbUser = await createUserFromAuthDto(userDto);
       (userService.create as jest.Mock).mockResolvedValue(dbUser);
 
       await service.signup(userDto);
@@ -136,7 +143,7 @@ describe('AuthService', () => {
     });
 
     it('should return otp token, url and barcode', async () => {
-      const dbUser = await createDbdUser(userDto);
+      const dbUser = await createUserFromAuthDto(userDto);
       (userService.create as jest.Mock).mockResolvedValue(dbUser);
 
       const response = await service.signup(userDto);
@@ -154,7 +161,7 @@ describe('AuthService', () => {
 
   describe('confirmOtp', () => {
     it('should load user from user service', async () => {
-      const dbUser = await createDbdUser(userDto);
+      const dbUser = await createUserFromAuthDto(userDto);
       (userService.findById as jest.Mock).mockResolvedValue(dbUser);
       const otpPassword = authenticator.generate(dbUser.otpSecret);
 
@@ -164,7 +171,7 @@ describe('AuthService', () => {
     });
 
     it('should return BadRequestException if user was not found', async () => {
-      const dbUser = await createDbdUser(userDto);
+      const dbUser = await createUserFromAuthDto(userDto);
       (userService.findById as jest.Mock).mockResolvedValue(undefined);
 
       await expect(
@@ -173,7 +180,7 @@ describe('AuthService', () => {
     });
 
     it('should return BadRequestException if user was not found', async () => {
-      const dbUser = await createDbdUser(userDto);
+      const dbUser = await createUserFromAuthDto(userDto);
       dbUser.otpSecret = '';
       (userService.findById as jest.Mock).mockResolvedValue(dbUser);
 
@@ -183,7 +190,7 @@ describe('AuthService', () => {
     });
 
     it('should return BadRequestException if user already confirmed otp', async () => {
-      const dbUser = await createDbdUser(userDto, 'rt', true);
+      const dbUser = await createUserFromAuthDto(userDto, 'rt', true);
 
       (userService.findById as jest.Mock).mockResolvedValue(dbUser);
 
@@ -193,7 +200,7 @@ describe('AuthService', () => {
     });
 
     it('should return BadRequestException if user not confirmed otp but should be', async () => {
-      const dbUser = await createDbdUser(userDto, 'rt', false);
+      const dbUser = await createUserFromAuthDto(userDto, 'rt', false);
 
       (userService.findById as jest.Mock).mockResolvedValue(dbUser);
 
@@ -203,7 +210,7 @@ describe('AuthService', () => {
     });
 
     it('should return ForbiddenException if otp password is wrong', async () => {
-      const dbUser = await createDbdUser(userDto);
+      const dbUser = await createUserFromAuthDto(userDto);
       (userService.findById as jest.Mock).mockResolvedValue(dbUser);
 
       await expect(
@@ -212,7 +219,7 @@ describe('AuthService', () => {
     });
 
     it('should return tokens if otp password is valid', async () => {
-      const dbUser = await createDbdUser(userDto);
+      const dbUser = await createUserFromAuthDto(userDto);
       (userService.findById as jest.Mock).mockResolvedValue(dbUser);
       const otpPassword = authenticator.generate(dbUser.otpSecret);
 
@@ -231,7 +238,7 @@ describe('AuthService', () => {
     });
 
     it('should update user with new refresh token and otp confirmed', async () => {
-      const dbUser = await createDbdUser(userDto);
+      const dbUser = await createUserFromAuthDto(userDto);
       (userService.findById as jest.Mock).mockResolvedValue(dbUser);
       const otpPassword = authenticator.generate(dbUser.otpSecret);
 
@@ -251,7 +258,7 @@ describe('AuthService', () => {
     });
 
     it('should update user with new refresh token and not update otp confirmed', async () => {
-      const dbUser = await createDbdUser(userDto, 'rt', true);
+      const dbUser = await createUserFromAuthDto(userDto, 'rt', true);
       (userService.findById as jest.Mock).mockResolvedValue(dbUser);
       const otpPassword = authenticator.generate(dbUser.otpSecret);
 
@@ -285,7 +292,7 @@ describe('AuthService', () => {
     });
 
     it('should return otp token and no barcode', async () => {
-      const dbUser = await createDbdUser(userDto, 'rt', true);
+      const dbUser = await createUserFromAuthDto(userDto, 'rt', true);
       (userService.create as jest.Mock).mockResolvedValue(dbUser);
 
       const response = await service.signin(dbUser);
@@ -308,7 +315,7 @@ describe('AuthService', () => {
 
   describe('refreshTokens', () => {
     it('should find user by user id', async () => {
-      const dbUser = await createDbdUser(userDto, 'my_refresh_token');
+      const dbUser = await createUserFromAuthDto(userDto, 'my_refresh_token');
       (userService.findById as jest.Mock).mockImplementation((userId) =>
         userServiceFindByIdMockImpl(dbUser, userId),
       );
@@ -319,7 +326,7 @@ describe('AuthService', () => {
     });
 
     it('should return ForbiddenException when user not found', async () => {
-      const dbUser = await createDbdUser(userDto, 'my_refresh_token');
+      const dbUser = await createUserFromAuthDto(userDto, 'my_refresh_token');
       (userService.findById as jest.Mock).mockImplementation((userId) =>
         userServiceFindByIdMockImpl(dbUser, userId),
       );
@@ -330,7 +337,7 @@ describe('AuthService', () => {
     });
 
     it('should return ForbiddenException when user has no refresh token hash', async () => {
-      const dbUser = await createDbdUser(userDto, 'my_refresh_token');
+      const dbUser = await createUserFromAuthDto(userDto, 'my_refresh_token');
       dbUser.hashedRt = '';
       (userService.findById as jest.Mock).mockImplementation((userId) =>
         userServiceFindByIdMockImpl(dbUser, userId),
@@ -342,7 +349,7 @@ describe('AuthService', () => {
     });
 
     it('should return ForbiddenException when refresh token hashes are not matching', async () => {
-      const dbUser = await createDbdUser(userDto, 'my_refresh_token');
+      const dbUser = await createUserFromAuthDto(userDto, 'my_refresh_token');
       (userService.findById as jest.Mock).mockImplementation((userId) =>
         userServiceFindByIdMockImpl(dbUser, userId),
       );
@@ -353,7 +360,7 @@ describe('AuthService', () => {
     });
 
     it('should update user with refresh token', async () => {
-      const dbUser = await createDbdUser(userDto, 'my_refresh_token');
+      const dbUser = await createUserFromAuthDto(userDto, 'my_refresh_token');
       (userService.findById as jest.Mock).mockImplementation((userId) =>
         userServiceFindByIdMockImpl(dbUser, userId),
       );
@@ -371,7 +378,7 @@ describe('AuthService', () => {
     });
 
     it('should return access and refresh token', async () => {
-      const dbUser = await createDbdUser(userDto, 'my_refresh_token');
+      const dbUser = await createUserFromAuthDto(userDto, 'my_refresh_token');
       (userService.findById as jest.Mock).mockImplementation((userId) =>
         userServiceFindByIdMockImpl(dbUser, userId),
       );

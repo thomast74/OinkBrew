@@ -1,35 +1,17 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
+/* eslint-disable @typescript-eslint/no-empty-function */
+import { LoggerService, LogLevel } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import * as argon2 from 'argon2';
-import { authenticator } from 'otplib';
-import { AuthDto } from '../src/auth/dtos';
-import { ARGON_OPTIONS } from '../src/constants';
 
-export async function createDbdUser(
-  user: AuthDto,
-  refreshToken = 'rt',
-  otpConfirmed = false,
-  otpSecret?: string,
-) {
-  const hash = await argon2.hash(user.password, ARGON_OPTIONS);
-  const hashedRt = await argon2.hash(refreshToken, ARGON_OPTIONS);
-  otpSecret = otpSecret ?? authenticator.generateSecret();
-
-  return {
-    id: '3',
-    email: userDto.email,
-    hash,
-    otpConfirmed,
-    otpSecret,
-    hashedRt,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  };
+export class TestingLogger implements LoggerService {
+  log(_message: any, ..._optionalParams: any[]) {}
+  error(_message: any, ..._optionalParams: any[]) {}
+  warn(_message: any, ..._optionalParams: any[]) {}
+  debug?(_message: any, ..._optionalParams: any[]) {}
+  verbose?(_message: any, ..._optionalParams: any[]) {}
+  setLogLevels?(_levels: LogLevel[]) {}
 }
-
-export const userDto = {
-  email: 'test@user.de',
-  password: '12345',
-} as AuthDto;
 
 export async function createOtpToken(
   jwt: JwtService,
