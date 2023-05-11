@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { parseJSON } from 'date-fns';
 import * as Particle from 'particle-api-js';
 
+import { mockBrewNotArchived } from '../configurations/tests/brew-configurations.mock';
 import { ParticleService } from './particle.service';
 
 describe('ParticleService', () => {
@@ -11,6 +12,8 @@ describe('ParticleService', () => {
 
   beforeEach(() => {
     jest.resetModules();
+    Particle.mockCallFunction.mockReset();
+
     process.env = { ...env };
 
     process.env.PARTICLE_CLIENT_ID = 'my_client_id';
@@ -148,6 +151,7 @@ describe('ParticleService', () => {
 
   describe('updateConnectedDeviceOffset', () => {
     it('should send new offset to device', async () => {
+      Particle.mockCallFunction.mockResolvedValue({ body: {} });
       const testSubject = testModule.get<ParticleService>(ParticleService);
 
       await testSubject.updateConnectedDeviceOffset('aaa', 17, '00000000', 0.7);
@@ -262,8 +266,41 @@ describe('ParticleService', () => {
     });
   });
 
+  describe('sendConfiguration', () => {
+    it('should send configuration to particle io', async () => {
+      Particle.mockCallFunction.mockResolvedValue({ body: '' });
+      const testSubject = testModule.get<ParticleService>(ParticleService);
+      const confToSend = { ...mockBrewNotArchived } as any;
+
+      await testSubject.sendConfiguration(confToSend);
+
+      delete confToSend.device;
+      const data = {
+        command: 2,
+        data: confToSend,
+      };
+      expect(Particle.mockCallFunction).toHaveBeenCalledWith({
+        deviceId: 'ccc',
+        name: 'setConfig',
+        argument: JSON.stringify(data),
+        auth: '123456',
+      });
+    });
+
+    it('should return an error if update fails', async () => {
+      Particle.mockCallFunction.mockRejectedValue(new Error('bad api error'));
+      const testSubject = testModule.get<ParticleService>(ParticleService);
+      const confToSend = { ...mockBrewNotArchived } as any;
+
+      await expect(testSubject.sendConfiguration(confToSend)).rejects.toEqual(
+        new Error('bad api error'),
+      );
+    });
+  });
+
   describe('restart', () => {
     it('should send restart request to device', async () => {
+      Particle.mockCallFunction.mockResolvedValue({ body: {} });
       const testSubject = testModule.get<ParticleService>(ParticleService);
 
       await testSubject.restart('aaa');

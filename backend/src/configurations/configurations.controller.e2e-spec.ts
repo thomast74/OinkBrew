@@ -24,10 +24,12 @@ import { ARGON_OPTIONS } from '../constants';
 import { Device } from '../devices/schemas';
 import { User } from '../users/schemas';
 import { createUserInDb } from '../users/tests/users-helper.mock';
-import { Configuration } from './schemas';
+import { BrewConfiguration, Configuration } from './schemas';
 import {
   expectedConfigurationBrewArchived,
   expectedConfigurationBrewNotArchived,
+  mockDtoBrewGood,
+  mockDtoBrewMissingDevice,
 } from './tests/brew-configurations.mock';
 import { createConfigurations } from './tests/configuration-helper.mock';
 import { expectedConfigurationFridgeNotArchived } from './tests/fridge-configurations.mock';
@@ -141,6 +143,93 @@ describe('ConfigurationsController (e2e)', () => {
         .get('/configurations?archived=blabla')
         .set('Authorization', `Bearer ${validAccessToken}`)
         .expect(400);
+    });
+  });
+
+  describe('POST /configurations', () => {
+    it('should return not authenticated if no valid token provided', () => {
+      return request(app.getHttpServer()).post('/configurations').expect(401);
+    });
+
+    it('should return BadRequestExcpetion if configuration not valid', async () => {
+      const confDto = {
+        ...mockDtoBrewGood,
+        temperature: -65,
+        heaterPwm: -45,
+      };
+
+      const response = await request(app.getHttpServer())
+        .post('/configurations')
+        .set('Authorization', `Bearer ${validAccessToken}`)
+        .send(confDto);
+
+      const error = JSON.parse(response.text);
+      expect(response.statusCode).toBe(400);
+      expect(error.message).toEqual([
+        'heaterPwm must not be less than 0',
+        'temperature must not be less than 0',
+      ]);
+    });
+
+    it('should return NotFoundException of device not found', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/configurations')
+        .set('Authorization', `Bearer ${validAccessToken}`)
+        .send(mockDtoBrewMissingDevice);
+
+      const error = JSON.parse(response.text);
+      expect(response.statusCode).toBe(404);
+      expect(error.message).toBe('Device not found');
+    });
+
+    it('should return NotFoundException if actuator/sensor not found', async () => {
+      const confDto = {
+        ...mockDtoBrewMissingDevice,
+        deviceId: 'ccc',
+      };
+      const response = await request(app.getHttpServer())
+        .post('/configurations')
+        .set('Authorization', `Bearer ${validAccessToken}`)
+        .send(confDto);
+
+      const error = JSON.parse(response.text);
+      expect(response.statusCode).toBe(404);
+      expect(error.message).toBe(
+        'Connected Device not found: 0/MISSING000000000',
+      );
+    });
+
+    it('should create the configuration in database', async () => {
+      const confDto = {
+        ...mockDtoBrewGood,
+        deviceId: 'ddd',
+      };
+      const response = await request(app.getHttpServer())
+        .post('/configurations')
+        .set('Authorization', `Bearer ${validAccessToken}`)
+        .send(confDto);
+
+      expect(response.statusCode).toBe(201);
+      expect(response.body).toBeDefined();
+
+      const confCount = await confModel.findOne({ id: 5 }).count().exec();
+      expect(confCount).toEqual(1);
+    });
+
+    it('should return InertalServerErrorException if particle update failed', async () => {
+      const confDto = {
+        ...mockDtoBrewGood,
+        deviceId: 'ccc',
+      };
+      const response = await request(app.getHttpServer())
+        .post('/configurations')
+        .set('Authorization', `Bearer ${validAccessToken}`)
+        .send(confDto);
+
+      expect(response.statusCode).toBe(500);
+      expect(response.body.info).toEqual(
+        "I didn't recognize that device name or ID, try opening https://api.particle.io/v1/devices?access_token=undefined",
+      );
     });
   });
 });

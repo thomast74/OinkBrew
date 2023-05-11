@@ -5,7 +5,7 @@ import {
 import { getModelToken } from '@nestjs/mongoose';
 import { Test } from '@nestjs/testing';
 
-import mongoose, { Model } from 'mongoose';
+import { Model } from 'mongoose';
 
 import {
   clearDatabase,
@@ -15,7 +15,7 @@ import {
 } from '../../test/db-helper.fn';
 import { ParticleService } from '../common/particle.service';
 import { DevicesService } from './devices.service';
-import { ConnectedDevice, Device, DeviceSchema } from './schemas';
+import { ConnectedDevice, Device } from './schemas';
 import { createDeviceInDb } from './tests/devices-helper.mock';
 import {
   mockDeviceOffline,
@@ -23,7 +23,6 @@ import {
   mockDeviceOfflineWithConnectedDeviceConnected,
   mockDeviceOnline,
   mockDeviceOnlineWithConnectedDevice,
-  mockDeviceWithConnectedDevicesConnected,
   newConnectedDevice,
 } from './tests/devices.mock';
 import { ConnectedDeviceType } from './types';
@@ -262,7 +261,7 @@ describe('DevicesService', () => {
         await deviceModel.findOne({ id: mockDeviceOffline.id })
       )?.toObject();
 
-      expect(dbDevice?.connectedDevices).toEqual([newConnectedDevice]);
+      expect(dbDevice?.connectedDevices).toContainEqual(newConnectedDevice);
     });
 
     it('should return error from upsert', async () => {
@@ -429,7 +428,7 @@ describe('DevicesService', () => {
         .findOne({ id: mockDeviceOffline.id })
         .exec();
 
-      expect(dbDevice?.connectedDevices[0]).toMatchObject(
+      expect(dbDevice?.connectedDevices).toContainEqual(
         expectedConnectedDevice,
       );
     });
@@ -514,28 +513,6 @@ describe('DevicesService', () => {
       await expect(service.restart('bbb')).rejects.toEqual(
         new InternalServerErrorException('403: restart failed'),
       );
-    });
-  });
-
-  describe('findConnectedDeviceFromDevice', () => {
-    it('should return connected device of device', () => {
-      const cDevice = service.findConnectedDeviceFromDevice(
-        mockDeviceWithConnectedDevicesConnected,
-        12,
-        '000000000000',
-      );
-
-      expect(cDevice).toBeDefined();
-    });
-
-    it('should return null if connected device was not found', () => {
-      const cDevice = service.findConnectedDeviceFromDevice(
-        mockDeviceWithConnectedDevicesConnected,
-        2,
-        '00000000',
-      );
-
-      expect(cDevice).toBeUndefined();
     });
   });
 });

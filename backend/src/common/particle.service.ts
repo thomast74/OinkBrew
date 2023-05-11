@@ -15,6 +15,7 @@ import {
   tap,
 } from 'rxjs';
 
+import { Configuration } from '../configurations/schemas';
 import { Device } from '../devices/schemas';
 import { EventData } from '../devices/types';
 import { TokenInfo, UpdateResponse } from './types';
@@ -158,6 +159,33 @@ export class ParticleService {
           info: error.body.info,
         });
       }),
+    );
+
+    return firstValueFrom($source);
+  }
+
+  public sendConfiguration(configuration: Configuration): Promise<void> {
+    const confToSend = { ...configuration } as any;
+    delete confToSend.device;
+
+    const data = {
+      command: 2,
+      data: confToSend,
+    };
+
+    const $source = this.tokenInfo.pipe(
+      tap(() => this.logger.debug('callFunction: UPDATE_CONFIGURATION')),
+      switchMap((tokens: any) =>
+        from(
+          this.particle.callFunction({
+            deviceId: configuration.device.id,
+            name: 'setConfig',
+            argument: JSON.stringify(data),
+            auth: tokens.access_token,
+          }),
+        ),
+      ),
+      map(() => void 0),
     );
 
     return firstValueFrom($source);

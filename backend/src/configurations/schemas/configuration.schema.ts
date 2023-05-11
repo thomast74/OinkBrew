@@ -25,9 +25,11 @@ export class Configuration {
   @Prop()
   updatedAt: Date;
 
-  @Prop([
-    { required: true, type: MongooseSchema.Types.ObjectId, ref: Device.name },
-  ])
+  @Prop({
+    required: true,
+    type: MongooseSchema.Types.ObjectId,
+    ref: Device.name,
+  })
   device: Device;
 
   @Prop({ required: true, unique: true })

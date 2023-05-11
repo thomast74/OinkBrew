@@ -1,6 +1,7 @@
 import { Model } from 'mongoose';
 
 import { Device } from '../../devices/schemas';
+import { ConfigurationDto } from '../dtos';
 import { Configuration, ConfigurationDocument } from '../schemas';
 import { mockBrewNotArchived } from './brew-configurations.mock';
 import { mockBrewArchived } from './brew-configurations.mock';
@@ -13,7 +14,6 @@ export async function createConfInDb(
 ): Promise<ConfigurationDocument | null> {
   const confToSave = {
     ...configuration,
-    device: { ...configuration.device },
   };
 
   let device = await deviceModel.findOne({ id: confToSave.device.id }).exec();
@@ -26,6 +26,22 @@ export async function createConfInDb(
   await new configurationModel(confToSave).save();
 
   return await configurationModel.findOne({ id: confToSave.id }).exec();
+}
+
+export async function createConfFromDto(
+  deviceModel: Model<Device>,
+  confModel: Model<Configuration>,
+  configrationDto: ConfigurationDto,
+) {
+  const device = await deviceModel
+    .findOne({ id: configrationDto.deviceId })
+    .exec();
+  const confToSave = configrationDto as any;
+  confToSave.device = device;
+
+  await new confModel(confToSave).save();
+
+  return await confModel.findOne({ id: confToSave.id }).exec();
 }
 
 export async function createConfigurations(

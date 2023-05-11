@@ -111,7 +111,7 @@ export class DevicesService {
       throw new NotFoundException('Device not found');
     }
 
-    const cDevice = this.findConnectedDevice(
+    const cDevice = ConnectedDeviceHelper.findConnectedDevice(
       device.connectedDevices,
       pinNr,
       hwAddress,
@@ -193,7 +193,7 @@ export class DevicesService {
       device.connectedDevices = [];
     }
 
-    const cDevice = this.findConnectedDevice(
+    const cDevice = ConnectedDeviceHelper.findConnectedDevice(
       device.connectedDevices,
       connectedDevice.pinNr,
       connectedDevice.hwAddress,
@@ -211,30 +211,6 @@ export class DevicesService {
     }
 
     return device;
-  }
-
-  public findConnectedDeviceFromDevice(
-    device: Device,
-    pinNr: number,
-    hwAddress: string,
-  ): ConnectedDevice | undefined {
-    const cDevices = ConnectedDeviceHelper.parseArray(
-      (device.connectedDevices as any[]) ?? [],
-    );
-
-    return this.findConnectedDevice(cDevices, pinNr, hwAddress);
-  }
-
-  private findConnectedDevice(
-    cDevices: ConnectedDevice[],
-    pinNr: number,
-    hwAddress: string,
-  ): ConnectedDevice | undefined {
-    const connectedDevice = cDevices?.find(
-      (cDevice) => cDevice.pinNr === pinNr && cDevice.hwAddress === hwAddress,
-    );
-
-    return connectedDevice;
   }
 
   private replaceConnectedDevice(

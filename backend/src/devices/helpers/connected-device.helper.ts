@@ -1,4 +1,4 @@
-import { ConnectedDevice } from '../schemas';
+import { ConnectedDevice, Device } from '../schemas';
 
 export class ConnectedDeviceHelper {
   static equals(cDevice1: ConnectedDevice, cDevice2: ConnectedDevice): boolean {
@@ -33,5 +33,33 @@ export class ConnectedDeviceHelper {
     });
 
     return cDevices;
+  }
+
+  static findConnectedDeviceFromDevice(
+    device: Device,
+    pinNr: number,
+    hwAddress: string,
+  ): ConnectedDevice | undefined {
+    const cDevices = ConnectedDeviceHelper.parseArray(
+      (device.connectedDevices as any[]) ?? [],
+    );
+
+    return ConnectedDeviceHelper.findConnectedDevice(
+      cDevices,
+      pinNr,
+      hwAddress,
+    );
+  }
+
+  static findConnectedDevice(
+    cDevices: ConnectedDevice[],
+    pinNr: number,
+    hwAddress: string,
+  ): ConnectedDevice | undefined {
+    const connectedDevice = cDevices?.find(
+      (cDevice) => cDevice.pinNr === pinNr && cDevice.hwAddress === hwAddress,
+    );
+
+    return connectedDevice;
   }
 }

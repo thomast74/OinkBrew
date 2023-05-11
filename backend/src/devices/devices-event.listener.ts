@@ -99,7 +99,7 @@ export class DevicesEventListener implements OnApplicationBootstrap {
     pinNr: number,
     hwAddress: string,
   ): Promise<void> {
-    const cDevice = this.devices.findConnectedDeviceFromDevice(
+    const cDevice = ConnectedDeviceHelper.findConnectedDeviceFromDevice(
       device,
       pinNr,
       hwAddress,

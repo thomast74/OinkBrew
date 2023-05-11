@@ -1,16 +1,24 @@
 import {
+  Body,
   Controller,
   DefaultValuePipe,
   Get,
   HttpCode,
   HttpException,
   HttpStatus,
+  InternalServerErrorException,
   Logger,
   ParseBoolPipe,
+  Post,
   Query,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 
 import { ConfigurationsService } from './configurations.service';
+import { ValidConfigurationBody } from './decorators';
+import { ConfigurationDto } from './dtos';
+import { ConfigurationValidationPipe } from './pipes';
 import { ConfigurationDocument } from './schemas';
 
 @Controller('configurations')
@@ -28,10 +36,15 @@ export class ConfigurationsController {
     try {
       return (await this.configurations.findAll(archived)) ?? [];
     } catch (error) {
-      throw new HttpException(
-        error.message ?? error,
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new InternalServerErrorException(error.message ?? error);
     }
+  }
+
+  @Post('/')
+  @HttpCode(HttpStatus.CREATED)
+  async createConfiguration(
+    @ValidConfigurationBody() configuration: ConfigurationDto,
+  ) {
+    return this.configurations.save(configuration);
   }
 }

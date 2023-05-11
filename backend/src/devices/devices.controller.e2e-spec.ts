@@ -223,7 +223,7 @@ describe('DevicesController (e2e)', () => {
     it('should return internal error when particle update failed', async () => {
       const deviceId = 'ccc';
       const result = await request(app.getHttpServer())
-        .post(`/devices/${deviceId}/00000000/8`)
+        .post(`/devices/${deviceId}/0000000000000000/8`)
         .set('Authorization', `Bearer ${validAccessToken}`)
         .send({
           name: 'sensor name',
