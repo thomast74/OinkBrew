@@ -145,7 +145,7 @@ describe('DevicesController', () => {
         controller.updateConnectedDevice,
       );
 
-      expect(method).toEqual(RequestMethod.POST);
+      expect(method).toEqual(RequestMethod.PUT);
       expect(path).toEqual('/:id/:hwAddress/:pinNr');
     });
 
@@ -262,7 +262,7 @@ describe('DevicesController', () => {
       );
       const path = Reflect.getMetadata(PATH_METADATA, controller.restartDevice);
 
-      expect(method).toEqual(RequestMethod.POST);
+      expect(method).toEqual(RequestMethod.PUT);
       expect(path).toEqual('/:id/restart');
     });
 
@@ -297,7 +297,7 @@ describe('DevicesController', () => {
       expect(metadata).toBeUndefined();
     });
 
-    it('should react to POST /{id}', () => {
+    it('should react to PUT /{id}', () => {
       const controller = module.get<DevicesController>(DevicesController);
       const method = Reflect.getMetadata(
         METHOD_METADATA,
@@ -305,7 +305,7 @@ describe('DevicesController', () => {
       );
       const path = Reflect.getMetadata(PATH_METADATA, controller.updateDevice);
 
-      expect(method).toEqual(RequestMethod.POST);
+      expect(method).toEqual(RequestMethod.PUT);
       expect(path).toEqual('/:id');
     });
 

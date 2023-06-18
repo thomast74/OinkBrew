@@ -121,7 +121,7 @@ describe('DevicesController (e2e)', () => {
     });
   });
 
-  describe('POST /devices/{id}/{hwAddress}/{pinNr}', () => {
+  describe('PUT /devices/{id}/{hwAddress}/{pinNr}', () => {
     beforeEach(async () => {
       await createDeviceInDb(
         deviceModel,
@@ -136,7 +136,7 @@ describe('DevicesController (e2e)', () => {
     it('should return not authenticated if no valid token provided', () => {
       const deviceId = 'bbb';
       return request(app.getHttpServer())
-        .post(`/devices/${deviceId}/000000000000/11`)
+        .put(`/devices/${deviceId}/000000000000/11`)
         .send({})
         .expect(401);
     });
@@ -144,7 +144,7 @@ describe('DevicesController (e2e)', () => {
     it('should return not found when pinNr missing', () => {
       const deviceId = 'bbb';
       return request(app.getHttpServer())
-        .post(`/devices/${deviceId}/000000000000`)
+        .put(`/devices/${deviceId}/000000000000`)
         .send({})
         .expect(404);
     });
@@ -152,7 +152,7 @@ describe('DevicesController (e2e)', () => {
     it('should return bad request when name is empty', async () => {
       const deviceId = 'bbb';
       return request(app.getHttpServer())
-        .post(`/devices/${deviceId}/000000000000/11`)
+        .put(`/devices/${deviceId}/000000000000/11`)
         .set('Authorization', `Bearer ${validAccessToken}`)
         .send({
           name: '',
@@ -164,7 +164,7 @@ describe('DevicesController (e2e)', () => {
     it('should return bad request when offset is missing', async () => {
       const deviceId = 'bbb';
       return request(app.getHttpServer())
-        .post(`/devices/${deviceId}/000000000000/11`)
+        .put(`/devices/${deviceId}/000000000000/11`)
         .set('Authorization', `Bearer ${validAccessToken}`)
         .send({
           name: 'sensor name',
@@ -175,7 +175,7 @@ describe('DevicesController (e2e)', () => {
     it('should return ok when offset is 0', async () => {
       const deviceId = 'bbb';
       const response = await request(app.getHttpServer())
-        .post(`/devices/${deviceId}/000000000000/11`)
+        .put(`/devices/${deviceId}/000000000000/11`)
         .set('Authorization', `Bearer ${validAccessToken}`)
         .send({
           name: 'sensor name',
@@ -187,7 +187,7 @@ describe('DevicesController (e2e)', () => {
 
     it('should return not found device not found in database', async () => {
       return request(app.getHttpServer())
-        .post(`/devices/unknown/000000000000/11`)
+        .put(`/devices/unknown/000000000000/11`)
         .set('Authorization', `Bearer ${validAccessToken}`)
         .send({
           name: 'sensor name',
@@ -199,7 +199,7 @@ describe('DevicesController (e2e)', () => {
     it('should return not found sensor not found in database', async () => {
       const deviceId = 'bbb';
       return request(app.getHttpServer())
-        .post(`/devices/${deviceId}/000000000000/3`)
+        .put(`/devices/${deviceId}/000000000000/3`)
         .set('Authorization', `Bearer ${validAccessToken}`)
         .send({
           name: 'sensor name',
@@ -211,7 +211,7 @@ describe('DevicesController (e2e)', () => {
     it('should return ok when offset is set on offline device', async () => {
       const deviceId = 'bbb';
       return request(app.getHttpServer())
-        .post(`/devices/${deviceId}/000000000000/11`)
+        .put(`/devices/${deviceId}/000000000000/11`)
         .set('Authorization', `Bearer ${validAccessToken}`)
         .send({
           name: 'sensor name',
@@ -223,7 +223,7 @@ describe('DevicesController (e2e)', () => {
     it('should return internal error when particle update failed', async () => {
       const deviceId = 'ccc';
       const result = await request(app.getHttpServer())
-        .post(`/devices/${deviceId}/0000000000000000/8`)
+        .put(`/devices/${deviceId}/0000000000000000/8`)
         .set('Authorization', `Bearer ${validAccessToken}`)
         .send({
           name: 'sensor name',
@@ -245,7 +245,7 @@ describe('DevicesController (e2e)', () => {
     //   const hwAddress = '28107974060000AC';
 
     //   const response = await request(app.getHttpServer())
-    //     .post(`/devices/${deviceId}/${hwAddress}/${pinNr}`)
+    //     .put(`/devices/${deviceId}/${hwAddress}/${pinNr}`)
     //     .set('Authorization', `Bearer ${validAccessToken}`)
     //     .send({
     //       name: 'sensor name',
@@ -264,11 +264,11 @@ describe('DevicesController (e2e)', () => {
     // });
   });
 
-  describe('POST /devices/{id}/restart', () => {
+  describe('PUT /devices/{id}/restart', () => {
     it('should return not authenticated if no valid token provided', () => {
       const deviceId = 'bbb';
       return request(app.getHttpServer())
-        .post(`/devices/${deviceId}/restart`)
+        .put(`/devices/${deviceId}/restart`)
         .send({})
         .expect(401);
     });
@@ -278,7 +278,7 @@ describe('DevicesController (e2e)', () => {
     // it('should return ok when device restart was successful', async () => {
     //   const deviceId = '3b003d000747343232363230';
     //   return request(app.getHttpServer())
-    //     .post(`/devices/${deviceId}/restart`)
+    //     .put(`/devices/${deviceId}/restart`)
     //     .set('Authorization', `Bearer ${validAccessToken}`)
     //     .send({})
     //     .expect(200);
@@ -287,7 +287,7 @@ describe('DevicesController (e2e)', () => {
     it('should return internal error when particle restart failed', async () => {
       const deviceId = 'bbb';
       const result = await request(app.getHttpServer())
-        .post(`/devices/${deviceId}/restart`)
+        .put(`/devices/${deviceId}/restart`)
         .set('Authorization', `Bearer ${validAccessToken}`)
         .send({});
 
@@ -299,17 +299,17 @@ describe('DevicesController (e2e)', () => {
     });
   });
 
-  describe('POST /devices/{id}', () => {
+  describe('PUT /devices/{id}', () => {
     it('should return not authenticated if no valid token provided', () => {
       return request(app.getHttpServer())
-        .post(`/devices/${expectedDevice1.id}`)
+        .put(`/devices/${expectedDevice1.id}`)
         .send({})
         .expect(401);
     });
 
     it('should return bad request when name is empty', async () => {
       return request(app.getHttpServer())
-        .post(`/devices/${expectedDevice1.id}`)
+        .put(`/devices/${expectedDevice1.id}`)
         .set('Authorization', `Bearer ${validAccessToken}`)
         .send({
           name: '',
@@ -319,7 +319,7 @@ describe('DevicesController (e2e)', () => {
 
     it('should return not found when device with {id} is not found in database', async () => {
       return request(app.getHttpServer())
-        .post(`/devices/notaknownid`)
+        .put(`/devices/notaknownid`)
         .set('Authorization', `Bearer ${validAccessToken}`)
         .send({
           name: 'a new name',
@@ -329,7 +329,7 @@ describe('DevicesController (e2e)', () => {
 
     it('should return bad request when name is null/undefined', async () => {
       return request(app.getHttpServer())
-        .post(`/devices/${expectedDevice1.id}`)
+        .put(`/devices/${expectedDevice1.id}`)
         .set('Authorization', `Bearer ${validAccessToken}`)
         .send({})
         .expect(400);
@@ -340,7 +340,7 @@ describe('DevicesController (e2e)', () => {
       const notes = faker.random.words(5);
 
       const response = await request(app.getHttpServer())
-        .post(`/devices/${expectedDevice2.id}`)
+        .put(`/devices/${expectedDevice2.id}`)
         .set('Authorization', `Bearer ${validAccessToken}`)
         .send({
           name,
@@ -361,7 +361,7 @@ describe('DevicesController (e2e)', () => {
       const notes = faker.random.words(5);
 
       await request(app.getHttpServer())
-        .post(`/devices/${expectedDevice2.id}`)
+        .put(`/devices/${expectedDevice2.id}`)
         .set('Authorization', `Bearer ${validAccessToken}`)
         .send({
           name,

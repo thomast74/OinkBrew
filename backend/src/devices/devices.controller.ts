@@ -10,7 +10,6 @@ import {
   OnApplicationBootstrap,
   Param,
   ParseIntPipe,
-  Post,
   Put,
   UseGuards,
 } from '@nestjs/common';
@@ -47,7 +46,7 @@ export class DevicesController implements OnApplicationBootstrap {
     }
   }
 
-  @Post('/:id/:hwAddress/:pinNr')
+  @Put('/:id/:hwAddress/:pinNr')
   @UseGuards(DeviceConnectedDeviceGuard)
   @HttpCode(HttpStatus.OK)
   async updateConnectedDevice(
@@ -66,14 +65,21 @@ export class DevicesController implements OnApplicationBootstrap {
     );
   }
 
-  @Post('/:id/restart')
+  @Put('/:id/restart')
   @HttpCode(HttpStatus.OK)
   async restartDevice(@Param('id') id: string): Promise<boolean> {
     await this.devices.restart(id);
     return true;
   }
 
-  @Post('/:id')
+  @Put('/refresh')
+  @HttpCode(HttpStatus.OK)
+  refresh(): Promise<boolean> {
+    this.devicesQueue.add('refresh');
+    return Promise.resolve(true);
+  }
+
+  @Put('/:id')
   @UseGuards(DeviceNameGuard)
   @HttpCode(HttpStatus.OK)
   async updateDevice(
@@ -82,12 +88,5 @@ export class DevicesController implements OnApplicationBootstrap {
     @Body('notes') notes?: string,
   ): Promise<Device | null> {
     return this.devices.update(id, name, notes);
-  }
-
-  @Put('/refresh')
-  @HttpCode(HttpStatus.OK)
-  refresh(): Promise<boolean> {
-    this.devicesQueue.add('refresh');
-    return Promise.resolve(true);
   }
 }
