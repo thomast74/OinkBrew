@@ -25,6 +25,7 @@ describe('ConfigurationsController', () => {
   const mockConfigurationsService = {
     findAll: jest.fn(),
     save: jest.fn(),
+    update: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -220,6 +221,95 @@ describe('ConfigurationsController', () => {
       mockConfigurationsService.save.mockResolvedValue(fridgeConfValid);
 
       const response = await controller.createConfiguration(
+        fridgeConfValid as FridgeConfigurationDto,
+      );
+
+      expect(response).toEqual(fridgeConfValid);
+    });
+  });
+
+  describe('PUT /{id}', () => {
+    it('should not be public', () => {
+      const controller = module.get<ConfigurationsController>(
+        ConfigurationsController,
+      );
+      const metadata = Reflect.getMetadata(
+        IS_PUBLIC_KEY,
+        controller.updateConfiguration,
+      );
+
+      expect(metadata).toBeUndefined();
+    });
+
+    it('should react to PUT /{id}', () => {
+      const controller = module.get<ConfigurationsController>(
+        ConfigurationsController,
+      );
+      const method = Reflect.getMetadata(
+        METHOD_METADATA,
+        controller.updateConfiguration,
+      );
+      const path = Reflect.getMetadata(
+        PATH_METADATA,
+        controller.updateConfiguration,
+      );
+
+      expect(method).toEqual(RequestMethod.PUT);
+      expect(path).toEqual('/:id');
+    });
+
+    it('should return HttpStatus.CREATED', () => {
+      const controller = module.get<ConfigurationsController>(
+        ConfigurationsController,
+      );
+      const metadata = Reflect.getMetadata(
+        HTTP_CODE_METADATA,
+        controller.updateConfiguration,
+      );
+
+      expect(metadata).toEqual(HttpStatus.CREATED);
+    });
+
+    it('should call configurations service with id and configuration', async () => {
+      const controller = module.get<ConfigurationsController>(
+        ConfigurationsController,
+      );
+
+      await controller.updateConfiguration(
+        6,
+        fridgeConfValid as FridgeConfigurationDto,
+      );
+
+      expect(mockConfigurationsService.update).toHaveBeenCalledWith(
+        6,
+        fridgeConfValid,
+      );
+    });
+
+    it('should return any error received from configration service', async () => {
+      const controller = module.get<ConfigurationsController>(
+        ConfigurationsController,
+      );
+      mockConfigurationsService.update.mockRejectedValue(
+        new NotFoundException('Configuration not found'),
+      );
+
+      await expect(
+        controller.updateConfiguration(
+          6,
+          fridgeConfValid as FridgeConfigurationDto,
+        ),
+      ).rejects.toEqual(new NotFoundException('Configuration not found'));
+    });
+
+    it('should return created configuration document', async () => {
+      const controller = module.get<ConfigurationsController>(
+        ConfigurationsController,
+      );
+      mockConfigurationsService.update.mockResolvedValue(fridgeConfValid);
+
+      const response = await controller.updateConfiguration(
+        6,
         fridgeConfValid as FridgeConfigurationDto,
       );
 

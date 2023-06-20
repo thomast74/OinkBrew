@@ -8,8 +8,10 @@ import {
   HttpStatus,
   InternalServerErrorException,
   Logger,
+  Param,
   ParseBoolPipe,
   Post,
+  Put,
   Query,
   UsePipes,
   ValidationPipe,
@@ -46,5 +48,14 @@ export class ConfigurationsController {
     @ValidConfigurationBody() configuration: ConfigurationDto,
   ) {
     return this.configurations.save(configuration);
+  }
+
+  @Put('/:id')
+  @HttpCode(HttpStatus.CREATED)
+  async updateConfiguration(
+    @Param('id') id: number,
+    @ValidConfigurationBody() configuration: ConfigurationDto,
+  ) {
+    return this.configurations.update(id, configuration);
   }
 }

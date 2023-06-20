@@ -283,4 +283,149 @@ describe('ConfigurationsService', () => {
       );
     });
   });
+
+  describe('update', () => {
+    it('should return NotFoundException if configurtion with id not found', async () => {
+      const updateConfiguration = { ...mockDtoBrewMissingDevice };
+      updateConfiguration.id = 22;
+
+      await expect(service.update(22, updateConfiguration)).rejects.toEqual(
+        new NotFoundException('Configuration not found'),
+      );
+    });
+
+    it('should return NotFoundException if provided device not found', async () => {
+      const updateConfiguration = { ...mockDtoBrewGood };
+      await createDeviceInDb(deviceModel, mockDeviceOnline);
+      await createConfFromDto(deviceModel, confModel, mockDtoBrewUpdate);
+      updateConfiguration.deviceId = 'not known';
+
+      mockDeviceSvc.findById.mockRejectedValue(
+        new NotFoundException('Device not found'),
+      );
+
+      await expect(service.update(2, updateConfiguration)).rejects.toEqual(
+        new NotFoundException('Device not found'),
+      );
+    });
+
+    it('should return BadRequestException if one of connected devices are not assocatiated with found device', async () => {
+      const device = await createDeviceInDb(deviceModel, mockDeviceOnline);
+      await createConfFromDto(deviceModel, confModel, mockDtoBrewUpdate);
+      mockDeviceSvc.findById.mockResolvedValue(device);
+      mockDeviceSvc.findConnectedDeviceFromDevice();
+      const updatedConfiguration = {
+        ...mockDtoBrewMissingDevice,
+        deviceId: 'ccc',
+      };
+
+      await expect(service.update(2, updatedConfiguration)).rejects.toEqual(
+        new NotFoundException(`Connected Device not found: 0/MISSING000000000`),
+      );
+    });
+
+    it('should return InternalServiceExcpetion if saving configuration errors', async () => {
+      const device = await createDeviceInDb(deviceModel, mockDeviceOnline);
+      await createConfFromDto(deviceModel, confModel, mockDtoBrewUpdate);
+      mockDeviceSvc.findById.mockResolvedValue(device);
+      mockDeviceSvc.findConnectedDeviceFromDevice();
+      await closeDatabase();
+
+      await expect(service.update(2, mockDtoBrewGood)).rejects.toEqual(
+        new InternalServerErrorException(
+          'Client must be connected before running operations',
+        ),
+      );
+    });
+
+    it('should update configuration in database', async () => {
+      const updateConfiguration = { ...mockDtoBrewGood };
+      const device = await createDeviceInDb(deviceModel, mockDeviceOnline);
+      await createConfFromDto(deviceModel, confModel, mockDtoBrewUpdate);
+      mockDeviceSvc.findById.mockResolvedValue(device);
+      mockDeviceSvc.findConnectedDeviceFromDevice();
+
+      updateConfiguration.name = 'new conf name';
+      updateConfiguration.p = 5;
+      updateConfiguration.i = 6;
+      updateConfiguration.d = 7;
+
+      await service.update(2, updateConfiguration);
+
+      const dbConf = await confModel
+        .findOne({ id: mockDtoBrewUpdate.id })
+        .populate('device')
+        .exec();
+      expect(dbConf?.name).toEqual('new conf name');
+      expect(dbConf?.p).toEqual(5);
+      expect(dbConf?.i).toEqual(6);
+      expect(dbConf?.d).toEqual(7);
+    });
+
+    it('should return configuration document if successful', async () => {
+      const updateConfiguration = { ...mockDtoBrewGood };
+      const device = await createDeviceInDb(deviceModel, mockDeviceOnline);
+      await createConfFromDto(deviceModel, confModel, mockDtoBrewUpdate);
+      mockDeviceSvc.findById.mockResolvedValue(device);
+      mockDeviceSvc.findConnectedDeviceFromDevice();
+
+      updateConfiguration.name = 'new conf name';
+      updateConfiguration.p = 5;
+      updateConfiguration.i = 6;
+      updateConfiguration.d = 7;
+
+      const newConfiguration = await service.update(2, updateConfiguration);
+
+      const dbConf = await confModel
+        .findOne({ id: 2 })
+        .populate('device')
+        .exec();
+
+      expect(newConfiguration).toEqual(dbConf);
+    });
+
+    it('should send new configuration to Particle if device is online', async () => {
+      const updateConfiguration = { ...mockDtoBrewGood };
+      const device = await createDeviceInDb(deviceModel, mockDeviceOnline);
+      await createConfFromDto(deviceModel, confModel, mockDtoBrewUpdate);
+      mockDeviceSvc.findById.mockResolvedValue(device);
+      mockDeviceSvc.findConnectedDeviceFromDevice();
+
+      const newConf = await service.update(2, updateConfiguration);
+
+      expect(mockParticleService.sendConfiguration).toHaveBeenCalledWith(
+        newConf,
+      );
+    });
+
+    it('should not send new configuration to Particle if device is offline', async () => {
+      const updateConfiguration = { ...mockDtoBrewGood };
+      const device = await createDeviceInDb(
+        deviceModel,
+        mockDeviceForConfOffline,
+      );
+      await createConfFromDto(deviceModel, confModel, mockDtoBrewUpdate);
+      mockDeviceSvc.findById.mockResolvedValue(device);
+      mockDeviceSvc.findConnectedDeviceFromDevice();
+
+      await service.update(2, updateConfiguration);
+
+      expect(mockParticleService.sendConfiguration).not.toHaveBeenCalled();
+    });
+
+    it('should return InternalServerException if particle service update fails', async () => {
+      const updateConfiguration = { ...mockDtoBrewGood };
+      const device = await createDeviceInDb(deviceModel, mockDeviceOnline);
+      await createConfFromDto(deviceModel, confModel, mockDtoBrewUpdate);
+      mockDeviceSvc.findById.mockResolvedValue(device);
+      mockDeviceSvc.findConnectedDeviceFromDevice();
+      mockParticleService.sendConfiguration.mockRejectedValue(
+        new Error('particle failed'),
+      );
+
+      await expect(service.update(2, updateConfiguration)).rejects.toEqual(
+        new InternalServerErrorException('particle failed'),
+      );
+    });
+  });
 });

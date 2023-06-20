@@ -26,7 +26,7 @@ export class ConfigurationsService {
     private particle: ParticleService,
   ) {}
 
-  public async findAll(archived: boolean): Promise<ConfigurationDocument[]> {
+  async findAll(archived: boolean): Promise<ConfigurationDocument[]> {
     try {
       return await this.configurationModel
         .find({
@@ -38,7 +38,7 @@ export class ConfigurationsService {
     }
   }
 
-  public async save(
+  async save(
     configurationDto: ConfigurationDto,
   ): Promise<ConfigurationDocument> {
     const { deviceId, ...confDto } = configurationDto;
@@ -74,6 +74,33 @@ export class ConfigurationsService {
     } catch (error) {
       throw new InternalServerErrorException(error.body ?? error);
     }
+  }
+
+  async update(
+    id: number,
+    configurationDto: ConfigurationDto,
+  ): Promise<ConfigurationDocument> {
+    let configurationFound = false;
+
+    try {
+      const configurationDoc = await this.configurationModel
+        .findOne({ id })
+        .exec();
+
+      if (configurationDoc !== null) {
+        configurationFound = true;
+      }
+    } catch (error) {
+      throw new InternalServerErrorException(error.body ?? error);
+    }
+
+    if (!configurationFound) {
+      throw new NotFoundException('Configuration not found');
+    }
+
+    configurationDto.id = id;
+
+    return this.save(configurationDto);
   }
 
   private validateConnectedDevices(
