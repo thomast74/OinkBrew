@@ -4,7 +4,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import * as argon2 from 'argon2';
 import { Model } from 'mongoose';
-import * as request from 'supertest';
+import request from 'supertest';
 
 import {
   closeDatabaseE2E,
@@ -24,7 +24,7 @@ import { ARGON_OPTIONS } from '../constants';
 import { Device } from '../devices/schemas';
 import { User } from '../users/schemas';
 import { createUserInDb } from '../users/tests/users-helper.mock';
-import { BrewConfiguration, Configuration } from './schemas';
+import { Configuration } from './schemas';
 import {
   expectedConfigurationBrewArchived,
   expectedConfigurationBrewNotArchived,
@@ -95,7 +95,6 @@ describe('ConfigurationsController (e2e)', () => {
 
   afterAll(async () => {
     await closeDatabaseE2E();
-    await app.close();
   });
 
   describe('GET /configurations', () => {

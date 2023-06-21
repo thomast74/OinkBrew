@@ -1,4 +1,4 @@
-import * as Particle from 'particle-api-js';
+import Particle from 'particle-api-js';
 
 import { ConnectedDeviceHelper } from '../src/devices/helpers';
 import { ConnectedDevice, Device } from '../src/devices/schemas';

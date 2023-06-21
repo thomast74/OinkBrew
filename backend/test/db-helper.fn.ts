@@ -1,5 +1,5 @@
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import mongoose, { ConnectionStates, Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 
 import {
   BrewConfiguration,
@@ -55,7 +55,7 @@ export function getConfigurationModel(): Model<Configuration> {
 }
 
 export async function clearDatabase() {
-  if (mongoose.connection.readyState === ConnectionStates.disconnected) {
+  if (mongoose.connection.readyState === 0) {
     await connectDatabase();
   }
 
@@ -77,7 +77,7 @@ export async function clearDatabaseCollections() {
 }
 
 export async function closeDatabase() {
-  if (mongoose.connection.readyState === ConnectionStates.disconnected) {
+  if (mongoose.connection.readyState === 0) {
     await connectDatabase();
   }
 
@@ -91,7 +91,7 @@ export async function connectDatabaseE2E() {
 }
 
 export async function closeDatabaseE2E() {
-  if (mongoose.connection.readyState === ConnectionStates.disconnected) {
+  if (mongoose.connection.readyState === 0) {
     await connectDatabase();
   }
 

@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 
 import { parseJSON } from 'date-fns';
-import * as Particle from 'particle-api-js';
+import Particle from 'particle-api-js';
 import {
   catchError,
   firstValueFrom,

@@ -5,7 +5,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import * as argon2 from 'argon2';
 import { Model } from 'mongoose';
 import { authenticator } from 'otplib';
-import * as request from 'supertest';
+import request from 'supertest';
 
 import {
   clearDatabase,
@@ -56,7 +56,6 @@ describe('AuthController (e2e)', () => {
 
   afterAll(async () => {
     await closeDatabaseE2E();
-    await app.close();
   });
 
   describe('POST /auth/signup', () => {

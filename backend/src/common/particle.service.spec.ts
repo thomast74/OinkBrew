@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { parseJSON } from 'date-fns';
-import * as Particle from 'particle-api-js';
+import { ParticleMock } from 'particle-api-js';
 
 import { mockBrewNotArchived } from '../configurations/tests/brew-configurations.mock';
 import { ParticleService } from './particle.service';
@@ -12,7 +12,6 @@ describe('ParticleService', () => {
 
   beforeEach(() => {
     jest.resetModules();
-    Particle.mockCallFunction.mockReset();
 
     process.env = { ...env };
 
@@ -34,10 +33,10 @@ describe('ParticleService', () => {
     it('should init particle with clientId and clientSecret', () => {
       testModule.get<ParticleService>(ParticleService);
 
-      expect(Particle?.mockConstructorOptions?.clientId).toEqual(
+      expect(ParticleMock.mockConstructorOptions().clientId).toEqual(
         'my_client_id',
       );
-      expect(Particle?.mockConstructorOptions?.clientSecret).toEqual(
+      expect(ParticleMock.mockConstructorOptions().clientSecret).toEqual(
         'my_client_secret',
       );
     });
@@ -45,7 +44,7 @@ describe('ParticleService', () => {
     it('should immediatelly loginAsClientOwner', () => {
       testModule.get<ParticleService>(ParticleService);
 
-      expect(Particle?.mockLoginAsClientOwner).toHaveBeenCalledWith({
+      expect(ParticleMock.mockLoginAsClientOwner).toHaveBeenCalledWith({
         headers: {},
         context: undefined,
       });
@@ -58,13 +57,13 @@ describe('ParticleService', () => {
 
       await testSubject.listDevices();
 
-      expect(Particle?.mockListDevices).toHaveBeenCalledWith({
+      expect(ParticleMock.mockListDevices).toHaveBeenCalledWith({
         auth: '123456',
       });
     });
 
     it('should return devices retrieved in body', async () => {
-      Particle.mockListDevices.mockResolvedValue({
+      ParticleMock.mockListDevices.mockResolvedValue({
         body: [{ name: 'control-box' }, { name: 'fridge-box' }],
       });
       const testSubject = testModule.get<ParticleService>(ParticleService);
@@ -75,7 +74,7 @@ describe('ParticleService', () => {
     });
 
     it('should return no devices in case of api error', async () => {
-      Particle.mockListDevices.mockRejectedValue('api error');
+      ParticleMock.mockListDevices.mockRejectedValue('api error');
       const testSubject = testModule.get<ParticleService>(ParticleService);
 
       const devices = await testSubject.listDevices();
@@ -84,7 +83,7 @@ describe('ParticleService', () => {
     });
 
     it('should return no devices in case of map error 1', async () => {
-      Particle.mockListDevices.mockResolvedValue({});
+      ParticleMock.mockListDevices.mockResolvedValue({});
       const testSubject = testModule.get<ParticleService>(ParticleService);
 
       const devices = await testSubject.listDevices();
@@ -93,7 +92,7 @@ describe('ParticleService', () => {
     });
 
     it('should return no devices in case of map error 2', async () => {
-      Particle.mockListDevices.mockResolvedValue(undefined);
+      ParticleMock.mockListDevices.mockResolvedValue(undefined);
       const testSubject = testModule.get<ParticleService>(ParticleService);
 
       const devices = await testSubject.listDevices();
@@ -104,12 +103,12 @@ describe('ParticleService', () => {
 
   describe('updateDevice', () => {
     it('should update device name and notes to particle io', async () => {
-      Particle.mockUpdateDevice.mockResolvedValue({ body: '' });
+      ParticleMock.mockUpdateDevice.mockResolvedValue({ body: '' });
       const testSubject = testModule.get<ParticleService>(ParticleService);
 
       await testSubject.updateDevice('aaa', 'new name', 'my notes');
 
-      expect(Particle.mockUpdateDevice).toHaveBeenCalledWith({
+      expect(ParticleMock.mockUpdateDevice).toHaveBeenCalledWith({
         auth: '123456',
         deviceId: 'aaa',
         name: 'new name',
@@ -118,7 +117,7 @@ describe('ParticleService', () => {
     });
 
     it('should return update response with isSuccessful true', async () => {
-      Particle.mockUpdateDevice.mockResolvedValue({});
+      ParticleMock.mockUpdateDevice.mockResolvedValue({});
       const testSubject = testModule.get<ParticleService>(ParticleService);
 
       const response = await testSubject.updateDevice(
@@ -131,7 +130,7 @@ describe('ParticleService', () => {
     });
 
     it('should return update response with isSuccessful false and error returned', async () => {
-      Particle.mockUpdateDevice.mockRejectedValue({
+      ParticleMock.mockUpdateDevice.mockRejectedValue({
         statusCode: 403,
         body: { info: 'Device update error' },
       });
@@ -151,12 +150,12 @@ describe('ParticleService', () => {
 
   describe('updateConnectedDeviceOffset', () => {
     it('should send new offset to device', async () => {
-      Particle.mockCallFunction.mockResolvedValue({ body: {} });
+      ParticleMock.mockCallFunction.mockResolvedValue({ body: {} });
       const testSubject = testModule.get<ParticleService>(ParticleService);
 
       await testSubject.updateConnectedDeviceOffset('aaa', 17, '00000000', 0.7);
 
-      expect(Particle.mockCallFunction).toHaveBeenCalledWith({
+      expect(ParticleMock.mockCallFunction).toHaveBeenCalledWith({
         auth: '123456',
         deviceId: 'aaa',
         name: 'setConfig',
@@ -172,7 +171,7 @@ describe('ParticleService', () => {
     });
 
     it('should return UpdateResponse with isSuccessful false and error code', async () => {
-      Particle.mockCallFunction.mockRejectedValue({
+      ParticleMock.mockCallFunction.mockRejectedValue({
         statusCode: 403,
         body: { info: 'Device not found' },
       });
@@ -193,7 +192,7 @@ describe('ParticleService', () => {
     });
 
     it('should return UpdateResponse with isSuccessful true', async () => {
-      Particle.mockCallFunction.mockResolvedValue({});
+      ParticleMock.mockCallFunction.mockResolvedValue({});
       const testSubject = testModule.get<ParticleService>(ParticleService);
 
       const updateResponse = await testSubject.updateConnectedDeviceOffset(
@@ -211,14 +210,14 @@ describe('ParticleService', () => {
 
   describe('getVariable', () => {
     it('should call particle service with deviceId, name and auth token', async () => {
-      Particle.mockGetVariable.mockResolvedValue({
+      ParticleMock.mockGetVariable.mockResolvedValue({
         body: { result: '' },
       });
       const testSubject = testModule.get<ParticleService>(ParticleService);
 
       await testSubject.getVariable('aaa', 'bbb');
 
-      expect(Particle.mockGetVariable).toHaveBeenCalledWith({
+      expect(ParticleMock.mockGetVariable).toHaveBeenCalledWith({
         deviceId: 'aaa',
         name: 'bbb',
         auth: '123456',
@@ -226,7 +225,7 @@ describe('ParticleService', () => {
     });
 
     it('should should return empty string in case Particle returns error', async () => {
-      Particle.mockGetVariable.mockRejectedValue('bad error');
+      ParticleMock.mockGetVariable.mockRejectedValue('bad error');
       const testSubject = testModule.get<ParticleService>(ParticleService);
 
       const value = await testSubject.getVariable('aaa', 'bbb');
@@ -235,7 +234,7 @@ describe('ParticleService', () => {
     });
 
     it('should should return empty string in case empty response', async () => {
-      Particle.mockGetVariable.mockResolvedValue(undefined);
+      ParticleMock.mockGetVariable.mockResolvedValue(undefined);
       const testSubject = testModule.get<ParticleService>(ParticleService);
 
       const value = await testSubject.getVariable('aaa', 'bbb');
@@ -244,7 +243,7 @@ describe('ParticleService', () => {
     });
 
     it('should should return value as string', async () => {
-      Particle.mockGetVariable.mockResolvedValue({
+      ParticleMock.mockGetVariable.mockResolvedValue({
         body: { result: 'fff' },
       });
       const testSubject = testModule.get<ParticleService>(ParticleService);
@@ -255,7 +254,7 @@ describe('ParticleService', () => {
     });
 
     it('should should return value as is', async () => {
-      Particle.mockGetVariable.mockResolvedValue({
+      ParticleMock.mockGetVariable.mockResolvedValue({
         body: { result: { key: 'fff' } },
       });
       const testSubject = testModule.get<ParticleService>(ParticleService);
@@ -268,7 +267,7 @@ describe('ParticleService', () => {
 
   describe('sendConfiguration', () => {
     it('should send configuration to particle io', async () => {
-      Particle.mockCallFunction.mockResolvedValue({ body: '' });
+      ParticleMock.mockCallFunction.mockResolvedValue({ body: '' });
       const testSubject = testModule.get<ParticleService>(ParticleService);
       const confToSend = { ...mockBrewNotArchived } as any;
 
@@ -279,7 +278,7 @@ describe('ParticleService', () => {
         command: 2,
         data: confToSend,
       };
-      expect(Particle.mockCallFunction).toHaveBeenCalledWith({
+      expect(ParticleMock.mockCallFunction).toHaveBeenCalledWith({
         deviceId: 'ccc',
         name: 'setConfig',
         argument: JSON.stringify(data),
@@ -288,7 +287,9 @@ describe('ParticleService', () => {
     });
 
     it('should return an error if update fails', async () => {
-      Particle.mockCallFunction.mockRejectedValue(new Error('bad api error'));
+      ParticleMock.mockCallFunction.mockRejectedValue(
+        new Error('bad api error'),
+      );
       const testSubject = testModule.get<ParticleService>(ParticleService);
       const confToSend = { ...mockBrewNotArchived } as any;
 
@@ -300,12 +301,12 @@ describe('ParticleService', () => {
 
   describe('restart', () => {
     it('should send restart request to device', async () => {
-      Particle.mockCallFunction.mockResolvedValue({ body: {} });
+      ParticleMock.mockCallFunction.mockResolvedValue({ body: {} });
       const testSubject = testModule.get<ParticleService>(ParticleService);
 
       await testSubject.restart('aaa');
 
-      expect(Particle.mockCallFunction).toHaveBeenCalledWith({
+      expect(ParticleMock.mockCallFunction).toHaveBeenCalledWith({
         auth: '123456',
         deviceId: 'aaa',
         name: 'setConfig',
@@ -317,7 +318,7 @@ describe('ParticleService', () => {
     });
 
     it('should return UpdateResponse with isSuccessful false and error code', async () => {
-      Particle.mockCallFunction.mockRejectedValue({
+      ParticleMock.mockCallFunction.mockRejectedValue({
         statusCode: 403,
         body: { info: 'Device not found' },
       });
@@ -333,7 +334,7 @@ describe('ParticleService', () => {
     });
 
     it('should return UpdateResponse with isSuccessful true', async () => {
-      Particle.mockCallFunction.mockResolvedValue({});
+      ParticleMock.mockCallFunction.mockResolvedValue({});
       const testSubject = testModule.get<ParticleService>(ParticleService);
 
       const updateResponse = await testSubject.restart('aaa');
@@ -350,7 +351,7 @@ describe('ParticleService', () => {
 
       testSubject.eventStream().subscribe();
 
-      expect(Particle.mockGetEventStream).toBeCalledWith({
+      expect(ParticleMock.mockGetEventStream).toBeCalledWith({
         deviceId: 'mine',
         name: 'oinkbrew',
         auth: '123456',
@@ -358,13 +359,13 @@ describe('ParticleService', () => {
     });
 
     it('should only start listening to particle events once', async () => {
-      Particle.mockGetEventStream.mockClear();
+      ParticleMock.mockGetEventStream.mockClear();
       const testSubject = testModule.get<ParticleService>(ParticleService);
 
       testSubject.eventStream().subscribe();
       testSubject.eventStream().subscribe();
 
-      expect(Particle.mockGetEventStream).toHaveBeenCalledTimes(1);
+      expect(ParticleMock.mockGetEventStream).toHaveBeenCalledTimes(1);
     });
 
     it('should send new particle events to event stream', async () => {
@@ -377,14 +378,14 @@ describe('ParticleService', () => {
         },
       });
       await new Promise(setImmediate);
-      Particle.mockStreamResponse(sendEventData);
+      ParticleMock.mockStreamResponse(sendEventData);
 
       expect(receivedEventData).toEqual(expectedEventData);
     });
 
     it('should send error to event stream in case particle event failed', async () => {
       let receivedError;
-      Particle.mockGetEventStream.mockRejectedValue('This is an error');
+      ParticleMock.mockGetEventStream.mockRejectedValue('This is an error');
       const testSubject = testModule.get<ParticleService>(ParticleService);
 
       testSubject.eventStream().subscribe({

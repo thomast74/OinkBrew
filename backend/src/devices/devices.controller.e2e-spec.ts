@@ -6,7 +6,7 @@ import { faker } from '@faker-js/faker';
 import * as argon2 from 'argon2';
 import 'jest-extended';
 import { Model } from 'mongoose';
-import * as request from 'supertest';
+import request from 'supertest';
 
 import {
   closeDatabaseE2E,
@@ -97,7 +97,6 @@ describe('DevicesController (e2e)', () => {
 
   afterAll(async () => {
     await closeDatabaseE2E();
-    await app.close();
   });
 
   describe('GET /devices', () => {
@@ -337,7 +336,7 @@ describe('DevicesController (e2e)', () => {
 
     it('should update name and notes in database', async () => {
       const name = faker.word.noun();
-      const notes = faker.random.words(5);
+      const notes = faker.word.words(5);
 
       const response = await request(app.getHttpServer())
         .put(`/devices/${expectedDevice2.id}`)
@@ -358,7 +357,7 @@ describe('DevicesController (e2e)', () => {
 
     it('should update name and notes in ParticleIO', async () => {
       const name = faker.word.noun();
-      const notes = faker.random.words(5);
+      const notes = faker.word.words(5);
 
       await request(app.getHttpServer())
         .put(`/devices/${expectedDevice2.id}`)
