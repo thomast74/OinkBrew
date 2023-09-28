@@ -1,10 +1,9 @@
 import {
-  Body,
   Controller,
   DefaultValuePipe,
+  Delete,
   Get,
   HttpCode,
-  HttpException,
   HttpStatus,
   InternalServerErrorException,
   Logger,
@@ -13,14 +12,12 @@ import {
   Post,
   Put,
   Query,
-  UsePipes,
-  ValidationPipe,
 } from '@nestjs/common';
 
+import { getErrorMessage } from '../helpers/error.converter';
 import { ConfigurationsService } from './configurations.service';
 import { ValidConfigurationBody } from './decorators';
 import { ConfigurationDto } from './dtos';
-import { ConfigurationValidationPipe } from './pipes';
 import { ConfigurationDocument } from './schemas';
 
 @Controller('configurations')
@@ -31,31 +28,35 @@ export class ConfigurationsController {
 
   @Get('/')
   @HttpCode(HttpStatus.OK)
-  async getListOfConfigurations(
+  async getList(
     @Query('archived', new DefaultValuePipe(false), ParseBoolPipe)
     archived = false,
   ): Promise<ConfigurationDocument[]> {
     try {
       return (await this.configurations.findAll(archived)) ?? [];
     } catch (error) {
-      throw new InternalServerErrorException(error.message ?? error);
+      throw new InternalServerErrorException(getErrorMessage(error));
     }
   }
 
   @Post('/')
   @HttpCode(HttpStatus.CREATED)
-  async createConfiguration(
-    @ValidConfigurationBody() configuration: ConfigurationDto,
-  ) {
+  create(@ValidConfigurationBody() configuration: ConfigurationDto) {
     return this.configurations.save(configuration);
   }
 
   @Put('/:id')
   @HttpCode(HttpStatus.CREATED)
-  async updateConfiguration(
+  update(
     @Param('id') id: number,
     @ValidConfigurationBody() configuration: ConfigurationDto,
   ) {
     return this.configurations.update(id, configuration);
+  }
+
+  @Delete('/:id')
+  @HttpCode(HttpStatus.OK)
+  async delete(@Param('id') id: number) {
+    return this.configurations.delete(id);
   }
 }

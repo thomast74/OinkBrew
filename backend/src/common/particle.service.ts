@@ -191,6 +191,32 @@ export class ParticleService {
     return firstValueFrom($source);
   }
 
+  public deleteConfiguration(configuration: Configuration): Promise<void> {
+    const confToSend = { id: configuration.id };
+
+    const data = {
+      command: 3,
+      data: confToSend,
+    };
+
+    const $source = this.tokenInfo.pipe(
+      tap(() => this.logger.debug('callFunction: REMOVE_CONFIGURATION')),
+      switchMap((tokens: any) =>
+        from(
+          this.particle.callFunction({
+            deviceId: configuration.device.id,
+            name: 'setConfig',
+            argument: JSON.stringify(data),
+            auth: tokens.access_token,
+          }),
+        ),
+      ),
+      map(() => void 0),
+    );
+
+    return firstValueFrom($source);
+  }
+
   public getVariable(deviceId: string, name: string): Promise<any> {
     const $source = this.tokenInfo.pipe(
       tap(() => this.logger.debug('Get devices')),

@@ -3,7 +3,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { parseJSON } from 'date-fns';
 import { ParticleMock } from 'particle-api-js';
 
+import { Configuration } from '../configurations/schemas';
 import { mockBrewNotArchived } from '../configurations/tests/brew-configurations.mock';
+import { mockDeviceOnline } from '../devices/tests/devices.mock';
 import { ParticleService } from './particle.service';
 
 describe('ParticleService', () => {
@@ -24,6 +26,7 @@ describe('ParticleService', () => {
   });
 
   beforeEach(async () => {
+    ParticleMock.mockCallFunction.mockClear();
     testModule = await Test.createTestingModule({
       providers: [ParticleService],
     }).compile();
@@ -296,6 +299,44 @@ describe('ParticleService', () => {
       await expect(testSubject.sendConfiguration(confToSend)).rejects.toEqual(
         new Error('bad api error'),
       );
+    });
+  });
+
+  describe('deleteConfiguration', () => {
+    it('should send configuration to particle io', async () => {
+      ParticleMock.mockCallFunction.mockResolvedValue({ body: '' });
+      const testSubject = testModule.get<ParticleService>(ParticleService);
+      const dataToSend = { id: 2 } as any;
+
+      await testSubject.deleteConfiguration({
+        id: 2,
+        device: mockDeviceOnline,
+      } as Configuration);
+
+      const data = {
+        command: 3,
+        data: dataToSend,
+      };
+      expect(ParticleMock.mockCallFunction).toHaveBeenCalledWith({
+        deviceId: 'ccc',
+        name: 'setConfig',
+        argument: JSON.stringify(data),
+        auth: '123456',
+      });
+    });
+
+    it('should return an error if update fails', async () => {
+      ParticleMock.mockCallFunction.mockRejectedValue(
+        new Error('bad api error'),
+      );
+      const testSubject = testModule.get<ParticleService>(ParticleService);
+
+      await expect(
+        testSubject.sendConfiguration({
+          id: 2,
+          device: mockDeviceOnline,
+        } as Configuration),
+      ).rejects.toEqual(new Error('bad api error'));
     });
   });
 

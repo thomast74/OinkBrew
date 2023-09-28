@@ -26,6 +26,7 @@ describe('ConfigurationsController', () => {
     findAll: jest.fn(),
     save: jest.fn(),
     update: jest.fn(),
+    delete: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -43,10 +44,7 @@ describe('ConfigurationsController', () => {
       const controller = module.get<ConfigurationsController>(
         ConfigurationsController,
       );
-      const metadata = Reflect.getMetadata(
-        IS_PUBLIC_KEY,
-        controller.getListOfConfigurations,
-      );
+      const metadata = Reflect.getMetadata(IS_PUBLIC_KEY, controller.getList);
 
       expect(metadata).toBeUndefined();
     });
@@ -55,14 +53,8 @@ describe('ConfigurationsController', () => {
       const controller = module.get<ConfigurationsController>(
         ConfigurationsController,
       );
-      const method = Reflect.getMetadata(
-        METHOD_METADATA,
-        controller.getListOfConfigurations,
-      );
-      const path = Reflect.getMetadata(
-        PATH_METADATA,
-        controller.getListOfConfigurations,
-      );
+      const method = Reflect.getMetadata(METHOD_METADATA, controller.getList);
+      const path = Reflect.getMetadata(PATH_METADATA, controller.getList);
 
       expect(method).toEqual(RequestMethod.GET);
       expect(path).toEqual('/');
@@ -74,7 +66,7 @@ describe('ConfigurationsController', () => {
       );
       const metadata = Reflect.getMetadata(
         HTTP_CODE_METADATA,
-        controller.getListOfConfigurations,
+        controller.getList,
       );
 
       expect(metadata).toEqual(HttpStatus.OK);
@@ -85,7 +77,7 @@ describe('ConfigurationsController', () => {
         ConfigurationsController,
       );
 
-      await controller.getListOfConfigurations();
+      await controller.getList();
 
       expect(mockConfigurationsService.findAll).toHaveBeenCalledWith(false);
     });
@@ -95,7 +87,7 @@ describe('ConfigurationsController', () => {
         ConfigurationsController,
       );
 
-      await controller.getListOfConfigurations(true);
+      await controller.getList(true);
 
       expect(mockConfigurationsService.findAll).toHaveBeenCalledWith(true);
     });
@@ -112,7 +104,7 @@ describe('ConfigurationsController', () => {
         expectedConfigurations,
       );
 
-      const response = await controller.getListOfConfigurations();
+      const response = await controller.getList();
 
       expect(response).toBe(expectedConfigurations);
     });
@@ -123,7 +115,7 @@ describe('ConfigurationsController', () => {
       );
       mockConfigurationsService.findAll.mockRejectedValue('db error');
 
-      await expect(controller.getListOfConfigurations()).rejects.toEqual(
+      await expect(controller.getList()).rejects.toEqual(
         new InternalServerErrorException('db error'),
       );
     });
@@ -134,10 +126,7 @@ describe('ConfigurationsController', () => {
       const controller = module.get<ConfigurationsController>(
         ConfigurationsController,
       );
-      const metadata = Reflect.getMetadata(
-        IS_PUBLIC_KEY,
-        controller.createConfiguration,
-      );
+      const metadata = Reflect.getMetadata(IS_PUBLIC_KEY, controller.create);
 
       expect(metadata).toBeUndefined();
     });
@@ -146,14 +135,8 @@ describe('ConfigurationsController', () => {
       const controller = module.get<ConfigurationsController>(
         ConfigurationsController,
       );
-      const method = Reflect.getMetadata(
-        METHOD_METADATA,
-        controller.createConfiguration,
-      );
-      const path = Reflect.getMetadata(
-        PATH_METADATA,
-        controller.createConfiguration,
-      );
+      const method = Reflect.getMetadata(METHOD_METADATA, controller.create);
+      const path = Reflect.getMetadata(PATH_METADATA, controller.create);
 
       expect(method).toEqual(RequestMethod.POST);
       expect(path).toEqual('/');
@@ -165,7 +148,7 @@ describe('ConfigurationsController', () => {
       );
       const metadata = Reflect.getMetadata(
         HTTP_CODE_METADATA,
-        controller.createConfiguration,
+        controller.create,
       );
 
       expect(metadata).toEqual(HttpStatus.CREATED);
@@ -176,9 +159,7 @@ describe('ConfigurationsController', () => {
         ConfigurationsController,
       );
 
-      await controller.createConfiguration(
-        brewConfValid as BrewConfigurationDto,
-      );
+      await controller.create(brewConfValid as BrewConfigurationDto);
 
       expect(mockConfigurationsService.save).toHaveBeenCalledWith(
         brewConfValid,
@@ -190,9 +171,7 @@ describe('ConfigurationsController', () => {
         ConfigurationsController,
       );
 
-      await controller.createConfiguration(
-        fridgeConfValid as FridgeConfigurationDto,
-      );
+      await controller.create(fridgeConfValid as FridgeConfigurationDto);
 
       expect(mockConfigurationsService.save).toHaveBeenCalledWith(
         fridgeConfValid,
@@ -208,9 +187,7 @@ describe('ConfigurationsController', () => {
       );
 
       await expect(
-        controller.createConfiguration(
-          fridgeConfValid as FridgeConfigurationDto,
-        ),
+        controller.create(fridgeConfValid as FridgeConfigurationDto),
       ).rejects.toEqual(new NotFoundException('Device not found'));
     });
 
@@ -220,7 +197,7 @@ describe('ConfigurationsController', () => {
       );
       mockConfigurationsService.save.mockResolvedValue(fridgeConfValid);
 
-      const response = await controller.createConfiguration(
+      const response = await controller.create(
         fridgeConfValid as FridgeConfigurationDto,
       );
 
@@ -233,10 +210,7 @@ describe('ConfigurationsController', () => {
       const controller = module.get<ConfigurationsController>(
         ConfigurationsController,
       );
-      const metadata = Reflect.getMetadata(
-        IS_PUBLIC_KEY,
-        controller.updateConfiguration,
-      );
+      const metadata = Reflect.getMetadata(IS_PUBLIC_KEY, controller.update);
 
       expect(metadata).toBeUndefined();
     });
@@ -245,14 +219,8 @@ describe('ConfigurationsController', () => {
       const controller = module.get<ConfigurationsController>(
         ConfigurationsController,
       );
-      const method = Reflect.getMetadata(
-        METHOD_METADATA,
-        controller.updateConfiguration,
-      );
-      const path = Reflect.getMetadata(
-        PATH_METADATA,
-        controller.updateConfiguration,
-      );
+      const method = Reflect.getMetadata(METHOD_METADATA, controller.update);
+      const path = Reflect.getMetadata(PATH_METADATA, controller.update);
 
       expect(method).toEqual(RequestMethod.PUT);
       expect(path).toEqual('/:id');
@@ -264,7 +232,7 @@ describe('ConfigurationsController', () => {
       );
       const metadata = Reflect.getMetadata(
         HTTP_CODE_METADATA,
-        controller.updateConfiguration,
+        controller.update,
       );
 
       expect(metadata).toEqual(HttpStatus.CREATED);
@@ -275,10 +243,7 @@ describe('ConfigurationsController', () => {
         ConfigurationsController,
       );
 
-      await controller.updateConfiguration(
-        6,
-        fridgeConfValid as FridgeConfigurationDto,
-      );
+      await controller.update(6, fridgeConfValid as FridgeConfigurationDto);
 
       expect(mockConfigurationsService.update).toHaveBeenCalledWith(
         6,
@@ -295,10 +260,7 @@ describe('ConfigurationsController', () => {
       );
 
       await expect(
-        controller.updateConfiguration(
-          6,
-          fridgeConfValid as FridgeConfigurationDto,
-        ),
+        controller.update(6, fridgeConfValid as FridgeConfigurationDto),
       ).rejects.toEqual(new NotFoundException('Configuration not found'));
     });
 
@@ -308,12 +270,69 @@ describe('ConfigurationsController', () => {
       );
       mockConfigurationsService.update.mockResolvedValue(fridgeConfValid);
 
-      const response = await controller.updateConfiguration(
+      const response = await controller.update(
         6,
         fridgeConfValid as FridgeConfigurationDto,
       );
 
       expect(response).toEqual(fridgeConfValid);
+    });
+  });
+
+  describe('DELETE /{id}', () => {
+    it('should not be public', () => {
+      const controller = module.get<ConfigurationsController>(
+        ConfigurationsController,
+      );
+      const metadata = Reflect.getMetadata(IS_PUBLIC_KEY, controller.delete);
+
+      expect(metadata).toBeUndefined();
+    });
+
+    it('should react to DELETE /{id}', () => {
+      const controller = module.get<ConfigurationsController>(
+        ConfigurationsController,
+      );
+      const method = Reflect.getMetadata(METHOD_METADATA, controller.delete);
+      const path = Reflect.getMetadata(PATH_METADATA, controller.delete);
+
+      expect(method).toEqual(RequestMethod.DELETE);
+      expect(path).toEqual('/:id');
+    });
+
+    it('should return HttpStatus.OK', () => {
+      const controller = module.get<ConfigurationsController>(
+        ConfigurationsController,
+      );
+      const metadata = Reflect.getMetadata(
+        HTTP_CODE_METADATA,
+        controller.delete,
+      );
+
+      expect(metadata).toEqual(HttpStatus.OK);
+    });
+
+    it('should call configurations service with id', async () => {
+      const controller = module.get<ConfigurationsController>(
+        ConfigurationsController,
+      );
+
+      await controller.delete(6);
+
+      expect(mockConfigurationsService.delete).toHaveBeenCalledWith(6);
+    });
+
+    it('should return any error received from configration service', async () => {
+      const controller = module.get<ConfigurationsController>(
+        ConfigurationsController,
+      );
+      mockConfigurationsService.delete.mockRejectedValue(
+        new NotFoundException('Configuration not found'),
+      );
+
+      await expect(controller.delete(6)).rejects.toEqual(
+        new NotFoundException('Configuration not found'),
+      );
     });
   });
 });

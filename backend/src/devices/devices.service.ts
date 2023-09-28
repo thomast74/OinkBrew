@@ -9,6 +9,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
 import { ParticleService } from '../common/particle.service';
+import { getErrorMessage } from '../helpers/error.converter';
 import { ConnectedDeviceHelper } from './helpers';
 import { ConnectedDevice, Device, DeviceDocument } from './schemas';
 
@@ -34,7 +35,7 @@ export class DevicesService {
     try {
       device = await this.deviceModel.findOne({ id: deviceId }).exec();
     } catch (error) {
-      throw new InternalServerErrorException(error);
+      throw new InternalServerErrorException(getErrorMessage(error));
     }
 
     if (!device) {
@@ -57,7 +58,7 @@ export class DevicesService {
       await this.save(device);
     } catch (error) {
       this.logger.error(`Update => General error: ${error}`);
-      throw new InternalServerErrorException(error.message || 'Unknown error');
+      throw new InternalServerErrorException(getErrorMessage(error));
     }
 
     const updateResponse = await this.particle.updateDevice(
@@ -81,7 +82,7 @@ export class DevicesService {
         .exec();
       this.logger.debug(`Saved ${device.id} to database`);
     } catch (error) {
-      throw new InternalServerErrorException(error);
+      throw new InternalServerErrorException(getErrorMessage(error));
     }
   }
 
@@ -142,8 +143,8 @@ export class DevicesService {
             `${updateResponse.errorCode}: ${updateResponse.info}`,
           );
         }
-      } catch (error) {
-        throw new InternalServerErrorException(error.message);
+      } catch (error: any) {
+        throw new InternalServerErrorException(getErrorMessage(error));
       }
     }
 

@@ -76,6 +76,11 @@ export async function clearDatabaseCollections() {
   }
 }
 
+export async function disconnectDatabase() {
+  await mongoose.disconnect();
+  await mongod.stop();
+}
+
 export async function closeDatabase() {
   if (mongoose.connection.readyState === 0) {
     await connectDatabase();

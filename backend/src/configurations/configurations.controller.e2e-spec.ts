@@ -362,4 +362,71 @@ describe('ConfigurationsController (e2e)', () => {
       );
     });
   });
+
+  describe('DELETE /configurations/{id}', () => {
+    it('should return not authenticated if no valid token provided', () => {
+      return request(app.getHttpServer())
+        .delete('/configurations/6')
+        .expect(401);
+    });
+
+    it('should return NotFoundException of configuration not found', async () => {
+      const response = await request(app.getHttpServer())
+        .delete('/configurations/32')
+        .set('Authorization', `Bearer ${validAccessToken}`)
+        .send(mockDtoBrewMissingDevice);
+
+      expect(response.statusCode).toBe(404);
+      const error = JSON.parse(response.text);
+
+      expect(error.message).toBe('Configuration not found');
+    });
+
+    it('should update the configuration in database', async () => {
+      const upddateConfiguration = {
+        ...mockDtoBrewGood,
+        id: 33,
+        name: 'normal update',
+        deviceId: 'ddd',
+      };
+      await createConfFromDto(deviceModel, confModel, {
+        ...upddateConfiguration,
+        name: 'old name',
+      });
+
+      const response = await request(app.getHttpServer())
+        .delete('/configurations/33')
+        .set('Authorization', `Bearer ${validAccessToken}`)
+        .send(upddateConfiguration);
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body).toBeDefined();
+
+      const updatedConf = await confModel.findOne({ id: 33 }).exec();
+      expect(updatedConf?.archived).toBeTrue();
+    });
+
+    it('should return InertalServerErrorException if particle update failed', async () => {
+      const upddateConfiguration = {
+        ...mockDtoBrewGood,
+        id: 34,
+        name: 'particle update',
+        deviceId: 'ccc',
+      };
+      await createConfFromDto(deviceModel, confModel, {
+        ...upddateConfiguration,
+        name: 'old particle',
+      });
+
+      const response = await request(app.getHttpServer())
+        .delete('/configurations/34')
+        .set('Authorization', `Bearer ${validAccessToken}`)
+        .send(upddateConfiguration);
+
+      expect(response.statusCode).toBe(500);
+      expect(response.body.info).toEqual(
+        "I didn't recognize that device name or ID, try opening https://api.particle.io/v1/devices?access_token=undefined",
+      );
+    });
+  });
 });

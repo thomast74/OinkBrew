@@ -12,6 +12,7 @@ import { ParticleService } from '../common/particle.service';
 import { DevicesService } from '../devices/devices.service';
 import { ConnectedDeviceHelper } from '../devices/helpers';
 import { Device } from '../devices/schemas';
+import { getErrorMessage } from '../helpers/error.converter';
 import { ConfigurationDto, ConnectedDeviceDto } from './dtos';
 import { Configuration, ConfigurationDocument } from './schemas';
 
@@ -72,7 +73,7 @@ export class ConfigurationsService {
 
       return configurationDoc;
     } catch (error) {
-      throw new InternalServerErrorException(error.body ?? error);
+      throw new InternalServerErrorException(getErrorMessage(error));
     }
   }
 
@@ -80,27 +81,46 @@ export class ConfigurationsService {
     id: number,
     configurationDto: ConfigurationDto,
   ): Promise<ConfigurationDocument> {
-    let configurationFound = false;
-
-    try {
-      const configurationDoc = await this.configurationModel
-        .findOne({ id })
-        .exec();
-
-      if (configurationDoc !== null) {
-        configurationFound = true;
-      }
-    } catch (error) {
-      throw new InternalServerErrorException(error.body ?? error);
-    }
-
-    if (!configurationFound) {
-      throw new NotFoundException('Configuration not found');
-    }
+    await this.getConfigurationIfExist(id);
 
     configurationDto.id = id;
 
     return this.save(configurationDto);
+  }
+
+  async delete(id: number): Promise<void> {
+    const configration = await this.getConfigurationIfExist(id);
+
+    configration.archived = true;
+
+    try {
+      await this.configurationModel.updateOne({ id }, configration).exec();
+
+      if (configration.device.online) {
+        await this.particle.deleteConfiguration(configration);
+      }
+    } catch (error: any) {
+      throw new InternalServerErrorException(getErrorMessage(error));
+    }
+  }
+
+  private async getConfigurationIfExist(
+    id: number,
+  ): Promise<ConfigurationDocument> {
+    try {
+      const configurationDoc = await this.configurationModel
+        .findOne({ id })
+        .populate('device')
+        .exec();
+
+      if (configurationDoc !== null) {
+        return configurationDoc;
+      }
+    } catch (error) {
+      throw new InternalServerErrorException(getErrorMessage(error));
+    }
+
+    throw new NotFoundException('Configuration not found');
   }
 
   private validateConnectedDevices(

@@ -12,6 +12,7 @@ import {
   clearDatabaseCollections,
   closeDatabase,
   connectDatabase,
+  disconnectDatabase,
   getConfigurationModel,
   getDeviceModel,
 } from '../../test/db-helper.fn';
@@ -21,6 +22,7 @@ import { Device } from '../devices/schemas';
 import { createDeviceInDb } from '../devices/tests/devices-helper.mock';
 import {
   mockDeviceForConfOffline,
+  mockDeviceOffline,
   mockDeviceOnline,
 } from '../devices/tests/devices.mock';
 import { ConfigurationsService } from './configurations.service';
@@ -50,6 +52,8 @@ describe('ConfigurationsService', () => {
 
   const mockParticleService = {
     sendConfiguration: jest.fn(),
+    removeConfiguration: jest.fn(),
+    deleteConfiguration: jest.fn(),
   };
 
   beforeAll(async () => {
@@ -82,6 +86,7 @@ describe('ConfigurationsService', () => {
 
   beforeEach(async () => {
     mockParticleService.sendConfiguration.mockReset();
+    mockParticleService.deleteConfiguration.mockReset();
     await connectDatabase();
   });
 
@@ -285,7 +290,7 @@ describe('ConfigurationsService', () => {
   });
 
   describe('update', () => {
-    it('should return NotFoundException if configurtion with id not found', async () => {
+    it('should return NotFoundException if configuration with id not found', async () => {
       const updateConfiguration = { ...mockDtoBrewMissingDevice };
       updateConfiguration.id = 22;
 
@@ -424,6 +429,80 @@ describe('ConfigurationsService', () => {
       );
 
       await expect(service.update(2, updateConfiguration)).rejects.toEqual(
+        new InternalServerErrorException('particle failed'),
+      );
+    });
+  });
+
+  describe('delete', () => {
+    it('should return NotFoundException if configuration with id not found', async () => {
+      await expect(service.delete(22)).rejects.toEqual(
+        new NotFoundException('Configuration not found'),
+      );
+    });
+
+    it('should return InternalServerErrorException if database has errors', async () => {
+      await disconnectDatabase();
+
+      await expect(service.delete(22)).rejects.toEqual(
+        new InternalServerErrorException(
+          'Client must be connected before running operations',
+        ),
+      );
+    });
+
+    it('should archive configuration in database', async () => {
+      const conf = { ...mockDtoBrewUpdate, deviceId: 'ddd' };
+      const device = await createDeviceInDb(deviceModel, mockDeviceOffline);
+      await createConfFromDto(deviceModel, confModel, conf);
+      mockDeviceSvc.findById.mockResolvedValue(device);
+      mockDeviceSvc.findConnectedDeviceFromDevice();
+
+      await service.delete(2);
+
+      const dbConf = await confModel
+        .findOne({ id: 2 })
+        .populate('device')
+        .exec();
+      expect(dbConf?.archived).toBeTrue();
+    });
+
+    it('should remove configuration from Particle if device is online', async () => {
+      const device = await createDeviceInDb(deviceModel, mockDeviceOnline);
+      await createConfFromDto(deviceModel, confModel, mockDtoBrewUpdate);
+      mockDeviceSvc.findById.mockResolvedValue(device);
+      mockDeviceSvc.findConnectedDeviceFromDevice();
+
+      await service.delete(2);
+
+      expect(mockParticleService.deleteConfiguration).toHaveBeenCalled();
+    });
+
+    it('should not send remove configuration to Particle if device is offline', async () => {
+      const device = await createDeviceInDb(
+        deviceModel,
+        mockDeviceForConfOffline,
+      );
+      await createConfFromDto(deviceModel, confModel, mockDtoBrewUpdate);
+      mockDeviceSvc.findById.mockResolvedValue(device);
+      mockDeviceSvc.findConnectedDeviceFromDevice();
+
+      await service.delete(2);
+
+      expect(mockParticleService.deleteConfiguration).not.toHaveBeenCalled();
+    });
+
+    it('should return InternalServerException if particle service update fails', async () => {
+      const device = await createDeviceInDb(deviceModel, mockDeviceOnline);
+      await createConfFromDto(deviceModel, confModel, mockDtoBrewUpdate);
+      mockDeviceSvc.findById.mockResolvedValue(device);
+      mockDeviceSvc.findConnectedDeviceFromDevice();
+
+      mockParticleService.deleteConfiguration.mockRejectedValue(
+        new Error('particle failed'),
+      );
+
+      await expect(service.delete(2)).rejects.toEqual(
         new InternalServerErrorException('particle failed'),
       );
     });
