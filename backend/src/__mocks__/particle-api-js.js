@@ -25,7 +25,7 @@ let streamResponse = undefined;
 const stream = {
   on: jest.fn(),
 };
-stream.on.mockImplementation((eventName, callback) => {
+stream.on.mockImplementation((_eventName, callback) => {
   streamResponse = callback;
 });
 
@@ -34,9 +34,7 @@ getEventStream.mockResolvedValue(stream);
 
 var Particle = (function () {
   function Particle() {
-    initOptions =
-      arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-    console.error(initOptions);
+    initOptions = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
   }
 
   Particle.prototype.loginAsClientOwner = loginAsClientOwner;

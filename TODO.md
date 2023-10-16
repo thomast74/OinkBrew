@@ -20,7 +20,7 @@
 | X)   | Configuration to Device assignment     | A configuration needs to be assigned to a device, change from Prisma to Mongoose                               |
 | X)   | POST /configurations                   | Create a new configuration, either Brew or Ferment, incl data verification of all fields and connected devices |
 | X)   | PUT /configurations/{id}               | Update a current configuration, if active and attached to a device send configuration to device                |
-|      | DELETE /configurations/{id}            | Archive configuration and remove from device                                                                   |
+| X)   | DELETE /configurations/{id}            | Archive configuration and remove from device                                                                   |
 | X)   | PUT /devices/{id}/restart              | Send restart command to device                                                                                 |
 |      | EVT /oinkbrew/start                    | When event received send active configuration to device + offset for sensors                                   |
 | X)   | EVT /oinkbrew/new                      | When device is newly discovered and sensor is connected send offset to device if differen to 0 and connected   |
