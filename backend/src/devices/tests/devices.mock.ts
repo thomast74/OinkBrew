@@ -43,7 +43,7 @@ export const mockDeviceOnline: Device = {
       connected: false,
     },
   ],
-  configuration: [],
+  configurations: [],
 };
 
 export const mockDeviceOffline: Device = {
@@ -88,7 +88,7 @@ export const mockDeviceOffline: Device = {
       connected: false,
     },
   ],
-  configuration: [],
+  configurations: [],
 };
 
 export const mockDeviceForConfOffline: Device = {
@@ -133,7 +133,7 @@ export const mockDeviceForConfOffline: Device = {
       connected: false,
     },
   ],
-  configuration: [],
+  configurations: [],
 };
 
 export const mockDeviceOnlineWithConnectedDevice = {

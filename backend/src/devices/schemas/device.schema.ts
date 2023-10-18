@@ -90,7 +90,7 @@ export class Device {
   @Prop({
     type: [{ type: MongooseSchema.Types.ObjectId, ref: 'Configuration' }],
   })
-  configuration: Configuration[];
+  configurations: Configuration[];
 }
 
 export const DeviceSchema = SchemaFactory.createForClass(Device);

@@ -5,17 +5,31 @@
 //    oinkbrew/devices/new
 //    oinkbrew/devices/remove
 //    oinkbrew/devices/values
-import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnApplicationBootstrap,
+  OnApplicationShutdown,
+  OnModuleDestroy,
+} from '@nestjs/common';
+
+import { de } from 'date-fns/locale';
+import { Subscription } from 'rxjs';
 
 import { ParticleService } from '../common/particle.service';
+import { Configuration } from '../configurations/schemas';
 import { DevicesService } from './devices.service';
 import { ConnectedDeviceHelper } from './helpers';
-import { Device } from './schemas';
+import { ConnectedDevice, Device } from './schemas';
 import { ConnectedDeviceType, EventData } from './types';
 
 @Injectable()
-export class DevicesEventListener implements OnApplicationBootstrap {
+export class DevicesEventListener
+  implements OnApplicationBootstrap, OnApplicationShutdown
+{
   private readonly logger = new Logger(DevicesEventListener.name);
+  private eventStreamRunning = false;
+  private eventStreamSubscription?: Subscription = undefined;
 
   constructor(
     private particle: ParticleService,
@@ -23,11 +37,20 @@ export class DevicesEventListener implements OnApplicationBootstrap {
   ) {}
 
   onApplicationBootstrap() {
+    if (this.eventStreamRunning) return;
+
     this.startEventStream();
+    this.eventStreamRunning = true;
+  }
+
+  onApplicationShutdown() {
+    if (this.eventStreamSubscription) {
+      this.eventStreamSubscription.unsubscribe();
+    }
   }
 
   private startEventStream(retryCount = 3) {
-    this.particle.eventStream().subscribe({
+    this.eventStreamSubscription = this.particle.eventStream().subscribe({
       next: (data) => {
         this.eventProcessor(data);
       },
@@ -62,9 +85,21 @@ export class DevicesEventListener implements OnApplicationBootstrap {
     }
   }
 
-  private oinkbrewStart(eventData: EventData) {
-    // TODO: send offset data
-    // TODO: send active configuration to device
+  private async oinkbrewStart(eventData: EventData): Promise<void> {
+    try {
+      const deviceId = eventData.coreid;
+      const device = await this.devices.findById(deviceId);
+
+      if (!device) return;
+
+      await device.populate('configurations');
+
+      for (const configuration of device.configurations) {
+        this.sendConfiguration(deviceId, configuration);
+      }
+    } catch (error) {
+      this.logger.error(error);
+    }
   }
 
   private async oinkbrewNewConnectedDevice(
@@ -105,21 +140,46 @@ export class DevicesEventListener implements OnApplicationBootstrap {
       hwAddress,
     );
 
-    if (!cDevice) {
-      return;
-    }
+    if (!cDevice) return;
 
+    await this.sendConnectedDeviceOffsetIfNeeded(device.id, cDevice);
+  }
+
+  private async sendConnectedDeviceOffsetIfNeeded(
+    deviceId: string,
+    cDevice: ConnectedDevice,
+  ): Promise<void> {
     if (
       cDevice.type === ConnectedDeviceType.ONEWIRE_TEMP &&
       cDevice.connected &&
+      cDevice.offset &&
       cDevice.offset !== 0.0
     ) {
       this.particle.updateConnectedDeviceOffset(
-        device.id,
-        pinNr,
-        hwAddress,
+        deviceId,
+        cDevice.pinNr,
+        cDevice.hwAddress,
         cDevice.offset,
       );
+    }
+  }
+  private async sendConfiguration(
+    deviceId: string,
+    configuration: Configuration,
+  ): Promise<void> {
+    if (configuration.archived) return;
+
+    if (!configuration.device) {
+      configuration.device = { id: deviceId } as any;
+    }
+    if (!configuration.device.id) {
+      configuration.device.id = deviceId;
+    }
+
+    try {
+      await this.particle.sendConfiguration(configuration);
+    } catch (error) {
+      this.logger.error(`Send Configuration: ${error}`);
     }
   }
 }

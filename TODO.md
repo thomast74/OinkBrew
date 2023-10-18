@@ -22,7 +22,7 @@
 | X)   | PUT /configurations/{id}               | Update a current configuration, if active and attached to a device send configuration to device                |
 | X)   | DELETE /configurations/{id}            | Archive configuration and remove from device                                                                   |
 | X)   | PUT /devices/{id}/restart              | Send restart command to device                                                                                 |
-|      | EVT /oinkbrew/start                    | When event received send active configuration to device + offset for sensors                                   |
+| X)   | EVT /oinkbrew/start                    | When event received send active configuration to device + offset for sensors                                   |
 | X)   | EVT /oinkbrew/new                      | When device is newly discovered and sensor is connected send offset to device if differen to 0 and connected   |
 |      | EVT /oinkbrew/devices/values           | Receive data vales and attach sensor data to conifguration                                                     |
 |      | GET /configurations/{id}/events        | Get a list of all events attached to configuration. This starts an active streamwith consistent updates        |
