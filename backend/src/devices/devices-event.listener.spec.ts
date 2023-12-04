@@ -1,11 +1,26 @@
 import { Logger } from '@nestjs/common';
-import { Test, TestingModule, TestingModuleBuilder } from '@nestjs/testing';
+import { Test, TestingModule } from '@nestjs/testing';
 
-import exp from 'constants';
+import { Model, Types } from 'mongoose';
 import { Subject } from 'rxjs';
 
+import {
+  clearDatabase,
+  closeDatabase,
+  connectDatabase,
+  getConfigurationModel,
+  getDeviceModel,
+} from '../../test/db-helper.fn';
 import { sleep } from '../../test/helper.fn';
 import { ParticleService } from '../common/particle.service';
+import { ConfigurationsService } from '../configurations/configurations.service';
+import { Configuration, SensorData } from '../configurations/schemas';
+import {
+  mockBrewArchivedForDeviceOnline,
+  mockBrewNotArchived,
+  mockBrewSecondForDeviceOnline,
+} from '../configurations/tests/brew-configurations.mock';
+import { createConfInDb } from '../configurations/tests/configuration-helper.mock';
 import { DevicesEventListener } from './devices-event.listener';
 import { DevicesService } from './devices.service';
 import { ConnectedDeviceHelper } from './helpers';
@@ -14,6 +29,8 @@ import { ConnectedDeviceType, EventData } from './types';
 
 describe('DevicesEventListener', () => {
   let listener: DevicesEventListener;
+  let confModel: Model<Configuration>;
+  let deviceModel: Model<Device>;
 
   let mockEventStream = new Subject<EventData>();
   const mockParticleService = {
@@ -29,6 +46,11 @@ describe('DevicesEventListener', () => {
     updateConnectedDeviceWithConnectStatus: jest.fn(),
   };
 
+  const mockConfigurationsService = {
+    findByDevice: jest.fn(),
+    saveDocument: jest.fn(),
+  };
+
   const mockLoggerService = {
     log: jest.fn(),
     warn: jest.fn(),
@@ -42,12 +64,20 @@ describe('DevicesEventListener', () => {
 
   let module: TestingModule;
 
+  beforeAll(async () => {
+    await connectDatabase();
+
+    deviceModel = getDeviceModel();
+    confModel = getConfigurationModel();
+  });
+
   beforeEach(async () => {
     module = await Test.createTestingModule({
       providers: [
         DevicesEventListener,
         ParticleService,
         DevicesService,
+        ConfigurationsService,
         {
           provide: Logger,
           useValue: mockLoggerService,
@@ -58,6 +88,8 @@ describe('DevicesEventListener', () => {
       .useValue(mockParticleService)
       .overrideProvider(DevicesService)
       .useValue(mockDevicesService)
+      .overrideProvider(ConfigurationsService)
+      .useValue(mockConfigurationsService)
       .compile();
     module.useLogger(mockLoggerService);
 
@@ -75,6 +107,11 @@ describe('DevicesEventListener', () => {
     if (module) {
       await module.close();
     }
+    await clearDatabase();
+  });
+
+  afterAll(async () => {
+    await closeDatabase();
   });
 
   describe('onApplicationBootstrap', () => {
@@ -124,10 +161,7 @@ describe('DevicesEventListener', () => {
       const device = {
         id: event.coreid,
         populate: jest.fn(),
-        configurations: [
-          { ...configurationArchived },
-          { ...configurationNotArchived },
-        ],
+        configurations: [{ ...configurationArchived }, { ...configurationNotArchived }],
       };
       mockDevicesService.findById.mockResolvedValue(device);
       device.populate.mockResolvedValue(void 0);
@@ -178,10 +212,7 @@ describe('DevicesEventListener', () => {
       const device = {
         id: event.coreid,
         populate: jest.fn(),
-        configurations: [
-          { ...configurationArchived },
-          { ...configurationNotArchived },
-        ],
+        configurations: [{ ...configurationArchived }, { ...configurationNotArchived }],
       };
       mockDevicesService.findById.mockResolvedValue(device);
       device.populate.mockRejectedValue('populate error');
@@ -246,9 +277,11 @@ describe('DevicesEventListener', () => {
       mockEventStream.next(event);
       await sleep(1000);
 
-      expect(
-        mockDevicesService.updateConnectedDeviceWithConnectStatus,
-      ).toHaveBeenCalledWith(event.coreid, expectedConnectedDevice, true);
+      expect(mockDevicesService.updateConnectedDeviceWithConnectStatus).toHaveBeenCalledWith(
+        event.coreid,
+        expectedConnectedDevice,
+        true,
+      );
     });
 
     it('should send offset to Particle if sensor is connected and a Temp Sensor', async () => {
@@ -262,17 +295,13 @@ describe('DevicesEventListener', () => {
       mockDevicesService.updateConnectedDeviceWithConnectStatus.mockResolvedValue(
         deviceWithTempSensorAndOffset,
       );
-      mockDevicesService.findConnectedDeviceFromDevice.mockReturnValue(
-        tempSensorWithOffset,
-      );
+      mockDevicesService.findConnectedDeviceFromDevice.mockReturnValue(tempSensorWithOffset);
 
       listener.onApplicationBootstrap();
       mockEventStream.next(event);
       await sleep(1000);
 
-      expect(
-        mockParticleService.updateConnectedDeviceOffset,
-      ).toHaveBeenCalledWith(
+      expect(mockParticleService.updateConnectedDeviceOffset).toHaveBeenCalledWith(
         deviceWithTempSensorAndOffset.id,
         tempSensorWithOffset.pinNr,
         tempSensorWithOffset.hwAddress,
@@ -299,9 +328,7 @@ describe('DevicesEventListener', () => {
       mockEventStream.next(event);
       await sleep(1000);
 
-      expect(
-        mockParticleService.updateConnectedDeviceOffset,
-      ).not.toHaveBeenCalled();
+      expect(mockParticleService.updateConnectedDeviceOffset).not.toHaveBeenCalled();
     });
 
     it('should not send offset to Particle if sensorhas offset of 0', async () => {
@@ -315,17 +342,13 @@ describe('DevicesEventListener', () => {
       mockDevicesService.updateConnectedDeviceWithConnectStatus.mockResolvedValue(
         deviceWithTempSensorAndNoOffset,
       );
-      mockDevicesService.findConnectedDeviceFromDevice.mockReturnValue(
-        tempSensorWithNoOffset,
-      );
+      mockDevicesService.findConnectedDeviceFromDevice.mockReturnValue(tempSensorWithNoOffset);
 
       listener.onApplicationBootstrap();
       mockEventStream.next(event);
       await sleep(1000);
 
-      expect(
-        mockParticleService.updateConnectedDeviceOffset,
-      ).not.toHaveBeenCalled();
+      expect(mockParticleService.updateConnectedDeviceOffset).not.toHaveBeenCalled();
     });
 
     it('should not send offset to Particle if sensor if not temp sensor', async () => {
@@ -339,17 +362,13 @@ describe('DevicesEventListener', () => {
       mockDevicesService.updateConnectedDeviceWithConnectStatus.mockResolvedValue(
         deviceWithNoTempSensor,
       );
-      mockDevicesService.findConnectedDeviceFromDevice.mockReturnValue(
-        noTempSensor,
-      );
+      mockDevicesService.findConnectedDeviceFromDevice.mockReturnValue(noTempSensor);
 
       listener.onApplicationBootstrap();
       mockEventStream.next(event);
       await sleep(1000);
 
-      expect(
-        mockParticleService.updateConnectedDeviceOffset,
-      ).not.toHaveBeenCalled();
+      expect(mockParticleService.updateConnectedDeviceOffset).not.toHaveBeenCalled();
     });
   });
 
@@ -367,9 +386,147 @@ describe('DevicesEventListener', () => {
       mockEventStream.next(event);
       await sleep(100);
 
-      expect(
-        mockDevicesService.updateConnectedDeviceWithConnectStatus,
-      ).toHaveBeenCalledWith(event.coreid, expectedConnectedDevice, false);
+      expect(mockDevicesService.updateConnectedDeviceWithConnectStatus).toHaveBeenCalledWith(
+        event.coreid,
+        expectedConnectedDevice,
+        false,
+      );
+    });
+  });
+
+  describe('event data: oinkbrew/devices/values', () => {
+    it('should add event data to active configuration', async () => {
+      await createConfInDb(deviceModel, confModel, mockBrewNotArchived);
+      await createConfInDb(deviceModel, confModel, mockBrewArchivedForDeviceOnline);
+      const eventDate = '2022-12-09T09:35:30+01:00';
+      const event = {
+        data: `[
+          {"pinNr": 0, "hwAddress": "2A00000000000000", "value": 20.000000},
+          {"pinNr": 0, "hwAddress": "2C00000000000000", "value": 30.000000}
+        ]`,
+        ttl: 60,
+        published_at: new Date(eventDate),
+        coreid: 'ccc',
+        name: 'oinkbrew/devices/values',
+      };
+      const expectedSensorData = new Map<string, SensorData[]>();
+      expectedSensorData.set(eventDate, [
+        { name: 'temp sensor name', value: 20.0, _id: expect.any(String) },
+      ]);
+      const activeConfigurations = await confModel.find({}).populate('device').exec();
+      mockConfigurationsService.findByDevice.mockResolvedValue(activeConfigurations);
+
+      listener.onApplicationBootstrap();
+      mockEventStream.next(event);
+      await sleep(100);
+
+      const configuration = await confModel.findOne({ id: 1 }).exec();
+      const sensorData = JSON.parse(JSON.stringify(configuration?.sensorData.get(eventDate)));
+      expect(mockConfigurationsService.findByDevice).toHaveBeenCalledWith('ccc');
+      expect(configuration?.sensorData?.size).toEqual(1);
+      expect(sensorData).toEqual(expectedSensorData.get(eventDate));
+    });
+
+    it('should add event to all configration with the same connected device', async () => {
+      await createConfInDb(deviceModel, confModel, mockBrewNotArchived);
+      await createConfInDb(deviceModel, confModel, mockBrewSecondForDeviceOnline);
+      const eventDate = '2022-12-09T09:35:30+01:00';
+      const event = {
+        data: `[
+          {"pinNr": 0, "hwAddress": "2A00000000000000", "value": 20.000000},
+          {"pinNr": 0, "hwAddress": "2C00000000000000", "value": 30.000000}
+        ]`,
+        ttl: 60,
+        published_at: new Date(eventDate),
+        coreid: 'ccc',
+        name: 'oinkbrew/devices/values',
+      };
+      const expectedSensorData = new Map<string, SensorData[]>();
+      expectedSensorData.set(eventDate, [
+        { name: 'temp sensor name', value: 20.0, _id: expect.any(String) },
+      ]);
+      const activeConfigurations = await confModel.find({}).populate('device').exec();
+      mockConfigurationsService.findByDevice.mockResolvedValue(activeConfigurations);
+
+      listener.onApplicationBootstrap();
+      mockEventStream.next(event);
+      await sleep(100);
+
+      const configuration1 = await confModel.findOne({ id: 1 }).exec();
+      const sensorData1 = JSON.parse(JSON.stringify(configuration1?.sensorData.get(eventDate)));
+
+      const configuration2 = await confModel.findOne({ id: 2 }).exec();
+      const sensorData2 = JSON.parse(JSON.stringify(configuration2?.sensorData.get(eventDate)));
+
+      expect(configuration1?.sensorData?.size).toEqual(1);
+      expect(configuration2?.sensorData?.size).toEqual(1);
+      expect(sensorData1).toEqual(expectedSensorData.get(eventDate));
+      expect(sensorData2).toEqual(expectedSensorData.get(eventDate));
+    });
+
+    it('should not add event data to archived configurations', async () => {
+      await createConfInDb(deviceModel, confModel, mockBrewNotArchived);
+      await createConfInDb(deviceModel, confModel, mockBrewArchivedForDeviceOnline);
+      const eventDate = '2022-12-09T09:35:30+01:00';
+      const event = {
+        data: `[
+          {"pinNr": 0, "hwAddress": "2A00000000000000", "value": 20.000000},
+          {"pinNr": 0, "hwAddress": "2C00000000000000", "value": 30.000000}
+        ]`,
+        ttl: 60,
+        published_at: new Date(eventDate),
+        coreid: 'ccc',
+        name: 'oinkbrew/devices/values',
+      };
+      const expectedSensorData = new Map<string, SensorData[]>();
+      expectedSensorData.set(eventDate, [
+        { name: 'temp sensor name', value: 20.0, _id: expect.any(String) },
+      ]);
+      const activeConfigurations = await confModel.find({}).populate('device').exec();
+      mockConfigurationsService.findByDevice.mockResolvedValue(activeConfigurations);
+
+      listener.onApplicationBootstrap();
+      mockEventStream.next(event);
+      await sleep(100);
+
+      const configuration = await confModel.findOne({ id: 2 }).exec();
+      expect(configuration?.sensorData?.size).toEqual(0);
+    });
+
+    it('should not overwrite existing event data', async () => {
+      await createConfInDb(deviceModel, confModel, mockBrewNotArchived);
+      await createConfInDb(deviceModel, confModel, mockBrewArchivedForDeviceOnline);
+      const eventDate1 = '2022-12-09T09:35:30+01:00';
+      const eventDate2 = '2022-12-09T09:35:40+01:00';
+      const eventData1 = `[
+        {"pinNr": 0, "hwAddress": "2A00000000000000", "value": 20.000000},
+        {"pinNr": 0, "hwAddress": "2C00000000000000", "value": 30.000000}
+      ]`;
+      const eventData2 = `[
+        {"pinNr": 0, "hwAddress": "2A00000000000000", "value": 25.000000},
+        {"pinNr": 0, "hwAddress": "2C00000000000000", "value": 30.000000}
+      ]`;
+      const event = {
+        ttl: 60,
+        coreid: 'ccc',
+        name: 'oinkbrew/devices/values',
+      };
+      const activeConfigurations = await confModel.find({}).populate('device').exec();
+      mockConfigurationsService.findByDevice.mockResolvedValue(activeConfigurations);
+
+      listener.onApplicationBootstrap();
+      mockEventStream.next({ ...event, data: eventData1, published_at: new Date(eventDate1) });
+      await sleep(100);
+      mockEventStream.next({ ...event, data: eventData2, published_at: new Date(eventDate2) });
+      await sleep(100);
+
+      const configuration = await confModel.findOne({ id: 1 }).exec();
+      const sensorData1 = JSON.parse(JSON.stringify(configuration?.sensorData.get(eventDate1)));
+      const sensorData2 = JSON.parse(JSON.stringify(configuration?.sensorData.get(eventDate2)));
+
+      expect(configuration?.sensorData?.size).toEqual(2);
+      expect(sensorData1[0].value).toEqual(20);
+      expect(sensorData2[0].value).toEqual(25);
     });
   });
 });

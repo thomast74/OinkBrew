@@ -1,8 +1,5 @@
 import { ConnectedDevice } from '../../devices/schemas';
-import {
-  mockDeviceOffline,
-  mockDeviceOnline,
-} from '../../devices/tests/devices.mock';
+import { mockDeviceOffline, mockDeviceOnline } from '../../devices/tests/devices.mock';
 import { ConnectedDeviceType } from '../../devices/types';
 import { BrewConfigurationDto } from '../dtos';
 import { BrewConfiguration } from '../schemas';
@@ -19,7 +16,7 @@ export const mockBrewNotArchived: BrewConfiguration = {
   heatActuator: {
     type: ConnectedDeviceType.ACTUATOR_PWM,
     pinNr: 17,
-    hwAddress: '000000000000',
+    hwAddress: '0000000000000000',
     connected: false,
     offset: 0,
     deviceOffset: 0,
@@ -27,7 +24,7 @@ export const mockBrewNotArchived: BrewConfiguration = {
   tempSensor: {
     type: ConnectedDeviceType.ONEWIRE_TEMP,
     pinNr: 0,
-    hwAddress: '2A0000000000',
+    hwAddress: '2A00000000000000',
     connected: false,
     offset: 0,
     deviceOffset: 0,
@@ -40,6 +37,77 @@ export const mockBrewNotArchived: BrewConfiguration = {
   pump1Pwm: 100.0,
   pump2Pwm: 100.0,
   archived: false,
+  sensorData: new Map(),
+};
+
+export const mockBrewArchivedForDeviceOnline: BrewConfiguration = {
+  type: ConfigurationType.BREW,
+  id: 2,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  device: mockDeviceOnline,
+  name: 'eee',
+  temperature: 65.0,
+  heatActuator: {
+    type: ConnectedDeviceType.ACTUATOR_PWM,
+    pinNr: 17,
+    hwAddress: '000000000000',
+    connected: false,
+    offset: 0,
+    deviceOffset: 0,
+  },
+  tempSensor: {
+    type: ConnectedDeviceType.ONEWIRE_TEMP,
+    pinNr: 0,
+    hwAddress: '2A00000000000000',
+    connected: false,
+    offset: 0,
+    deviceOffset: 0,
+  },
+  heatingPeriod: 5000,
+  p: 1,
+  i: 2,
+  d: 3,
+  heaterPwm: 0.0,
+  pump1Pwm: 100.0,
+  pump2Pwm: 100.0,
+  archived: true,
+  sensorData: new Map(),
+};
+
+export const mockBrewSecondForDeviceOnline: BrewConfiguration = {
+  type: ConfigurationType.BREW,
+  id: 2,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  device: mockDeviceOnline,
+  name: 'eee',
+  temperature: 65.0,
+  heatActuator: {
+    type: ConnectedDeviceType.ACTUATOR_PWM,
+    pinNr: 17,
+    hwAddress: '000000000000',
+    connected: false,
+    offset: 0,
+    deviceOffset: 0,
+  },
+  tempSensor: {
+    type: ConnectedDeviceType.ONEWIRE_TEMP,
+    pinNr: 0,
+    hwAddress: '2A00000000000000',
+    connected: false,
+    offset: 0,
+    deviceOffset: 0,
+  },
+  heatingPeriod: 5000,
+  p: 1,
+  i: 2,
+  d: 3,
+  heaterPwm: 0.0,
+  pump1Pwm: 100.0,
+  pump2Pwm: 100.0,
+  archived: false,
+  sensorData: new Map(),
 };
 
 export const mockBrewArchived: BrewConfiguration = {
@@ -74,6 +142,7 @@ export const mockBrewArchived: BrewConfiguration = {
   pump1Pwm: 100.0,
   pump2Pwm: 100.0,
   archived: true,
+  sensorData: new Map(),
 };
 
 export const expectedConfigurationBrewNotArchived = {

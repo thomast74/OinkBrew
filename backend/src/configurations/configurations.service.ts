@@ -7,11 +7,12 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 
 import { Model } from 'mongoose';
+import { Observable } from 'rxjs';
 
 import { ParticleService } from '../common/particle.service';
 import { DevicesService } from '../devices/devices.service';
 import { ConnectedDeviceHelper } from '../devices/helpers';
-import { Device } from '../devices/schemas';
+import { Device, DeviceDocument } from '../devices/schemas';
 import { getErrorMessage } from '../helpers/error.converter';
 import { ConfigurationDto, ConnectedDeviceDto } from './dtos';
 import { Configuration, ConfigurationDocument } from './schemas';
@@ -21,8 +22,8 @@ export class ConfigurationsService {
   private readonly logger = new Logger(ConfigurationsService.name);
 
   constructor(
-    @InjectModel(Configuration.name)
-    private configurationModel: Model<Configuration>,
+    @InjectModel(Configuration.name) private configurationModel: Model<Configuration>,
+    @InjectModel(Device.name) private deviceModel: Model<Device>,
     private device: DevicesService,
     private particle: ParticleService,
   ) {}
@@ -39,9 +40,31 @@ export class ConfigurationsService {
     }
   }
 
-  async save(
-    configurationDto: ConfigurationDto,
-  ): Promise<ConfigurationDocument> {
+  async findByDevice(deviceId: string): Promise<ConfigurationDocument[]> {
+    try {
+      const device = await this.deviceModel
+        .findOne({ id: deviceId })
+        .populate({ path: 'configurations' })
+        .exec();
+      if (!device) {
+        return [];
+      }
+
+      const configurations = await this.configurationModel
+        .find({
+          device: device._id,
+        })
+        .populate({ path: 'device' })
+        .exec();
+
+      return configurations;
+    } catch (error) {
+      console.error(error);
+      return [];
+    }
+  }
+
+  async save(configurationDto: ConfigurationDto): Promise<ConfigurationDocument> {
     const { deviceId, ...confDto } = configurationDto;
 
     const device = await this.device.findById(deviceId);
@@ -54,6 +77,10 @@ export class ConfigurationsService {
       configuration.id = await this.getNextId();
     }
 
+    return this.saveDocument(configuration);
+  }
+
+  async saveDocument(configuration: Configuration): Promise<ConfigurationDocument> {
     try {
       const configurationDoc = await this.configurationModel
         .findOneAndUpdate({ id: configuration.id }, configuration, {
@@ -67,6 +94,14 @@ export class ConfigurationsService {
         throw new InternalServerErrorException('Configuration not created');
       }
 
+      let device = configurationDoc.device as DeviceDocument;
+      if (device.configurations.findIndex((confs) => confs.id === configurationDoc.id) === -1) {
+        device.configurations.push(configurationDoc);
+        device = await device.save();
+        configurationDoc.device = device;
+      }
+      device.depopulate('configurations');
+
       this.logger.debug(`Saved ${configurationDoc._id} to database`);
 
       await this.sendConfigurationToParticle(configurationDoc);
@@ -77,10 +112,7 @@ export class ConfigurationsService {
     }
   }
 
-  async update(
-    id: number,
-    configurationDto: ConfigurationDto,
-  ): Promise<ConfigurationDocument> {
+  async update(id: number, configurationDto: ConfigurationDto): Promise<ConfigurationDocument> {
     await this.getConfigurationIfExist(id);
 
     configurationDto.id = id;
@@ -104,9 +136,7 @@ export class ConfigurationsService {
     }
   }
 
-  private async getConfigurationIfExist(
-    id: number,
-  ): Promise<ConfigurationDocument> {
+  private async getConfigurationIfExist(id: number): Promise<ConfigurationDocument> {
     try {
       const configurationDoc = await this.configurationModel
         .findOne({ id })
@@ -123,10 +153,7 @@ export class ConfigurationsService {
     throw new NotFoundException('Configuration not found');
   }
 
-  private validateConnectedDevices(
-    configuration: ConfigurationDto,
-    device: Device,
-  ) {
+  private validateConnectedDevices(configuration: ConfigurationDto, device: Device) {
     Object.keys(configuration)
       .filter((key) => key.endsWith('Actuator') || key.endsWith('Sensor'))
       .forEach((key) => {
@@ -161,9 +188,7 @@ export class ConfigurationsService {
     return maxId === null ? 1 : maxId.id;
   }
 
-  private async sendConfigurationToParticle(
-    configuration: ConfigurationDocument,
-  ): Promise<void> {
+  private async sendConfigurationToParticle(configuration: ConfigurationDocument): Promise<void> {
     if (!configuration.device.online) {
       return;
     }

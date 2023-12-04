@@ -4,6 +4,7 @@ import { HydratedDocument, Schema as MongooseSchema } from 'mongoose';
 
 import { ConnectedDevice, Device } from '../../devices/schemas';
 import { ConfigurationType } from '../types';
+import { SensorData } from './sensor-data.schema';
 
 export type ConfigurationDocument = HydratedDocument<Configuration>;
 
@@ -58,9 +59,26 @@ export class Configuration {
 
   @Prop({ required: true, default: false })
   archived: boolean;
+
+  @Prop({ type: MongooseSchema.Types.Map, of: [{ name: String, value: Number }] })
+  sensorData: Map<string, SensorData[]>;
 }
 
 export const ConfigurationSchema = SchemaFactory.createForClass(Configuration);
+
+ConfigurationSchema.methods.hasConnectedDevice = function (
+  pinNr: number,
+  hwAddress: string,
+): boolean {
+  if (
+    (this.heatActuator.pinNr === pinNr && this.heatActuator.hwAddress === hwAddress) ||
+    (this.tempSensor.pinNr === pinNr && this.tempSensor.hwAddress === hwAddress)
+  ) {
+    return true;
+  }
+
+  return false;
+};
 
 ConfigurationSchema.pre('save', function (next) {
   if (this.isNew) {

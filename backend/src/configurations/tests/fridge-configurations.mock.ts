@@ -44,6 +44,7 @@ export const mockFridgeNotArchived: FridgeConfiguration = {
   d: 3,
   fanPwm: 0.0,
   archived: false,
+  sensorData: new Map(),
 };
 
 export const expectedConfigurationFridgeNotArchived = {

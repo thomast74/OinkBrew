@@ -1,32 +1,24 @@
-// start listening to Particle events
-// receive events
-// distribute events:
-//    oinkbrew/start
-//    oinkbrew/devices/new
-//    oinkbrew/devices/remove
-//    oinkbrew/devices/values
-import {
-  Injectable,
-  Logger,
-  OnApplicationBootstrap,
-  OnApplicationShutdown,
-  OnModuleDestroy,
-} from '@nestjs/common';
+import { Injectable, Logger, OnApplicationBootstrap, OnApplicationShutdown } from '@nestjs/common';
 
-import { de } from 'date-fns/locale';
+import { formatISO } from 'date-fns';
 import { Subscription } from 'rxjs';
 
 import { ParticleService } from '../common/particle.service';
+import { ConfigurationsService } from '../configurations/configurations.service';
 import { Configuration } from '../configurations/schemas';
 import { DevicesService } from './devices.service';
 import { ConnectedDeviceHelper } from './helpers';
 import { ConnectedDevice, Device } from './schemas';
 import { ConnectedDeviceType, EventData } from './types';
 
+type EventValueData = {
+  pinNr: number;
+  hwAddress: string;
+  value: number;
+};
+
 @Injectable()
-export class DevicesEventListener
-  implements OnApplicationBootstrap, OnApplicationShutdown
-{
+export class DevicesEventListener implements OnApplicationBootstrap, OnApplicationShutdown {
   private readonly logger = new Logger(DevicesEventListener.name);
   private eventStreamRunning = false;
   private eventStreamSubscription?: Subscription = undefined;
@@ -34,6 +26,7 @@ export class DevicesEventListener
   constructor(
     private particle: ParticleService,
     private devices: DevicesService,
+    private configurations: ConfigurationsService,
   ) {}
 
   onApplicationBootstrap() {
@@ -52,7 +45,11 @@ export class DevicesEventListener
   private startEventStream(retryCount = 3) {
     this.eventStreamSubscription = this.particle.eventStream().subscribe({
       next: (data) => {
-        this.eventProcessor(data);
+        try {
+          this.eventProcessor(data);
+        } catch (error) {
+          this.logger.error(error);
+        }
       },
       error: () => {
         if (retryCount > 0) {
@@ -80,7 +77,7 @@ export class DevicesEventListener
         this.oinkbrewRemoveConnectedDevice(eventData);
         break;
       case 'oinkbrew/devices/values':
-        // TODO: add new sensor data values to cofiguration
+        this.oinkbrewNewData(eventData);
         break;
     }
   }
@@ -102,9 +99,7 @@ export class DevicesEventListener
     }
   }
 
-  private async oinkbrewNewConnectedDevice(
-    eventData: EventData,
-  ): Promise<void> {
+  private async oinkbrewNewConnectedDevice(eventData: EventData): Promise<void> {
     const data = ConnectedDeviceHelper.parseData(JSON.parse(eventData.data));
     const device = await this.devices.updateConnectedDeviceWithConnectStatus(
       eventData.coreid,
@@ -113,12 +108,59 @@ export class DevicesEventListener
     );
 
     if (device) {
-      this.updateConnectedDeviceOffsetIfNeeded(
-        device,
-        data.pinNr,
-        data.hwAddress,
-      );
+      this.updateConnectedDeviceOffsetIfNeeded(device, data.pinNr, data.hwAddress);
     }
+  }
+
+  private async oinkbrewNewData(eventData: EventData): Promise<void> {
+    const data = (JSON.parse(eventData.data) as any[]).map((item) => {
+      return {
+        pinNr: +item.pinNr,
+        hwAddress: item.hwAddress,
+        value: item.value,
+      } as EventValueData;
+    });
+
+    const configurations = await this.configurations.findByDevice(eventData.coreid);
+    if (!configurations) return;
+
+    const activeConfigurations = configurations.filter((confs) => !confs.archived);
+
+    for (const valueData of data) {
+      activeConfigurations
+        .filter((configuration) =>
+          (configuration as any).hasConnectedDevice(valueData.pinNr, valueData.hwAddress),
+        )
+        .forEach((configuration) => {
+          const connectedDevice = ConnectedDeviceHelper.findConnectedDeviceFromDevice(
+            configuration.device,
+            valueData.pinNr,
+            valueData.hwAddress,
+          );
+
+          const sensorData = {
+            name: connectedDevice?.name ?? `${valueData.pinNr}/${valueData.hwAddress}`,
+            value: valueData.value,
+          };
+
+          if (!configuration.sensorData) {
+            configuration.sensorData = new Map();
+          }
+
+          const key = formatISO(eventData.published_at);
+          let currentSensorData = configuration.sensorData.get(key);
+          if (!currentSensorData) {
+            currentSensorData = [];
+          }
+          currentSensorData.push(sensorData);
+
+          configuration.sensorData.set(key, currentSensorData);
+        });
+    }
+
+    activeConfigurations.forEach(async (configuration) => {
+      await configuration.save();
+    });
   }
 
   private oinkbrewRemoveConnectedDevice(eventData: EventData) {
@@ -134,11 +176,7 @@ export class DevicesEventListener
     pinNr: number,
     hwAddress: string,
   ): Promise<void> {
-    const cDevice = ConnectedDeviceHelper.findConnectedDeviceFromDevice(
-      device,
-      pinNr,
-      hwAddress,
-    );
+    const cDevice = ConnectedDeviceHelper.findConnectedDeviceFromDevice(device, pinNr, hwAddress);
 
     if (!cDevice) return;
 
@@ -163,10 +201,7 @@ export class DevicesEventListener
       );
     }
   }
-  private async sendConfiguration(
-    deviceId: string,
-    configuration: Configuration,
-  ): Promise<void> {
+  private async sendConfiguration(deviceId: string, configuration: Configuration): Promise<void> {
     if (configuration.archived) return;
 
     if (!configuration.device) {

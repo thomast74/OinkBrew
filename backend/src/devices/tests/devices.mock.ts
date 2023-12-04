@@ -46,6 +46,51 @@ export const mockDeviceOnline: Device = {
   configurations: [],
 };
 
+export const mockDeviceOnlineNotUsed: Device = {
+  id: 'www',
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  name: 'Test Device WWW',
+  last_ip_address: '',
+  last_heard: new Date(),
+  last_handshake_at: new Date(),
+  product_id: 1,
+  online: true,
+  connected: false,
+  platform_id: 1,
+  cellular: false,
+  firmware_updates_enabled: true,
+  firmware_updates_forced: false,
+  status: '',
+  serial_number: '',
+  system_firmware_version: '',
+  current_build_target: '',
+  default_build_target: '',
+  functions: [],
+  variables: {},
+  connectedDevices: [
+    {
+      type: ConnectedDeviceType.ACTUATOR_PWM,
+      pinNr: 8,
+      hwAddress: '0000000000000000',
+      name: 'new sensor name',
+      offset: 0.0,
+      deviceOffset: 0.0,
+      connected: false,
+    },
+    {
+      type: ConnectedDeviceType.ONEWIRE_TEMP,
+      pinNr: 0,
+      hwAddress: '2A00000000000000',
+      name: 'temp sensor name',
+      offset: 0.8,
+      deviceOffset: 0.0,
+      connected: false,
+    },
+  ],
+  configurations: [],
+};
+
 export const mockDeviceOffline: Device = {
   id: 'ddd',
   createdAt: new Date(),
@@ -201,10 +246,7 @@ const secondConnectedDevice: ConnectedDevice = {
 
 export const mockDeviceWithConnectedDevicesConnected = {
   id: 'bbb',
-  connectedDevices: [
-    { ...secondConnectedDevice },
-    { ...newConnectedDevice, connected: true },
-  ],
+  connectedDevices: [{ ...secondConnectedDevice }, { ...newConnectedDevice, connected: true }],
 } as Device;
 
 export const expectedDeviceDatabaseOffline = {

@@ -16,16 +16,30 @@ export async function createConfInDb(
     ...configuration,
   };
 
-  let device = await deviceModel.findOne({ id: confToSave.device.id }).exec();
+  let device = await deviceModel
+    .findOne({ id: confToSave.device.id })
+    .populate('configurations')
+    .exec();
   if (!device) {
     await new deviceModel(confToSave.device).save();
-    device = await deviceModel.findOne({ id: confToSave.device.id }).exec();
+    device = await deviceModel
+      .findOne({ id: confToSave.device.id })
+      .populate('configurations')
+      .exec();
   }
-  confToSave.device = device;
+  confToSave.device = device?._id;
 
   await new configurationModel(confToSave).save();
+  const confDoc = await configurationModel.findOne({ id: confToSave.id }).exec();
 
-  return await configurationModel.findOne({ id: confToSave.id }).exec();
+  if (device?.configurations.findIndex((conf) => conf.id === confDoc!.id) == -1) {
+    device?.configurations.push(confDoc!);
+    await device?.save();
+  } else {
+    console.error('no conf');
+  }
+
+  return confDoc;
 }
 
 export async function createConfFromDto(
@@ -33,9 +47,7 @@ export async function createConfFromDto(
   confModel: Model<Configuration>,
   configrationDto: ConfigurationDto,
 ) {
-  const device = await deviceModel
-    .findOne({ id: configrationDto.deviceId })
-    .exec();
+  const device = await deviceModel.findOne({ id: configrationDto.deviceId }).exec();
   const confToSave = configrationDto as any;
   confToSave.device = device;
 

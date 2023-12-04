@@ -20,7 +20,7 @@ This event is received when the device is starting during initialisation or when
 
 ```
 {
-  "data": "{\"type\":1,\"pin_nr\":\"17\",\"hw_address\":\"0000000000000000\",\"deviceOffset\":0.0}",
+  "data": "{\"type\":1,\"pin_nr\":\"17\",\"hwAddress\":\"0000000000000000\",\"deviceOffset\":0.0}",
   "ttl": 60,
   "published_at": "2022-12-09T09:34:31.056Z",
   "coreid": "3b003d000747343232363230",
@@ -34,7 +34,7 @@ This event is send when after 1 minute the device or sensor is reprting false da
 
 ```
 {
-  "data": "{\"type\":1,\"pin_nr\":\"17\",\"hw_address\":\"0000000000000000\",\"deviceOffset\":0.0}",
+  "data": "{\"type\":1,\"pin_nr\":\"17\",\"hwAddress\":\"0000000000000000\",\"deviceOffset\":0.0}",
   "ttl": 60,
   "published_at": "2022-12-09T09:34:31.056Z",
   "coreid": "3b003d000747343232363230",
@@ -48,7 +48,11 @@ This event is sent every 10 seconds with current values of all connected devices
 
 ```
 {
-  "data": "[{\"pin_nr\":\"10\",\"hw_address\":\"0000000000000000\",\"value\":0.000000},{\"pin_nr\":\"11\",\"hw_address\":\"0000000000000000\",\"value\":0.000000},{\"pin_nr\":\"16\",\"hw_address\":\"0000000000000000\",\"value\":0.000000},{\"pin_nr\":\"17\",\"hw_address\":\"0000000000000000\",\"value\":0.000000}]",
+  "data": "[
+    {\"pin_nr\":\"10\",
+    \"hwAddress\":\"0000000000000000\",
+    \"value\":0.000000},
+    {\"pin_nr\":\"11\",\"hwAddress\":\"0000000000000000\",\"value\":0.000000},{\"pin_nr\":\"16\",\"hwAddress\":\"0000000000000000\",\"value\":0.000000},{\"pin_nr\":\"17\",\"hwAddress\":\"0000000000000000\",\"value\":0.000000}]",
   "ttl": 60,
   "published_at": "2022-12-09T09:34:34.951Z",
   "coreid": "3b003d000747343232363230",

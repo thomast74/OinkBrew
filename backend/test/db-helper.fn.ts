@@ -15,6 +15,10 @@ import { User, UserSchema } from '../src/users/schemas';
 
 const mongod = new MongoMemoryServer();
 
+const defaultHasConnectedDevice = (_pinNr: string, _hwAddress: string) => {
+  return false;
+};
+
 export async function connectDatabase() {
   if (mongod.state !== 'running' && mongod.state !== 'starting') {
     await mongod.start();
@@ -35,21 +39,18 @@ export function getDeviceModel(): Model<Device> {
   return mongoose.connection.model(Device.name, DeviceSchema);
 }
 
-export function getConfigurationModel(): Model<Configuration> {
-  const confModel = mongoose.connection.model(
-    Configuration.name,
-    ConfigurationSchema,
-  );
-  confModel.discriminator(
-    BrewConfiguration.name,
-    BrewConfigurationSchema,
-    ConfigurationType.BREW,
-  );
+export function getConfigurationModel(
+  hasConnectedDevice: (pinNr: string, hwAddress: string) => boolean = defaultHasConnectedDevice,
+): Model<Configuration> {
+  const confModel = mongoose.connection.model(Configuration.name, ConfigurationSchema);
+  confModel.discriminator(BrewConfiguration.name, BrewConfigurationSchema, ConfigurationType.BREW);
   confModel.discriminator(
     FridgeConfiguration.name,
     FridgeConfigurationSchema,
     ConfigurationType.FRIDGE,
   );
+
+  confModel.schema.methods.hasConnectedDevice = hasConnectedDevice;
 
   return confModel;
 }

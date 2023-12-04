@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 import { ConnectedDevice, Device } from '../../devices/schemas';
 import { ConfigurationType } from '../types';
+import { SensorData } from './sensor-data.schema';
 
 @Schema()
 export class BrewConfiguration {
@@ -18,6 +19,7 @@ export class BrewConfiguration {
   p: number;
   i: number;
   d: number;
+  sensorData: Map<string, SensorData[]>;
   archived: boolean;
 
   @Prop()
@@ -36,5 +38,20 @@ export class BrewConfiguration {
   pump2Pwm: number;
 }
 
-export const BrewConfigurationSchema =
-  SchemaFactory.createForClass(BrewConfiguration);
+export const BrewConfigurationSchema = SchemaFactory.createForClass(BrewConfiguration);
+
+BrewConfigurationSchema.methods.hasConnectedDevice = function (
+  pinNr: number,
+  hwAddress: string,
+): boolean {
+  if (
+    (this.heatActuator.pinNr === pinNr && this.heatActuator.hwAddress === hwAddress) ||
+    (this.tempSensor.pinNr === pinNr && this.tempSensor.hwAddress === hwAddress) ||
+    (this.pump1Actuator?.pinNr === pinNr && this.pump1Actuator?.hwAddress === hwAddress) ||
+    (this.pump2Actuator?.pinNr === pinNr && this.pump2Actuator?.hwAddress === hwAddress)
+  ) {
+    return true;
+  }
+
+  return false;
+};

@@ -40,15 +40,9 @@ export class ConnectedDeviceHelper {
     pinNr: number,
     hwAddress: string,
   ): ConnectedDevice | undefined {
-    const cDevices = ConnectedDeviceHelper.parseArray(
-      (device.connectedDevices as any[]) ?? [],
-    );
+    const cDevices = ConnectedDeviceHelper.parseArray((device.connectedDevices as any[]) ?? []);
 
-    return ConnectedDeviceHelper.findConnectedDevice(
-      cDevices,
-      pinNr,
-      hwAddress,
-    );
+    return ConnectedDeviceHelper.findConnectedDevice(cDevices, pinNr, hwAddress);
   }
 
   static findConnectedDevice(
