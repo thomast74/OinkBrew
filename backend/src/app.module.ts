@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { JwtAccessAuthGuard } from './auth/guards';
 import { ConfigurationsModule } from './configurations/configurations.module';
 import { DevicesModule } from './devices/devices.module';
+import { ListenerModule } from './listener/listener.module';
 import { UsersModule } from './users/users.module';
 
 @Module({
@@ -24,6 +25,7 @@ import { UsersModule } from './users/users.module';
     UsersModule,
     DevicesModule,
     ConfigurationsModule,
+    ListenerModule,
   ],
   controllers: [AppController],
   providers: [

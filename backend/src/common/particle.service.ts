@@ -3,14 +3,14 @@ import { Injectable, Logger } from '@nestjs/common';
 import { parseJSON } from 'date-fns';
 import Particle from 'particle-api-js';
 import {
+  Observable,
+  ReplaySubject,
+  Subject,
   catchError,
   firstValueFrom,
   from,
   map,
-  Observable,
   of,
-  ReplaySubject,
-  Subject,
   switchMap,
   tap,
 } from 'rxjs';
@@ -58,21 +58,15 @@ export class ParticleService {
 
   public listDevices(): Promise<Device[]> {
     const $source = this.tokenInfo.pipe(
-      switchMap((tokens: any) =>
-        from(this.particle.listDevices({ auth: tokens.access_token })),
-      ),
-      map((response: any) =>
-        response?.body ? (response.body as Device[]) : [],
-      ),
+      switchMap((tokens: any) => from(this.particle.listDevices({ auth: tokens.access_token }))),
+      map((response: any) => (response?.body ? (response.body as Device[]) : [])),
       catchError((error) => {
         this.logger.error(`Could not get devices: ${error}`);
         return of([]);
       }),
       tap({
         next: (devices) => {
-          this.logger.log(
-            `Retrieved ${devices.length} devices from Particle Cloud`,
-          );
+          this.logger.log(`Retrieved ${devices.length} devices from Particle Cloud`);
         },
       }),
     );
@@ -97,16 +91,12 @@ export class ParticleService {
         ),
       ),
       map((response) => {
-        this.logger.log(
-          `Name and notes for device ${deviceId} updated successful`,
-        );
+        this.logger.log(`Name and notes for device ${deviceId} updated successful`);
         this.logger.error(JSON.stringify(response));
         return { isSuccessful: true };
       }),
       catchError((error: any) => {
-        this.logger.error(
-          `callFunction error: ${error.statusCode} => ${error.body.info}`,
-        );
+        this.logger.error(`callFunction error: ${error.statusCode} => ${error.body.info}`);
         return of({
           isSuccessful: false,
           errorCode: error.statusCode,
@@ -150,9 +140,7 @@ export class ParticleService {
         return { isSuccessful: true };
       }),
       catchError((error: any) => {
-        this.logger.error(
-          `Offset callFunction error: ${error.statusCode} => ${error.body.info}`,
-        );
+        this.logger.error(`Offset callFunction error: ${error.statusCode} => ${error.body.info}`);
         return of({
           isSuccessful: false,
           errorCode: error.statusCode,
@@ -229,18 +217,14 @@ export class ParticleService {
           }),
         ),
       ),
-      map((response: any) =>
-        response?.body?.result ? (response.body.result as any) : '',
-      ),
+      map((response: any) => (response?.body?.result ? (response.body.result as any) : '')),
       catchError((error) => {
         this.logger.error(`Could not get variable ${name}`, error);
         return of('');
       }),
       tap({
         next: (value) =>
-          this.logger.debug(
-            `Retrieved variable ${name} from device ${deviceId}: ${value}`,
-          ),
+          this.logger.debug(`Retrieved variable ${name} from device ${deviceId}: ${value}`),
       }),
     );
 
@@ -270,9 +254,7 @@ export class ParticleService {
         return { isSuccessful: true };
       }),
       catchError((error: any) => {
-        this.logger.error(
-          `restart callFunction error: ${error.statusCode} => ${error.body.info}`,
-        );
+        this.logger.error(`restart callFunction error: ${error.statusCode} => ${error.body.info}`);
         return of({
           isSuccessful: false,
           errorCode: error.statusCode,

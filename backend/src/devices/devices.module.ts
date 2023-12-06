@@ -3,7 +3,6 @@ import { Module } from '@nestjs/common';
 import { ModelDefinition, MongooseModule } from '@nestjs/mongoose';
 
 import { CommonModule } from '../common/common.module';
-import { DevicesEventListener } from './devices-event.listener';
 import { DevicesController } from './devices.controller';
 import { DevicesProcessor } from './devices.processor';
 import { DevicesService } from './devices.service';
@@ -23,6 +22,6 @@ const modelDefinition: ModelDefinition[] = [
   ],
   exports: [MongooseModule.forFeature(modelDefinition), DevicesService],
   controllers: [DevicesController],
-  providers: [DevicesService, DevicesProcessor, DevicesEventListener],
+  providers: [DevicesService, DevicesProcessor],
 })
 export class DevicesModule {}

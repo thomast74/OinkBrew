@@ -15,8 +15,8 @@ import { User, UserSchema } from '../src/users/schemas';
 
 const mongod = new MongoMemoryServer();
 
-const defaultHasConnectedDevice = (_pinNr: string, _hwAddress: string) => {
-  return false;
+const defaultHasConnectedDevice = (pinNr: number, hwAddress: string) => {
+  return pinNr === 0 && hwAddress === '28FF5C92711503AF';
 };
 
 export async function connectDatabase() {
@@ -40,7 +40,7 @@ export function getDeviceModel(): Model<Device> {
 }
 
 export function getConfigurationModel(
-  hasConnectedDevice: (pinNr: string, hwAddress: string) => boolean = defaultHasConnectedDevice,
+  hasConnectedDevice: (pinNr: number, hwAddress: string) => boolean = defaultHasConnectedDevice,
 ): Model<Configuration> {
   const confModel = mongoose.connection.model(Configuration.name, ConfigurationSchema);
   confModel.discriminator(BrewConfiguration.name, BrewConfigurationSchema, ConfigurationType.BREW);

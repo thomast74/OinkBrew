@@ -5,10 +5,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import { authenticator } from 'otplib';
 
-import {
-  createUserFromAuthDto,
-  userDto,
-} from '../users/tests/users-helper.mock';
+import { createUserFromAuthDto, userDto } from '../users/tests/users-helper.mock';
 import { UsersService } from '../users/users.service';
 import { AuthService } from './auth.service';
 import jwtConfig from './config/jwt.config';
@@ -80,10 +77,7 @@ describe('AuthService', () => {
       const dbUser = await createUserFromAuthDto(userDto);
       (userService.findByEmail as jest.Mock).mockResolvedValue(dbUser);
 
-      const response = await service.validateUser(
-        userDto.email,
-        userDto.password,
-      );
+      const response = await service.validateUser(userDto.email, userDto.password);
 
       expect(response).toEqual({
         id: '3',
@@ -331,9 +325,9 @@ describe('AuthService', () => {
         userServiceFindByIdMockImpl(dbUser, userId),
       );
 
-      await expect(
-        service.refreshTokens('1', 'my_refresh_token'),
-      ).rejects.toEqual(new ForbiddenException('Access Denied'));
+      await expect(service.refreshTokens('1', 'my_refresh_token')).rejects.toEqual(
+        new ForbiddenException('Access Denied'),
+      );
     });
 
     it('should return ForbiddenException when user has no refresh token hash', async () => {
@@ -343,9 +337,9 @@ describe('AuthService', () => {
         userServiceFindByIdMockImpl(dbUser, userId),
       );
 
-      await expect(
-        service.refreshTokens(dbUser.id, 'my_refresh_token'),
-      ).rejects.toEqual(new ForbiddenException('Access Denied'));
+      await expect(service.refreshTokens(dbUser.id, 'my_refresh_token')).rejects.toEqual(
+        new ForbiddenException('Access Denied'),
+      );
     });
 
     it('should return ForbiddenException when refresh token hashes are not matching', async () => {
@@ -354,9 +348,9 @@ describe('AuthService', () => {
         userServiceFindByIdMockImpl(dbUser, userId),
       );
 
-      await expect(
-        service.refreshTokens(dbUser.id, 'old_refresh_token'),
-      ).rejects.toEqual(new ForbiddenException('Access Denied'));
+      await expect(service.refreshTokens(dbUser.id, 'old_refresh_token')).rejects.toEqual(
+        new ForbiddenException('Access Denied'),
+      );
     });
 
     it('should update user with refresh token', async () => {
@@ -364,9 +358,7 @@ describe('AuthService', () => {
       (userService.findById as jest.Mock).mockImplementation((userId) =>
         userServiceFindByIdMockImpl(dbUser, userId),
       );
-      (jwtService.signAsync as jest.Mock).mockImplementation(
-        jwtServiceMockImpl,
-      );
+      (jwtService.signAsync as jest.Mock).mockImplementation(jwtServiceMockImpl);
 
       await service.refreshTokens(dbUser.id, 'my_refresh_token');
 
@@ -382,14 +374,9 @@ describe('AuthService', () => {
       (userService.findById as jest.Mock).mockImplementation((userId) =>
         userServiceFindByIdMockImpl(dbUser, userId),
       );
-      (jwtService.signAsync as jest.Mock).mockImplementation(
-        jwtServiceMockImpl,
-      );
+      (jwtService.signAsync as jest.Mock).mockImplementation(jwtServiceMockImpl);
 
-      const response = await service.refreshTokens(
-        dbUser.id,
-        'my_refresh_token',
-      );
+      const response = await service.refreshTokens(dbUser.id, 'my_refresh_token');
 
       expect(response).toEqual({
         accessToken: 'new_access_token',

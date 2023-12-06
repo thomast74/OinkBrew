@@ -29,10 +29,7 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async validateUser(
-    email: string,
-    password: string,
-  ): Promise<User | undefined> {
+  async validateUser(email: string, password: string): Promise<User | undefined> {
     const user = await this.usersService.findByEmail(email);
 
     if (!user) {
@@ -40,11 +37,7 @@ export class AuthService {
       return undefined;
     }
 
-    const passwordMatches = await argon2.verify(
-      user.hash,
-      password,
-      ARGON_OPTIONS,
-    );
+    const passwordMatches = await argon2.verify(user.hash, password);
 
     Logger.log(`passwordMatches: ${passwordMatches}`);
 
@@ -81,21 +74,11 @@ export class AuthService {
       throw new ForbiddenException('Access Denied');
     }
 
-    return await this.getAccessTokensAndUpdateUser(
-      user.id,
-      user.email,
-      confirmOtp,
-    );
+    return await this.getAccessTokensAndUpdateUser(user.id, user.email, confirmOtp);
   }
 
   async signin(user: User): Promise<Tokens> {
-    if (
-      !user ||
-      !user.id ||
-      !user.email ||
-      !user.otpSecret ||
-      !user.otpConfirmed
-    ) {
+    if (!user || !user.id || !user.email || !user.otpSecret || !user.otpConfirmed) {
       throw new BadRequestException('User not signed up correctly');
     }
 
@@ -116,11 +99,7 @@ export class AuthService {
 
     let rtMatches = false;
     try {
-      rtMatches = await argon2.verify(
-        user.hashedRt,
-        refreshToken,
-        ARGON_OPTIONS,
-      );
+      rtMatches = await argon2.verify(user.hashedRt, refreshToken);
     } catch {}
 
     if (!rtMatches) throw new ForbiddenException('Access Denied');
@@ -168,19 +147,12 @@ export class AuthService {
     confirmOtp?: boolean,
   ): Promise<Tokens> {
     const tokens = await this.getAccessTokens(userId, email);
-    await this.usersService.updateRefreshToken(
-      userId,
-      tokens.refreshToken,
-      confirmOtp,
-    );
+    await this.usersService.updateRefreshToken(userId, tokens.refreshToken, confirmOtp);
 
     return tokens;
   }
 
-  private async getAccessTokens(
-    userId: string,
-    email: string,
-  ): Promise<Tokens> {
+  private async getAccessTokens(userId: string, email: string): Promise<Tokens> {
     const jwtPayload: JwtPayload = {
       sub: userId,
       email: email,

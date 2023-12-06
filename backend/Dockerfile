@@ -1,4 +1,4 @@
-FROM node:16-alpine
+FROM node:20-alpine
 LABEL maintainer="Thomas Trageser <thomast74@gmail.com>"
 
 # set EST timezone and time

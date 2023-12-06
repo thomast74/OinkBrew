@@ -37,7 +37,7 @@ const modelDefinition: ModelDefinition[] = [
     MongooseModule.forFeature(modelDefinition),
     DevicesModule,
   ],
-  exports: [MongooseModule.forFeature(modelDefinition)],
+  exports: [MongooseModule.forFeature(modelDefinition), ConfigurationsService],
   controllers: [ConfigurationsController],
   providers: [ConfigurationsService],
 })

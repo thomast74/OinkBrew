@@ -2,7 +2,9 @@ import { InternalServerErrorException, NotFoundException } from '@nestjs/common'
 import { getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 
+import { formatISO } from 'date-fns';
 import { Model } from 'mongoose';
+import { take } from 'rxjs';
 
 import {
   clearDatabase,
@@ -13,6 +15,7 @@ import {
   getConfigurationModel,
   getDeviceModel,
 } from '../../test/db-helper.fn';
+import { sleep } from '../../test/helper.fn';
 import { ParticleService } from '../common/particle.service';
 import { DevicesService } from '../devices/devices.service';
 import { Device, DeviceDocument } from '../devices/schemas';
@@ -24,7 +27,7 @@ import {
   mockDeviceOnlineNotUsed,
 } from '../devices/tests/devices.mock';
 import { ConfigurationsService } from './configurations.service';
-import { Configuration } from './schemas';
+import { Configuration, EventSensorData } from './schemas';
 import {
   mockBrewArchived,
   mockBrewNotArchived,
@@ -144,7 +147,7 @@ describe('ConfigurationsService', () => {
   });
 
   describe('findByDevice', () => {
-    it('XXXX should call db to get all configurations assigned to device', async () => {
+    it('should call db to get all configurations assigned to device', async () => {
       await createConfInDb(deviceModel, confModel, mockBrewNotArchived);
       await createConfInDb(deviceModel, confModel, mockBrewArchived);
       await createConfInDb(deviceModel, confModel, mockFridgeNotArchived);
@@ -516,6 +519,49 @@ describe('ConfigurationsService', () => {
       await expect(service.delete(2)).rejects.toEqual(
         new InternalServerErrorException('particle failed'),
       );
+    });
+  });
+
+  describe('eventSensorData', () => {
+    it('should receive event sensor data when new one is send', async () => {
+      const sensorData: EventSensorData = {
+        publishedAt: formatISO(new Date()),
+        configurationId: 2,
+        sensorData: [{ name: 'temp sensor 1', value: 23.34 }],
+      };
+      let recvSensorData: EventSensorData | undefined = undefined;
+
+      const subsription = service.getEventSensorData(2).subscribe({
+        next: (sensorData) => (recvSensorData = sensorData),
+      });
+      service.sendEventSensorData(sensorData);
+      await sleep(10);
+
+      expect(recvSensorData).toEqual(sensorData);
+
+      subsription.unsubscribe();
+    });
+
+    it('should receive event sensor data when new one is send', async () => {
+      const publishedAt = formatISO(new Date());
+      const sensorData = [{ name: 'temp sensor 1', value: 23.34 }];
+      const sensorData1: EventSensorData = { publishedAt, configurationId: 1, sensorData };
+      const sensorData2: EventSensorData = { publishedAt, configurationId: 2, sensorData };
+      const recvSensorData: EventSensorData[] = [];
+
+      const subscription = service.getEventSensorData(2).subscribe({
+        next: (sensorData) => {
+          recvSensorData.push(sensorData);
+        },
+      });
+      service.sendEventSensorData(sensorData1);
+      service.sendEventSensorData(sensorData2);
+      await sleep(100);
+
+      expect(recvSensorData).toHaveLength(1);
+      expect(recvSensorData[0]).toEqual(sensorData2);
+
+      subscription.unsubscribe();
     });
   });
 });

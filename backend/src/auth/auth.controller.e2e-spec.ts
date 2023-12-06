@@ -14,10 +14,10 @@ import {
   getUserModel,
 } from '../../test/db-helper.fn';
 import {
+  TestingLogger,
   createAccessToken,
   createOtpToken,
   createRefreshToken,
-  TestingLogger,
 } from '../../test/helper.fn';
 import { AppModule } from '../app.module';
 import { ARGON_OPTIONS } from '../constants';
@@ -60,9 +60,7 @@ describe('AuthController (e2e)', () => {
 
   describe('POST /auth/signup', () => {
     it('should return UNAUTHORIZED and otp token if successful', async () => {
-      const response = await request(app.getHttpServer())
-        .post('/auth/signup')
-        .send(userDto);
+      const response = await request(app.getHttpServer()).post('/auth/signup').send(userDto);
 
       expect(response.status).toEqual(HttpStatus.OK);
       expect(response.body).toEqual(expectedOtpBarcodeTokens);
@@ -102,9 +100,7 @@ describe('AuthController (e2e)', () => {
     });
 
     it('should return UNAUTHORIZED if no/wrong otp token provided', async () => {
-      const response = await request(app.getHttpServer())
-        .post('/auth/signupOtp')
-        .send({});
+      const response = await request(app.getHttpServer()).post('/auth/signupOtp').send({});
 
       expect(response.status).toEqual(HttpStatus.UNAUTHORIZED);
     });
@@ -164,9 +160,7 @@ describe('AuthController (e2e)', () => {
         .set('Authorization', `Bearer ${otpToken}`)
         .send({ userId: user?.id, otpPassword });
 
-      const updatedUser = await userModel
-        .findOne({ email: user?.email ?? '' })
-        .exec();
+      const updatedUser = await userModel.findOne({ email: user?.email ?? '' }).exec();
 
       expect(updatedUser?.hashedRt).toBeDefined();
     });
@@ -180,9 +174,7 @@ describe('AuthController (e2e)', () => {
         .set('Authorization', `Bearer ${otpToken}`)
         .send({ userId: user?.id, otpPassword });
 
-      const updatedUser = await userModel
-        .findOne({ email: user?.email ?? '' })
-        .exec();
+      const updatedUser = await userModel.findOne({ email: user?.email ?? '' }).exec();
 
       expect(updatedUser?.otpConfirmed).toBeTrue();
     });
@@ -190,9 +182,7 @@ describe('AuthController (e2e)', () => {
 
   describe('POST /auth/signin', () => {
     it('should return UNAUTHORIZED if no email provided', async () => {
-      const response = await request(app.getHttpServer())
-        .post('/auth/signin')
-        .send({});
+      const response = await request(app.getHttpServer()).post('/auth/signin').send({});
 
       expect(response.status).toEqual(HttpStatus.UNAUTHORIZED);
     });
@@ -200,11 +190,9 @@ describe('AuthController (e2e)', () => {
     it('should return UNAUTHORIZED if no password provided', async () => {
       const user = await createUserInDb(userModel, true);
 
-      const response = await request(app.getHttpServer())
-        .post('/auth/signin')
-        .send({
-          email: user?.email,
-        });
+      const response = await request(app.getHttpServer()).post('/auth/signin').send({
+        email: user?.email,
+      });
 
       expect(response.status).toEqual(HttpStatus.UNAUTHORIZED);
     });
@@ -212,12 +200,10 @@ describe('AuthController (e2e)', () => {
     it('should return FORBIDDEN if password not matches', async () => {
       const user = await createUserInDb(userModel, true);
 
-      const response = await request(app.getHttpServer())
-        .post('/auth/signin')
-        .send({
-          email: user?.email,
-          password: '111222333',
-        });
+      const response = await request(app.getHttpServer()).post('/auth/signin').send({
+        email: user?.email,
+        password: '111222333',
+      });
 
       expect(response.status).toEqual(HttpStatus.FORBIDDEN);
     });
@@ -225,12 +211,10 @@ describe('AuthController (e2e)', () => {
     it('should return BAD_REQUEST if otp is not confirmed', async () => {
       const user = await createUserInDb(userModel, false);
 
-      const response = await request(app.getHttpServer())
-        .post('/auth/signin')
-        .send({
-          email: user?.email,
-          password: '12345',
-        });
+      const response = await request(app.getHttpServer()).post('/auth/signin').send({
+        email: user?.email,
+        password: '12345',
+      });
 
       expect(response.status).toEqual(HttpStatus.BAD_REQUEST);
       expect(response.body).toMatchObject({
@@ -241,12 +225,10 @@ describe('AuthController (e2e)', () => {
     it('should return OK and otp token if successful', async () => {
       await createUserInDb(userModel, true);
 
-      const response = await request(app.getHttpServer())
-        .post('/auth/signin')
-        .send({
-          email: userDto.email,
-          password: userDto.password,
-        });
+      const response = await request(app.getHttpServer()).post('/auth/signin').send({
+        email: userDto.email,
+        password: userDto.password,
+      });
 
       expect(response.status).toEqual(HttpStatus.OK);
       expect(response.body).toEqual(expectedOtpTokens);
@@ -261,9 +243,7 @@ describe('AuthController (e2e)', () => {
     });
 
     it('should return UNAUTHORIZED if no/wrong otp token provided', async () => {
-      const response = await request(app.getHttpServer())
-        .post('/auth/signinOtp')
-        .send({});
+      const response = await request(app.getHttpServer()).post('/auth/signinOtp').send({});
 
       expect(response.status).toEqual(HttpStatus.UNAUTHORIZED);
     });
@@ -323,9 +303,7 @@ describe('AuthController (e2e)', () => {
         .set('Authorization', `Bearer ${otpToken}`)
         .send({ userId: user?.id, otpPassword });
 
-      const updatedUser = await userModel
-        .findOne({ email: user?.email ?? '' })
-        .exec();
+      const updatedUser = await userModel.findOne({ email: user?.email ?? '' }).exec();
 
       expect(updatedUser?.hashedRt).toBeDefined();
       expect(updatedUser?.otpConfirmed).toBeTruthy();
@@ -348,9 +326,7 @@ describe('AuthController (e2e)', () => {
     });
 
     it('should return UNAUTHORIZED if no access token provided', async () => {
-      const response = await request(app.getHttpServer())
-        .post('/auth/logout')
-        .send({});
+      const response = await request(app.getHttpServer()).post('/auth/logout').send({});
 
       expect(response.status).toEqual(HttpStatus.UNAUTHORIZED);
     });
@@ -366,11 +342,7 @@ describe('AuthController (e2e)', () => {
     });
 
     it('should return OK if valid access token was provided', async () => {
-      const validAccessToken = await createAccessToken(
-        jwt,
-        user?.id,
-        user?.email,
-      );
+      const validAccessToken = await createAccessToken(jwt, user?.id, user?.email);
       const response = await request(app.getHttpServer())
         .post('/auth/logout')
         .set('Authorization', `Bearer ${validAccessToken}`)
@@ -380,11 +352,7 @@ describe('AuthController (e2e)', () => {
     });
 
     it('should remove refresh token from user', async () => {
-      const validAccessToken = await createAccessToken(
-        jwt,
-        user?.id,
-        user?.email,
-      );
+      const validAccessToken = await createAccessToken(jwt, user?.id, user?.email);
 
       await request(app.getHttpServer())
         .post('/auth/logout')
@@ -414,9 +382,7 @@ describe('AuthController (e2e)', () => {
     });
 
     it('should return UNAUTHORIZED when no refresh token provided', async () => {
-      const response = await request(app.getHttpServer())
-        .post('/auth/refresh')
-        .send({});
+      const response = await request(app.getHttpServer()).post('/auth/refresh').send({});
 
       expect(response.status).toEqual(HttpStatus.UNAUTHORIZED);
     });
@@ -433,11 +399,7 @@ describe('AuthController (e2e)', () => {
     });
 
     it('should return FORBIDDEN if user not found', async () => {
-      const validToken = await createRefreshToken(
-        jwt,
-        '12345',
-        'test@tester.org',
-      );
+      const validToken = await createRefreshToken(jwt, '12345', 'test@tester.org');
 
       const response = await request(app.getHttpServer())
         .post('/auth/refresh')
@@ -501,11 +463,7 @@ describe('AuthController (e2e)', () => {
 
       const newRefreshToken = response.body.refreshToken;
       const dbUser = await userModel.findOne({ email: userDto.email }).exec();
-      const rtMatches = await argon2.verify(
-        dbUser?.hashedRt ?? '',
-        newRefreshToken,
-        ARGON_OPTIONS,
-      );
+      const rtMatches = await argon2.verify(dbUser?.hashedRt ?? '', newRefreshToken);
 
       expect(rtMatches).toBeTruthy();
     });

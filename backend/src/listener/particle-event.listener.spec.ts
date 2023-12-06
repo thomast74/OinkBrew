@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
 import { Subject } from 'rxjs';
 
 import {
@@ -21,14 +21,14 @@ import {
   mockBrewSecondForDeviceOnline,
 } from '../configurations/tests/brew-configurations.mock';
 import { createConfInDb } from '../configurations/tests/configuration-helper.mock';
-import { DevicesEventListener } from './devices-event.listener';
-import { DevicesService } from './devices.service';
-import { ConnectedDeviceHelper } from './helpers';
-import { Device } from './schemas';
-import { ConnectedDeviceType, EventData } from './types';
+import { DevicesService } from '../devices/devices.service';
+import { ConnectedDeviceHelper } from '../devices/helpers';
+import { Device } from '../devices/schemas';
+import { ConnectedDeviceType, EventData } from '../devices/types';
+import { ParticleEventListener } from './particle-event.listener';
 
 describe('DevicesEventListener', () => {
-  let listener: DevicesEventListener;
+  let listener: ParticleEventListener;
   let confModel: Model<Configuration>;
   let deviceModel: Model<Device>;
 
@@ -49,6 +49,7 @@ describe('DevicesEventListener', () => {
   const mockConfigurationsService = {
     findByDevice: jest.fn(),
     saveDocument: jest.fn(),
+    sendEventSensorData: jest.fn(),
   };
 
   const mockLoggerService = {
@@ -74,7 +75,7 @@ describe('DevicesEventListener', () => {
   beforeEach(async () => {
     module = await Test.createTestingModule({
       providers: [
-        DevicesEventListener,
+        ParticleEventListener,
         ParticleService,
         DevicesService,
         ConfigurationsService,
@@ -93,7 +94,7 @@ describe('DevicesEventListener', () => {
       .compile();
     module.useLogger(mockLoggerService);
 
-    listener = module.get<DevicesEventListener>(DevicesEventListener);
+    listener = module.get<ParticleEventListener>(ParticleEventListener);
 
     mockDevicesService.findById.mockReset();
     mockParticleService.eventStream.mockClear();
@@ -104,6 +105,7 @@ describe('DevicesEventListener', () => {
   });
 
   afterEach(async () => {
+    mockConfigurationsService.sendEventSensorData.mockClear();
     if (module) {
       await module.close();
     }
@@ -197,7 +199,7 @@ describe('DevicesEventListener', () => {
       expect(mockLoggerService.error).toHaveBeenCalledWith(
         'device service error',
         undefined,
-        'DevicesEventListener1',
+        'ParticleEventListener',
       );
     });
 
@@ -224,7 +226,7 @@ describe('DevicesEventListener', () => {
       expect(mockLoggerService.error).toHaveBeenCalledWith(
         'populate error',
         undefined,
-        'DevicesEventListener1',
+        'ParticleEventListener',
       );
     });
 
@@ -258,7 +260,7 @@ describe('DevicesEventListener', () => {
       expect(mockLoggerService.error).toHaveBeenCalledWith(
         'Send Configuration: send configuration error',
         undefined,
-        'DevicesEventListener1',
+        'ParticleEventListener',
       );
     });
   });
@@ -394,7 +396,7 @@ describe('DevicesEventListener', () => {
     });
   });
 
-  describe('event data: oinkbrew/devices/values', () => {
+  describe('event data: oinkbrew/device/values', () => {
     it('should add event data to active configuration', async () => {
       await createConfInDb(deviceModel, confModel, mockBrewNotArchived);
       await createConfInDb(deviceModel, confModel, mockBrewArchivedForDeviceOnline);
@@ -407,7 +409,7 @@ describe('DevicesEventListener', () => {
         ttl: 60,
         published_at: new Date(eventDate),
         coreid: 'ccc',
-        name: 'oinkbrew/devices/values',
+        name: 'oinkbrew/device/values',
       };
       const expectedSensorData = new Map<string, SensorData[]>();
       expectedSensorData.set(eventDate, [
@@ -439,7 +441,7 @@ describe('DevicesEventListener', () => {
         ttl: 60,
         published_at: new Date(eventDate),
         coreid: 'ccc',
-        name: 'oinkbrew/devices/values',
+        name: 'oinkbrew/device/values',
       };
       const expectedSensorData = new Map<string, SensorData[]>();
       expectedSensorData.set(eventDate, [
@@ -476,7 +478,7 @@ describe('DevicesEventListener', () => {
         ttl: 60,
         published_at: new Date(eventDate),
         coreid: 'ccc',
-        name: 'oinkbrew/devices/values',
+        name: 'oinkbrew/device/values',
       };
       const expectedSensorData = new Map<string, SensorData[]>();
       expectedSensorData.set(eventDate, [
@@ -493,7 +495,7 @@ describe('DevicesEventListener', () => {
       expect(configuration?.sensorData?.size).toEqual(0);
     });
 
-    it('should not overwrite existing event data', async () => {
+    it('should send event data to configuration service', async () => {
       await createConfInDb(deviceModel, confModel, mockBrewNotArchived);
       await createConfInDb(deviceModel, confModel, mockBrewArchivedForDeviceOnline);
       const eventDate1 = '2022-12-09T09:35:30+01:00';
@@ -509,7 +511,7 @@ describe('DevicesEventListener', () => {
       const event = {
         ttl: 60,
         coreid: 'ccc',
-        name: 'oinkbrew/devices/values',
+        name: 'oinkbrew/device/values',
       };
       const activeConfigurations = await confModel.find({}).populate('device').exec();
       mockConfigurationsService.findByDevice.mockResolvedValue(activeConfigurations);
@@ -520,13 +522,27 @@ describe('DevicesEventListener', () => {
       mockEventStream.next({ ...event, data: eventData2, published_at: new Date(eventDate2) });
       await sleep(100);
 
-      const configuration = await confModel.findOne({ id: 1 }).exec();
-      const sensorData1 = JSON.parse(JSON.stringify(configuration?.sensorData.get(eventDate1)));
-      const sensorData2 = JSON.parse(JSON.stringify(configuration?.sensorData.get(eventDate2)));
-
-      expect(configuration?.sensorData?.size).toEqual(2);
-      expect(sensorData1[0].value).toEqual(20);
-      expect(sensorData2[0].value).toEqual(25);
+      expect(mockConfigurationsService.sendEventSensorData).toHaveBeenCalledTimes(2);
+      expect(mockConfigurationsService.sendEventSensorData).toHaveBeenCalledWith({
+        publishedAt: eventDate1,
+        configurationId: 1,
+        sensorData: [
+          expect.objectContaining({
+            name: 'temp sensor name',
+            value: 20.0,
+          }),
+        ],
+      });
+      expect(mockConfigurationsService.sendEventSensorData).toHaveBeenCalledWith({
+        publishedAt: eventDate2,
+        configurationId: 1,
+        sensorData: [
+          expect.objectContaining({
+            name: 'temp sensor name',
+            value: 25.0,
+          }),
+        ],
+      });
     });
   });
 });

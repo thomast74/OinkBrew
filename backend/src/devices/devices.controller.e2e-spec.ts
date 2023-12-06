@@ -14,12 +14,7 @@ import {
   getDeviceModel,
   getUserModel,
 } from '../../test/db-helper.fn';
-import {
-  createAccessToken,
-  createRefreshToken,
-  sleep,
-  TestingLogger,
-} from '../../test/helper.fn';
+import { TestingLogger, createAccessToken, createRefreshToken, sleep } from '../../test/helper.fn';
 import { getParticleDevice } from '../../test/particle-helper.fn';
 import { AppModule } from '../app.module';
 import { ARGON_OPTIONS } from '../constants';
@@ -72,11 +67,7 @@ describe('DevicesController (e2e)', () => {
 
   const prepareUserInDb = async () => {
     const userDocument = await createUserInDb(userModel, true);
-    refreshToken = await createRefreshToken(
-      jwt,
-      userDocument?.id,
-      userDocument?.email,
-    );
+    refreshToken = await createRefreshToken(jwt, userDocument?.id, userDocument?.email);
     hashedRt = await argon2.hash(refreshToken, ARGON_OPTIONS);
 
     if (userDocument) {
@@ -84,11 +75,7 @@ describe('DevicesController (e2e)', () => {
       await userDocument.save();
     }
 
-    validAccessToken = await createAccessToken(
-      jwt,
-      userDocument?.id,
-      userDocument?.email,
-    );
+    validAccessToken = await createAccessToken(jwt, userDocument?.id, userDocument?.email);
   };
 
   const prepareDeviceInDb = async () => {
@@ -122,10 +109,7 @@ describe('DevicesController (e2e)', () => {
 
   describe('PUT /devices/{id}/{hwAddress}/{pinNr}', () => {
     beforeEach(async () => {
-      await createDeviceInDb(
-        deviceModel,
-        mockDeviceWithConnectedDevicesConnected,
-      );
+      await createDeviceInDb(deviceModel, mockDeviceWithConnectedDevicesConnected);
     });
 
     afterEach(async () => {
@@ -266,10 +250,7 @@ describe('DevicesController (e2e)', () => {
   describe('PUT /devices/{id}/restart', () => {
     it('should return not authenticated if no valid token provided', () => {
       const deviceId = 'bbb';
-      return request(app.getHttpServer())
-        .put(`/devices/${deviceId}/restart`)
-        .send({})
-        .expect(401);
+      return request(app.getHttpServer()).put(`/devices/${deviceId}/restart`).send({}).expect(401);
     });
 
     // this test passes only when device connected with sensor
@@ -346,9 +327,7 @@ describe('DevicesController (e2e)', () => {
           notes,
         });
 
-      const deviceDb = await deviceModel
-        .findOne({ id: expectedDevice2.id })
-        .exec();
+      const deviceDb = await deviceModel.findOne({ id: expectedDevice2.id }).exec();
 
       expect(response.statusCode).toEqual(200);
       expect(deviceDb?.name).toEqual(name);
@@ -376,7 +355,7 @@ describe('DevicesController (e2e)', () => {
   describe('PUT /devices/refresh', () => {
     beforeEach(async () => {
       await deviceModel.deleteMany().exec();
-      const deviceCount = await deviceModel.count().exec();
+      const deviceCount = await deviceModel.countDocuments().exec();
 
       expect(deviceCount).toEqual(0);
     });
@@ -392,7 +371,7 @@ describe('DevicesController (e2e)', () => {
         .send();
       await sleep(9000);
 
-      const deviceCount = await deviceModel.count().exec();
+      const deviceCount = await deviceModel.countDocuments().exec();
 
       expect(response.statusCode).toEqual(200);
       expect(deviceCount).toEqual(2);

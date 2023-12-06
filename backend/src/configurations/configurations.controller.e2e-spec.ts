@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import * as argon2 from 'argon2';
+import EventSource from 'eventsource';
 import { Model } from 'mongoose';
 import request from 'supertest';
 
@@ -13,12 +14,7 @@ import {
   getDeviceModel,
   getUserModel,
 } from '../../test/db-helper.fn';
-import {
-  createAccessToken,
-  createRefreshToken,
-  sleep,
-  TestingLogger,
-} from '../../test/helper.fn';
+import { TestingLogger, createAccessToken, createRefreshToken, sleep } from '../../test/helper.fn';
 import { AppModule } from '../app.module';
 import { ARGON_OPTIONS } from '../constants';
 import { Device } from '../devices/schemas';
@@ -34,11 +30,13 @@ import {
 import {
   createConfFromDto,
   createConfigurations,
+  createSeeConfiguration,
 } from './tests/configuration-helper.mock';
 import { expectedConfigurationFridgeNotArchived } from './tests/fridge-configurations.mock';
 
 describe('ConfigurationsController (e2e)', () => {
   let app: INestApplication;
+  let serverUrl: string;
   let jwt: JwtService;
   let user: User | null;
   let refreshToken: string;
@@ -68,6 +66,8 @@ describe('ConfigurationsController (e2e)', () => {
       }),
     );
     await app.init();
+    await app.listen(8100);
+    serverUrl = await app.getUrl();
 
     jwt = moduleFixture.get<JwtService>(JwtService);
 
@@ -91,6 +91,7 @@ describe('ConfigurationsController (e2e)', () => {
 
   const prepareConfigurationsInDb = async () => {
     await createConfigurations(deviceModel, confModel);
+    await createSeeConfiguration(deviceModel, confModel);
   };
 
   afterAll(async () => {
@@ -108,7 +109,7 @@ describe('ConfigurationsController (e2e)', () => {
         .set('Authorization', `Bearer ${validAccessToken}`)
         .send();
 
-      expect(response.body).toBeArrayOfSize(2);
+      expect(response.body).toBeArrayOfSize(3);
       expect(response.body).toIncludeAllMembers([
         expectedConfigurationBrewNotArchived,
         expectedConfigurationFridgeNotArchived,
@@ -121,7 +122,7 @@ describe('ConfigurationsController (e2e)', () => {
         .set('Authorization', `Bearer ${validAccessToken}`)
         .send();
 
-      expect(response.body).toBeArrayOfSize(2);
+      expect(response.body).toBeArrayOfSize(3);
       expect(response.body).toIncludeAllMembers([
         expectedConfigurationBrewNotArchived,
         expectedConfigurationFridgeNotArchived,
@@ -135,9 +136,7 @@ describe('ConfigurationsController (e2e)', () => {
         .send();
 
       expect(response.body).toBeArrayOfSize(1);
-      expect(response.body).toIncludeAllMembers([
-        expectedConfigurationBrewArchived,
-      ]);
+      expect(response.body).toIncludeAllMembers([expectedConfigurationBrewArchived]);
     });
 
     it('should return bad request if archived query string is malformed', () => {
@@ -196,9 +195,7 @@ describe('ConfigurationsController (e2e)', () => {
 
       const error = JSON.parse(response.text);
       expect(response.statusCode).toBe(404);
-      expect(error.message).toBe(
-        'Connected Device not found: 0/MISSING000000000',
-      );
+      expect(error.message).toBe('Connected Device not found: 0/MISSING000000000');
     });
 
     it('should create the configuration in database', async () => {
@@ -214,7 +211,7 @@ describe('ConfigurationsController (e2e)', () => {
       expect(response.statusCode).toBe(201);
       expect(response.body).toBeDefined();
 
-      const confCount = await confModel.findOne({ id: 5 }).count().exec();
+      const confCount = await confModel.findOne({ id: 5 }).countDocuments().exec();
       expect(confCount).toEqual(1);
     });
 
@@ -310,9 +307,7 @@ describe('ConfigurationsController (e2e)', () => {
 
       const error = JSON.parse(response.text);
       expect(response.statusCode).toBe(404);
-      expect(error.message).toBe(
-        'Connected Device not found: 0/MISSING000000000',
-      );
+      expect(error.message).toBe('Connected Device not found: 0/MISSING000000000');
     });
 
     it('should update the configuration in database', async () => {
@@ -365,9 +360,7 @@ describe('ConfigurationsController (e2e)', () => {
 
   describe('DELETE /configurations/{id}', () => {
     it('should return not authenticated if no valid token provided', () => {
-      return request(app.getHttpServer())
-        .delete('/configurations/6')
-        .expect(401);
+      return request(app.getHttpServer()).delete('/configurations/6').expect(401);
     });
 
     it('should return NotFoundException of configuration not found', async () => {
@@ -428,5 +421,44 @@ describe('ConfigurationsController (e2e)', () => {
         "I didn't recognize that device name or ID, try opening https://api.particle.io/v1/devices?access_token=undefined",
       );
     });
+  });
+
+  describe('SSE /configurations/{id}/sse', () => {
+    let eventSource: EventSource | undefined;
+
+    beforeEach(() => {
+      eventSource = undefined;
+    });
+
+    afterEach(() => {
+      eventSource?.close();
+    });
+
+    it('should return not authenticated if no valid token provided', (done) => {
+      eventSource = new EventSource(`${serverUrl}/configurations/25/sse`);
+
+      eventSource.onerror = (event) => {
+        expect(event.status).toEqual(401);
+        done();
+      };
+    });
+
+    // this only works when there is a connected device
+    // please connect device and also connect a sensor
+    it('should connect to configuration sse EventSensorData stream', async () => {
+      let eventsReceived = 0;
+      eventSource = new EventSource(`${serverUrl}/configurations/25/sse`, {
+        headers: {
+          Authorization: `Bearer ${validAccessToken}`,
+        },
+      });
+
+      eventSource.addEventListener('SensorData', () => {
+        eventsReceived++;
+      });
+      await sleep(24000);
+
+      expect(eventsReceived).toBeGreaterThanOrEqual(2);
+    }, 25000);
   });
 });

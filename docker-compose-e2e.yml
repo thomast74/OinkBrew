@@ -1,9 +1,9 @@
-version: '3.8'
+version: "3.8"
 name: oinkbrew-e2e
 
 services:
   mongo1-e2e:
-    image: mongo:6.0.4
+    image: mongo:7.0.8
     container_name: oinkbrew-e2e-db-1
     hostname: mongo1-e2e
     restart: "always"
@@ -33,7 +33,7 @@ services:
     command: mongod --port 27026 --replSet oinkbrewReplSet --keyFile /data/replica.key --bind_ip localhost,mongo1-e2e
 
   mongo2-e2e:
-    image: mongo:6.0.4
+    image: mongo:7.0.8
     container_name: oinkbrew-e2e-db-2
     hostname: mongo2-e2e
     restart: "always"
@@ -62,7 +62,7 @@ services:
     command: mongod --port 27027 --replSet oinkbrewReplSet --keyFile /data/replica.key --bind_ip localhost,mongo2-e2e
 
   mongo3-e2e:
-    image: mongo:6.0.4
+    image: mongo:7.0.8
     container_name: oinkbrew-e2e-db-3
     hostname: mongo3-e2e
     restart: "always"
@@ -91,14 +91,14 @@ services:
     command: mongod --port 27028 --replSet oinkbrewReplSet --keyFile /data/replica.key --bind_ip localhost,mongo3-e2e
 
   mongoinit-e2e:
-    image: mongo:6.0.4
+    image: mongo:7.0.8
     container_name: oinkbrew-e2e-mongoinit
     restart: "no"
     networks:
       - mongo-e2e-cluster-network
     volumes:
       - $PWD/../.docker/mongo/docker_e2e_init.sh:/data/docker_e2e_init.devel.sh
-    depends_on: [ mongo1-e2e, mongo2-e2e, mongo3-e2e ]
+    depends_on: [mongo1-e2e, mongo2-e2e, mongo3-e2e]
     environment:
       ROOT_USERNAME: mongoroot
       ROOT_PASSWORD: secretpwd
@@ -113,11 +113,11 @@ services:
     command: "exec bash -c /data/docker_init.sh"
 
   cache-e2e:
-    image: redis:7.0.5-alpine
+    image: redis:7.2.4-alpine
     container_name: oinkbrew-e2e-cache
     restart: always
     ports:
-      - '6379:6379'
+      - "6379:6379"
     volumes:
       - cache-e2e:/data
     command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81

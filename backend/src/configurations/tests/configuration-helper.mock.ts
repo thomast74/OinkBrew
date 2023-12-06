@@ -5,7 +5,7 @@ import { ConfigurationDto } from '../dtos';
 import { Configuration, ConfigurationDocument } from '../schemas';
 import { mockBrewNotArchived } from './brew-configurations.mock';
 import { mockBrewArchived } from './brew-configurations.mock';
-import { mockFridgeNotArchived } from './fridge-configurations.mock';
+import { mockFridgeNotArchived, mockRealFridgeNotArchived } from './fridge-configurations.mock';
 
 export async function createConfInDb(
   deviceModel: Model<Device>,
@@ -63,4 +63,11 @@ export async function createConfigurations(
   await createConfInDb(deviceModel, confModel, mockBrewNotArchived);
   await createConfInDb(deviceModel, confModel, mockBrewArchived);
   await createConfInDb(deviceModel, confModel, mockFridgeNotArchived);
+}
+
+export async function createSeeConfiguration(
+  deviceModel: Model<Device>,
+  confModel: Model<Configuration>,
+) {
+  await createConfInDb(deviceModel, confModel, mockRealFridgeNotArchived);
 }

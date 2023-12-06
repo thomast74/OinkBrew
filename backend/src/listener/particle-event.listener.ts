@@ -6,10 +6,10 @@ import { Subscription } from 'rxjs';
 import { ParticleService } from '../common/particle.service';
 import { ConfigurationsService } from '../configurations/configurations.service';
 import { Configuration } from '../configurations/schemas';
-import { DevicesService } from './devices.service';
-import { ConnectedDeviceHelper } from './helpers';
-import { ConnectedDevice, Device } from './schemas';
-import { ConnectedDeviceType, EventData } from './types';
+import { DevicesService } from '../devices/devices.service';
+import { ConnectedDeviceHelper } from '../devices/helpers';
+import { ConnectedDevice, Device } from '../devices/schemas';
+import { ConnectedDeviceType, EventData } from '../devices/types';
 
 type EventValueData = {
   pinNr: number;
@@ -18,8 +18,8 @@ type EventValueData = {
 };
 
 @Injectable()
-export class DevicesEventListener implements OnApplicationBootstrap, OnApplicationShutdown {
-  private readonly logger = new Logger(DevicesEventListener.name);
+export class ParticleEventListener implements OnApplicationBootstrap, OnApplicationShutdown {
+  private readonly logger = new Logger(ParticleEventListener.name);
   private eventStreamRunning = false;
   private eventStreamSubscription?: Subscription = undefined;
 
@@ -65,7 +65,6 @@ export class DevicesEventListener implements OnApplicationBootstrap, OnApplicati
   }
 
   private eventProcessor(eventData: EventData) {
-    this.logger.log(`Received particle event: ${eventData.name}`);
     switch (eventData.name) {
       case 'oinkbrew/start':
         this.oinkbrewStart(eventData);
@@ -76,7 +75,7 @@ export class DevicesEventListener implements OnApplicationBootstrap, OnApplicati
       case 'oinkbrew/devices/remove':
         this.oinkbrewRemoveConnectedDevice(eventData);
         break;
-      case 'oinkbrew/devices/values':
+      case 'oinkbrew/device/values':
         this.oinkbrewNewData(eventData);
         break;
     }
@@ -159,6 +158,16 @@ export class DevicesEventListener implements OnApplicationBootstrap, OnApplicati
     }
 
     activeConfigurations.forEach(async (configuration) => {
+      const publishedAt = formatISO(eventData.published_at);
+      const sensorData = configuration.sensorData.get(publishedAt);
+      if (sensorData) {
+        this.configurations.sendEventSensorData({
+          publishedAt,
+          configurationId: configuration.id,
+          sensorData,
+        });
+      }
+
       await configuration.save();
     });
   }

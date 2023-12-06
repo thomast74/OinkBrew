@@ -7,7 +7,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 
 import { Model } from 'mongoose';
-import { Observable } from 'rxjs';
+import { Observable, Subject, filter } from 'rxjs';
 
 import { ParticleService } from '../common/particle.service';
 import { DevicesService } from '../devices/devices.service';
@@ -15,11 +15,12 @@ import { ConnectedDeviceHelper } from '../devices/helpers';
 import { Device, DeviceDocument } from '../devices/schemas';
 import { getErrorMessage } from '../helpers/error.converter';
 import { ConfigurationDto, ConnectedDeviceDto } from './dtos';
-import { Configuration, ConfigurationDocument } from './schemas';
+import { Configuration, ConfigurationDocument, EventSensorData } from './schemas';
 
 @Injectable()
 export class ConfigurationsService {
   private readonly logger = new Logger(ConfigurationsService.name);
+  private events$ = new Subject<EventSensorData>();
 
   constructor(
     @InjectModel(Configuration.name) private configurationModel: Model<Configuration>,
@@ -134,6 +135,14 @@ export class ConfigurationsService {
     } catch (error: any) {
       throw new InternalServerErrorException(getErrorMessage(error));
     }
+  }
+
+  getEventSensorData(id: number): Observable<EventSensorData> {
+    return this.events$.pipe(filter((event) => event.configurationId === +id));
+  }
+
+  sendEventSensorData(newEvent: EventSensorData) {
+    this.events$.next(newEvent);
   }
 
   private async getConfigurationIfExist(id: number): Promise<ConfigurationDocument> {
