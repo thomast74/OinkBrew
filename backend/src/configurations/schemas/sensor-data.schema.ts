@@ -5,3 +5,9 @@ export class SensorData {
   name: string;
   value: number;
 }
+
+export type EventSensorData = {
+  publishedAt: string;
+  configurationId: number;
+  sensorData: SensorData[];
+};

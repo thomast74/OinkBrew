@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import * as argon2 from 'argon2';
+import EventSource from 'eventsource';
 import { Model } from 'mongoose';
 import request from 'supertest';
 
@@ -13,12 +14,7 @@ import {
   getDeviceModel,
   getUserModel,
 } from '../../test/db-helper.fn';
-import {
-  createAccessToken,
-  createRefreshToken,
-  sleep,
-  TestingLogger,
-} from '../../test/helper.fn';
+import { TestingLogger, createAccessToken, createRefreshToken, sleep } from '../../test/helper.fn';
 import { AppModule } from '../app.module';
 import { ARGON_OPTIONS } from '../constants';
 import { Device } from '../devices/schemas';
@@ -31,10 +27,7 @@ import {
   mockDtoBrewGood,
   mockDtoBrewMissingDevice,
 } from './tests/brew-configurations.mock';
-import {
-  createConfFromDto,
-  createConfigurations,
-} from './tests/configuration-helper.mock';
+import { createConfFromDto, createConfigurations } from './tests/configuration-helper.mock';
 import { expectedConfigurationFridgeNotArchived } from './tests/fridge-configurations.mock';
 
 describe('ConfigurationsController (e2e)', () => {
@@ -135,9 +128,7 @@ describe('ConfigurationsController (e2e)', () => {
         .send();
 
       expect(response.body).toBeArrayOfSize(1);
-      expect(response.body).toIncludeAllMembers([
-        expectedConfigurationBrewArchived,
-      ]);
+      expect(response.body).toIncludeAllMembers([expectedConfigurationBrewArchived]);
     });
 
     it('should return bad request if archived query string is malformed', () => {
@@ -196,9 +187,7 @@ describe('ConfigurationsController (e2e)', () => {
 
       const error = JSON.parse(response.text);
       expect(response.statusCode).toBe(404);
-      expect(error.message).toBe(
-        'Connected Device not found: 0/MISSING000000000',
-      );
+      expect(error.message).toBe('Connected Device not found: 0/MISSING000000000');
     });
 
     it('should create the configuration in database', async () => {
@@ -310,9 +299,7 @@ describe('ConfigurationsController (e2e)', () => {
 
       const error = JSON.parse(response.text);
       expect(response.statusCode).toBe(404);
-      expect(error.message).toBe(
-        'Connected Device not found: 0/MISSING000000000',
-      );
+      expect(error.message).toBe('Connected Device not found: 0/MISSING000000000');
     });
 
     it('should update the configuration in database', async () => {
@@ -365,9 +352,7 @@ describe('ConfigurationsController (e2e)', () => {
 
   describe('DELETE /configurations/{id}', () => {
     it('should return not authenticated if no valid token provided', () => {
-      return request(app.getHttpServer())
-        .delete('/configurations/6')
-        .expect(401);
+      return request(app.getHttpServer()).delete('/configurations/6').expect(401);
     });
 
     it('should return NotFoundException of configuration not found', async () => {
@@ -428,5 +413,34 @@ describe('ConfigurationsController (e2e)', () => {
         "I didn't recognize that device name or ID, try opening https://api.particle.io/v1/devices?access_token=undefined",
       );
     });
+  });
+
+  describe('SSE /configurations/{id}/sse', () => {
+    beforeEach(async () => {
+      await app.listen(8100);
+    });
+
+    afterEach(async () => {
+      await app.close();
+    });
+
+    it('should return not authenticated if no valid token provided', async () => {
+      const serverUrl = await app.getUrl();
+      console.error(serverUrl);
+      const es = new EventSource(`${serverUrl}/configurations/1/sse`);
+      let recvStatus: number | undefined;
+
+      es.onerror = (event) => {
+        recvStatus = event.status;
+      };
+      await sleep(100);
+
+      expect(recvStatus).toEqual(401);
+    });
+
+    // it('should connect to confiuration sse EventSensorData stream', () => {
+    //   // add configuration to database
+    //   //
+    // });
   });
 });

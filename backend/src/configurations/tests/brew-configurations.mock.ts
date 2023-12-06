@@ -150,6 +150,7 @@ export const expectedConfigurationBrewNotArchived = {
   __v: expect.any(Number),
   _id: expect.any(String),
   device: expect.any(String),
+  sensorData: {},
   createdAt: expect.any(String),
   updatedAt: expect.any(String),
 };
@@ -159,6 +160,7 @@ export const expectedConfigurationBrewArchived = {
   __v: expect.any(Number),
   _id: expect.any(String),
   device: expect.any(String),
+  sensorData: {},
   createdAt: expect.any(String),
   updatedAt: expect.any(String),
 };

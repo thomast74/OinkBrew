@@ -7,12 +7,16 @@ import {
   HttpStatus,
   InternalServerErrorException,
   Logger,
+  MessageEvent,
   Param,
   ParseBoolPipe,
   Post,
   Put,
   Query,
+  Sse,
 } from '@nestjs/common';
+
+import { Observable, map } from 'rxjs';
 
 import { getErrorMessage } from '../helpers/error.converter';
 import { ConfigurationsService } from './configurations.service';
@@ -47,10 +51,7 @@ export class ConfigurationsController {
 
   @Put('/:id')
   @HttpCode(HttpStatus.CREATED)
-  update(
-    @Param('id') id: number,
-    @ValidConfigurationBody() configuration: ConfigurationDto,
-  ) {
+  update(@Param('id') id: number, @ValidConfigurationBody() configuration: ConfigurationDto) {
     return this.configurations.update(id, configuration);
   }
 
@@ -58,5 +59,18 @@ export class ConfigurationsController {
   @HttpCode(HttpStatus.OK)
   async delete(@Param('id') id: number) {
     return this.configurations.delete(id);
+  }
+
+  @Sse('/:id/sse')
+  events(@Param('id') id: number): Observable<MessageEvent> {
+    return this.configurations.getEventSensorData(id).pipe(
+      map((event) => {
+        return {
+          data: event,
+          type: 'SensorData',
+          retry: 0,
+        };
+      }),
+    );
   }
 }
