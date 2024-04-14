@@ -39,10 +39,7 @@ export class DevicesController implements OnApplicationBootstrap {
     try {
       return await this.devices.findAll();
     } catch (error) {
-      throw new HttpException(
-        error.message ?? error,
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new HttpException(error.message ?? error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -56,13 +53,7 @@ export class DevicesController implements OnApplicationBootstrap {
     @Body('name') name: string,
     @Body('offset') offset: number,
   ): Promise<Device | null> {
-    return this.devices.updateConnectedDeviceWithNameAndOffset(
-      id,
-      pinNr,
-      hwAddress,
-      name,
-      offset,
-    );
+    return this.devices.updateConnectedDeviceWithNameAndOffset(id, pinNr, hwAddress, name, offset);
   }
 
   @Put('/:id/restart')

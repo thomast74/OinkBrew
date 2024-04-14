@@ -3,8 +3,8 @@ import { getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { formatISO } from 'date-fns';
+import _ from 'lodash';
 import { Model } from 'mongoose';
-import { take } from 'rxjs';
 
 import {
   clearDatabase,
@@ -36,7 +36,11 @@ import {
   mockDtoBrewUpdate,
 } from './tests/brew-configurations.mock';
 import { createConfFromDto, createConfInDb } from './tests/configuration-helper.mock';
-import { mockFridgeNotArchived } from './tests/fridge-configurations.mock';
+import {
+  expectedSensorData,
+  mapSensorData,
+  mockFridgeNotArchived,
+} from './tests/fridge-configurations.mock';
 
 describe('ConfigurationsService', () => {
   let service: ConfigurationsService;
@@ -184,6 +188,30 @@ describe('ConfigurationsService', () => {
 
       expect(response).toHaveLength(0);
     });
+  });
+
+  describe('findSensorData', () => {
+    it('should get configuration from databse', async () => {
+      const configuration = _.cloneDeep(mockFridgeNotArchived);
+      configuration.sensorData = _.cloneDeep(mapSensorData);
+
+      await createConfInDb(deviceModel, confModel, mockBrewNotArchived);
+      await createConfInDb(deviceModel, confModel, mockBrewArchived);
+      await createConfInDb(deviceModel, confModel, configuration);
+
+      const response = await service.findSensorData(2);
+      const received = JSON.parse(JSON.stringify(response));
+
+      expect(received).toEqual(expectedSensorData);
+    });
+
+    it('should return not found if configuration not in database', async () => {
+      await expect(service.findSensorData(65)).rejects.toEqual(
+        new NotFoundException('Configuration not found'),
+      );
+    });
+
+    it('should return InternalServerErrorException if there is an error', async () => {});
   });
 
   describe('save', () => {

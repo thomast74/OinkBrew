@@ -25,7 +25,7 @@
 | X)   | EVT /oinkbrew/start                    | When event received send active configuration to device + offset for sensors                                   |
 | X)   | EVT /oinkbrew/new                      | When device is newly discovered and sensor is connected send offset to device if differen to 0 and connected   |
 | X)   | EVT /oinkbrew/device/values            | Receive data vales and attach sensor data to conifguration                                                     |
-|      | GET /configurations/{id}/events        | Get a list of all events attached to configuration.                                                            |
+| X)   | GET /configurations/{id}/sensordata    | Get a list of all sensor data attached to configuration.                                                       |
 | X)   | SSE /configurations/{id}/sse           | Get a stream of events attached to configuration.                                                              |
 |      | Updating README.md                     |                                                                                                                |
 

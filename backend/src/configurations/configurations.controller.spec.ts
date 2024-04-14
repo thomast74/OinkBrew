@@ -22,13 +22,14 @@ import { BrewConfigurationDto, FridgeConfigurationDto } from './dtos';
 import { EventSensorData } from './schemas';
 import { mockBrewNotArchived } from './tests/brew-configurations.mock';
 import { brewConfValid, fridgeConfValid } from './tests/configuration-dto.mock';
-import { mockFridgeNotArchived } from './tests/fridge-configurations.mock';
+import { expectedSensorData, mockFridgeNotArchived } from './tests/fridge-configurations.mock';
 
 describe('ConfigurationsController', () => {
   let module: TestingModule;
 
   const mockConfigurationsService = {
     findAll: jest.fn(),
+    findSensorData: jest.fn(),
     save: jest.fn(),
     update: jest.fn(),
     delete: jest.fn(),
@@ -104,6 +105,63 @@ describe('ConfigurationsController', () => {
       mockConfigurationsService.findAll.mockRejectedValue('db error');
 
       await expect(controller.getList()).rejects.toEqual(
+        new InternalServerErrorException('db error'),
+      );
+    });
+  });
+
+  describe('GET /{id}/sensordata', () => {
+    it('should not be public', () => {
+      const controller = module.get<ConfigurationsController>(ConfigurationsController);
+      const metadata = Reflect.getMetadata(IS_PUBLIC_KEY, controller.getSensorData);
+
+      expect(metadata).toBeUndefined();
+    });
+
+    it('should react to Get /:id/sensordata', () => {
+      const controller = module.get<ConfigurationsController>(ConfigurationsController);
+      const method = Reflect.getMetadata(METHOD_METADATA, controller.getSensorData);
+      const path = Reflect.getMetadata(PATH_METADATA, controller.getSensorData);
+
+      expect(method).toEqual(RequestMethod.GET);
+      expect(path).toEqual('/:id/sensordata');
+    });
+
+    it('should return HttpStatus.OK', () => {
+      const controller = module.get<ConfigurationsController>(ConfigurationsController);
+      const metadata = Reflect.getMetadata(HTTP_CODE_METADATA, controller.getSensorData);
+
+      expect(metadata).toEqual(HttpStatus.OK);
+    });
+
+    it('should call service to get sesnor data for configuration with :id', async () => {
+      const controller = module.get<ConfigurationsController>(ConfigurationsController);
+
+      await controller.getSensorData('2');
+
+      expect(mockConfigurationsService.findSensorData).toHaveBeenCalledWith(2);
+    });
+
+    it('should return an array of sensor data for requested configuration', async () => {
+      const controller = module.get<ConfigurationsController>(ConfigurationsController);
+      mockConfigurationsService.findSensorData.mockResolvedValue(expectedSensorData);
+
+      const response = await controller.getSensorData('2');
+
+      expect(response).toMatchObject({
+        publishedAt: expect.any(String),
+        configurationId: 2,
+        sensorData: expectedSensorData,
+      });
+    });
+
+    it('should return error in case backend has an error', async () => {
+      const controller = module.get<ConfigurationsController>(ConfigurationsController);
+      mockConfigurationsService.findSensorData.mockRejectedValue(
+        new InternalServerErrorException('db error'),
+      );
+
+      await expect(controller.getSensorData('3')).rejects.toEqual(
         new InternalServerErrorException('db error'),
       );
     });
@@ -286,7 +344,7 @@ describe('ConfigurationsController', () => {
       const controller = module.get<ConfigurationsController>(ConfigurationsController);
       mockConfigurationsService.getEventSensorData.mockReturnValue(new Subject<EventSensorData>());
 
-      controller.events(2).subscribe();
+      controller.events('2').subscribe();
 
       expect(mockConfigurationsService.getEventSensorData).toHaveBeenCalledWith(2);
     });
@@ -301,7 +359,7 @@ describe('ConfigurationsController', () => {
         sensorData: [{ name: 'temp sensor 1', value: 23.34 }],
       };
 
-      controller.events(2).subscribe({
+      controller.events('2').subscribe({
         next: (messageEvent) => {
           expect(messageEvent).toEqual({
             data: eventSensorData,

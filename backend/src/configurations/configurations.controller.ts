@@ -6,7 +6,6 @@ import {
   HttpCode,
   HttpStatus,
   InternalServerErrorException,
-  Logger,
   MessageEvent,
   Param,
   ParseBoolPipe,
@@ -16,19 +15,29 @@ import {
   Sse,
 } from '@nestjs/common';
 
+import { formatISO } from 'date-fns';
 import { Observable, map } from 'rxjs';
 
 import { getErrorMessage } from '../helpers/error.converter';
 import { ConfigurationsService } from './configurations.service';
 import { ValidConfigurationBody } from './decorators';
 import { ConfigurationDto } from './dtos';
-import { ConfigurationDocument } from './schemas';
+import { ConfigurationDocument, ConfigurationSensorDatas } from './schemas';
 
 @Controller('configurations')
 export class ConfigurationsController {
-  private readonly logger = new Logger(ConfigurationsController.name);
-
   constructor(private configurations: ConfigurationsService) {}
+
+  @Get('/:id/sensordata')
+  @HttpCode(HttpStatus.OK)
+  async getSensorData(@Param('id') id: string): Promise<ConfigurationSensorDatas> {
+    const sensorData = (await this.configurations.findSensorData(+id)) ?? [];
+    return {
+      publishedAt: formatISO(new Date()),
+      configurationId: +id,
+      sensorData,
+    };
+  }
 
   @Get('/')
   @HttpCode(HttpStatus.OK)
@@ -62,8 +71,8 @@ export class ConfigurationsController {
   }
 
   @Sse('/:id/sse')
-  events(@Param('id') id: number): Observable<MessageEvent> {
-    return this.configurations.getEventSensorData(id).pipe(
+  events(@Param('id') id: string): Observable<MessageEvent> {
+    return this.configurations.getEventSensorData(+id).pipe(
       map((event) => {
         return {
           data: event,

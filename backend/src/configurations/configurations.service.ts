@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Observable, Subject, filter } from 'rxjs';
 
 import { ParticleService } from '../common/particle.service';
@@ -15,7 +15,12 @@ import { ConnectedDeviceHelper } from '../devices/helpers';
 import { Device, DeviceDocument } from '../devices/schemas';
 import { getErrorMessage } from '../helpers/error.converter';
 import { ConfigurationDto, ConnectedDeviceDto } from './dtos';
-import { Configuration, ConfigurationDocument, EventSensorData } from './schemas';
+import {
+  Configuration,
+  ConfigurationDocument,
+  ConfigurationSensorData,
+  EventSensorData,
+} from './schemas';
 
 @Injectable()
 export class ConfigurationsService {
@@ -63,6 +68,26 @@ export class ConfigurationsService {
       console.error(error);
       return [];
     }
+  }
+
+  async findSensorData(configurationId: number): Promise<ConfigurationSensorData> {
+    let configuration: Configuration | null;
+
+    try {
+      configuration = await this.configurationModel.findOne({ id: configurationId }).exec();
+    } catch (error) {
+      throw new InternalServerErrorException(getErrorMessage(error));
+    }
+
+    if (!configuration) {
+      throw new NotFoundException('Configuration not found');
+    }
+
+    if (configuration.sensorData?.size > 0) {
+      return Object.fromEntries(configuration.sensorData);
+    }
+
+    return {};
   }
 
   async save(configurationDto: ConfigurationDto): Promise<ConfigurationDocument> {
@@ -138,7 +163,7 @@ export class ConfigurationsService {
   }
 
   getEventSensorData(id: number): Observable<EventSensorData> {
-    return this.events$.pipe(filter((event) => event.configurationId === +id));
+    return this.events$.pipe(filter((event) => event.configurationId === id));
   }
 
   sendEventSensorData(newEvent: EventSensorData) {

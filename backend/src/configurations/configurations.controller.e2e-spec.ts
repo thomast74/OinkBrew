@@ -32,7 +32,11 @@ import {
   createConfigurations,
   createSeeConfiguration,
 } from './tests/configuration-helper.mock';
-import { expectedConfigurationFridgeNotArchived } from './tests/fridge-configurations.mock';
+import {
+  expectedConfigurationFridgeNotArchived,
+  expectedSensorData,
+  mapSensorData,
+} from './tests/fridge-configurations.mock';
 
 describe('ConfigurationsController (e2e)', () => {
   let app: INestApplication;
@@ -144,6 +148,56 @@ describe('ConfigurationsController (e2e)', () => {
         .get('/configurations?archived=blabla')
         .set('Authorization', `Bearer ${validAccessToken}`)
         .expect(400);
+    });
+  });
+
+  describe('GET /configurations/{id}/sensordata', () => {
+    it('should return not authenticated if no valid token provided', () => {
+      return request(app.getHttpServer()).get('/configurations/2/sensordata').expect(401);
+    });
+
+    it('should get not found when configuration is not in the databse', async () => {
+      return request(app.getHttpServer())
+        .get('/configurations/333/sensordata')
+        .set('Authorization', `Bearer ${validAccessToken}`)
+        .expect(404);
+    });
+
+    it('should return all sensor data when configuration found', async () => {
+      await confModel.updateOne({ id: 25 }, { $set: { sensorData: mapSensorData } }).exec();
+
+      const response = await request(app.getHttpServer())
+        .get('/configurations/25/sensordata')
+        .set('Authorization', `Bearer ${validAccessToken}`)
+        .send();
+
+      expect(response.body).toEqual({
+        configurationId: 25,
+        publishedAt: expect.any(String),
+        sensorData: expectedSensorData,
+      });
+
+      await confModel.updateOne({ id: 25 }, { $set: { sensorData: new Map() } }).exec();
+    });
+
+    it('should return empty object if there are not sensor data', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/configurations/1/sensordata')
+        .set('Authorization', `Bearer ${validAccessToken}`)
+        .send();
+
+      expect(response.body).toEqual({
+        configurationId: 1,
+        publishedAt: expect.any(String),
+        sensorData: {},
+      });
+    });
+
+    it('should return internal server expcetion if configuration id is string', async () => {
+      return request(app.getHttpServer())
+        .get('/configurations/nix/sensordata')
+        .set('Authorization', `Bearer ${validAccessToken}`)
+        .expect(500);
     });
   });
 
@@ -445,7 +499,7 @@ describe('ConfigurationsController (e2e)', () => {
 
     // this only works when there is a connected device
     // please connect device and also connect a sensor
-    it('should connect to configuration sse EventSensorData stream', async () => {
+    it.skip('should connect to configuration sse EventSensorData stream', async () => {
       let eventsReceived = 0;
       eventSource = new EventSource(`${serverUrl}/configurations/25/sse`, {
         headers: {

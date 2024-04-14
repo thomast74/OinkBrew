@@ -1,6 +1,8 @@
+import { Types } from 'mongoose';
+
 import { mockDeviceOnline, mockRealDeviceOnline } from '../../devices/tests/devices.mock';
 import { ConnectedDeviceType } from '../../devices/types';
-import { FridgeConfiguration } from '../schemas';
+import { FridgeConfiguration, SensorData } from '../schemas';
 import { ConfigurationType } from '../types';
 
 export const mockFridgeNotArchived: FridgeConfiguration = {
@@ -99,4 +101,16 @@ export const expectedConfigurationFridgeNotArchived = {
   sensorData: {},
   createdAt: expect.any(String),
   updatedAt: expect.any(String),
+};
+
+export const mapSensorData = new Map<string, SensorData[]>([
+  ['2014-04-14T23:03:07', [{ _id: new Types.ObjectId(), name: '0/2F02928283', value: 23.65 }]],
+  ['2014-04-14T23:03:17', [{ _id: new Types.ObjectId(), name: '0/2F02928283', value: 23.75 }]],
+  ['2014-04-14T23:03:27', [{ _id: new Types.ObjectId(), name: '0/2F02928283', value: 23.55 }]],
+]);
+
+export const expectedSensorData = {
+  '2014-04-14T23:03:07': [{ _id: expect.any(String), name: '0/2F02928283', value: 23.65 }],
+  '2014-04-14T23:03:17': [{ _id: expect.any(String), name: '0/2F02928283', value: 23.75 }],
+  '2014-04-14T23:03:27': [{ _id: expect.any(String), name: '0/2F02928283', value: 23.55 }],
 };

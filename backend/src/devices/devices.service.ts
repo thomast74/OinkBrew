@@ -45,11 +45,7 @@ export class DevicesService {
     return device;
   }
 
-  public async update(
-    deviceId: string,
-    name: string,
-    notes?: string,
-  ): Promise<DeviceDocument> {
+  public async update(deviceId: string, name: string, notes?: string): Promise<DeviceDocument> {
     const device = await this.findById(deviceId);
 
     try {
@@ -61,15 +57,9 @@ export class DevicesService {
       throw new InternalServerErrorException(getErrorMessage(error));
     }
 
-    const updateResponse = await this.particle.updateDevice(
-      deviceId,
-      name,
-      notes,
-    );
+    const updateResponse = await this.particle.updateDevice(deviceId, name, notes);
     if (!updateResponse.isSuccessful) {
-      throw new InternalServerErrorException(
-        `${updateResponse.errorCode}: ${updateResponse.info}`,
-      );
+      throw new InternalServerErrorException(`${updateResponse.errorCode}: ${updateResponse.info}`);
     }
 
     return device;
@@ -77,9 +67,7 @@ export class DevicesService {
 
   public async save(device: Device): Promise<void> {
     try {
-      await this.deviceModel
-        .findOneAndUpdate({ id: device.id }, device, { upsert: true })
-        .exec();
+      await this.deviceModel.findOneAndUpdate({ id: device.id }, device, { upsert: true }).exec();
       this.logger.debug(`Saved ${device.id} to database`);
     } catch (error) {
       throw new InternalServerErrorException(getErrorMessage(error));
@@ -90,11 +78,7 @@ export class DevicesService {
     deviceId: string,
     connectedDevice: ConnectedDevice,
   ): Promise<void> {
-    await this.updateConnectedDeviceWithConnectStatus(
-      deviceId,
-      connectedDevice,
-      true,
-    );
+    await this.updateConnectedDeviceWithConnectStatus(deviceId, connectedDevice, true);
   }
 
   public async updateConnectedDeviceWithNameAndOffset(
@@ -106,9 +90,7 @@ export class DevicesService {
   ): Promise<DeviceDocument> {
     const device = await this.findById(deviceId);
     if (!device) {
-      this.logger.error(
-        'updateConnectedDeviceWithNameAndOffset => Device not found',
-      );
+      this.logger.error('updateConnectedDeviceWithNameAndOffset => Device not found');
       throw new NotFoundException('Device not found');
     }
 
@@ -118,9 +100,7 @@ export class DevicesService {
       hwAddress,
     );
     if (!cDevice) {
-      this.logger.error(
-        'updateConnectedDeviceWithNameAndOffset => Connected device not found',
-      );
+      this.logger.error('updateConnectedDeviceWithNameAndOffset => Connected device not found');
       throw new NotFoundException('Connected device not found');
     }
 
@@ -158,11 +138,7 @@ export class DevicesService {
   ): Promise<DeviceDocument> {
     let device = await this.findById(deviceId);
 
-    device = this.markOrAddConnectedDevice(
-      device,
-      connectedDevice,
-      connectStatus,
-    );
+    device = this.markOrAddConnectedDevice(device, connectedDevice, connectStatus);
     if (!device) {
       this.logger.warn(`Connected Device not found, so nothing to do`);
       return device;
@@ -177,9 +153,7 @@ export class DevicesService {
     const updateResponse = await this.particle.restart(deviceId);
 
     if (!updateResponse.isSuccessful) {
-      throw new InternalServerErrorException(
-        `${updateResponse.errorCode}: ${updateResponse.info}`,
-      );
+      throw new InternalServerErrorException(`${updateResponse.errorCode}: ${updateResponse.info}`);
     }
 
     return true;
@@ -214,14 +188,10 @@ export class DevicesService {
     return device;
   }
 
-  private replaceConnectedDevice(
-    device: DeviceDocument,
-    cDevice: ConnectedDevice,
-  ) {
+  private replaceConnectedDevice(device: DeviceDocument, cDevice: ConnectedDevice) {
     const index = device.connectedDevices.findIndex(
       (connectedDevice) =>
-        connectedDevice.pinNr === cDevice.pinNr &&
-        connectedDevice.hwAddress === cDevice.hwAddress,
+        connectedDevice.pinNr === cDevice.pinNr && connectedDevice.hwAddress === cDevice.hwAddress,
     );
     device.connectedDevices.splice(index, 1, cDevice);
   }
