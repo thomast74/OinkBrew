@@ -1,6 +1,6 @@
 {
-    "otp_token": "AAAAAA",
-    "otp_url": "BBBBBB",
-    "otp_barcode": "CCCCCC;DDDDDD,FFFFFF",
-    "user_id": 32
+    "otpToken": "AAAAAA",
+    "otpUrl": "BBBBBB",
+    "otpBarcode": "CCCCCC;DDDDDD,FFFFFF",
+    "userId": 32
 }

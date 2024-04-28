@@ -1,7 +1,6 @@
 import XCTest
 @testable import OinkBrew_Mobile
 
-@MainActor
 class PreferenceViewModelTests: XCTestCase {
     private var userDefaults: UserDefaults!
     private var model: PreferenceViewModel!

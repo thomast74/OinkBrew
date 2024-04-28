@@ -8,7 +8,7 @@ enum UserStateError: Error {
          signUpConfirmToken,
          signInLoginError,
          signInNoToken,
-         SignInConfirmToken,
+         signInConfirmToken,
          signOutError
 }
 
@@ -43,9 +43,10 @@ class UserStateViewModel: ObservableObject {
     private var signinTokens: SignInTokensDto?
     private let session: URLSession
     
-    init(urlSession: URLSession = .shared, signupTokens: SignUpTokensDto? = nil) {
+    init(urlSession: URLSession = .shared, signupTokens: SignUpTokensDto? = nil, signinTokens: SignInTokensDto? = nil) {
         self.session = urlSession
         self.signupTokens = signupTokens
+        self.signinTokens = signinTokens
     }
     
     func signUp(email: String, password: String) async -> Result<SignUpTokensDto, UserStateError>  {
@@ -171,10 +172,10 @@ class UserStateViewModel: ObservableObject {
             }
             
             isBusy = false
-            return .failure(.signUpConfirmToken)
+            return .failure(.signInConfirmToken)
         } catch {
             isBusy = false
-            return .failure(.signUpConfirmToken)
+            return .failure(.signInConfirmToken)
         }
     }
 
@@ -182,6 +183,10 @@ class UserStateViewModel: ObservableObject {
         isBusy = true
         do {
             try await Task.sleep(nanoseconds: 1_000_000_000)
+            accessTokens = nil
+            signupTokens = nil
+            signinTokens = nil
+            
             isSignedIn = false
             isBusy = false
             return .success(true)
