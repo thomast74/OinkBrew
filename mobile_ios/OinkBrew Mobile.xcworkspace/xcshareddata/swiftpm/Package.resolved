@@ -1,0 +1,33 @@
+{
+  "originHash" : "b6b4c0445f13d85e0cb94bf754136a71b6a0b4364df15e8dd49d983e40fc6e03",
+  "pins" : [
+    {
+      "identity" : "argon2swift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/tmthecoder/Argon2Swift.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "53543623fefe68461b7eeea03d7f96677c2fd76d"
+      }
+    },
+    {
+      "identity" : "mocker",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/WeTransfer/Mocker.git",
+      "state" : {
+        "revision" : "95fa785c751f6bc40c49e112d433c3acf8417a97",
+        "version" : "3.0.2"
+      }
+    },
+    {
+      "identity" : "phc-winner-argon2",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/P-H-C/phc-winner-argon2.git",
+      "state" : {
+        "branch" : "master",
+        "revision" : "f57e61e19229e23c4445b85494dbf7c07de721cb"
+      }
+    }
+  ],
+  "version" : 3
+}
