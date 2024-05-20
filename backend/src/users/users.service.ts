@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 
 import * as argon2 from 'argon2';
@@ -11,7 +11,9 @@ import { UserAlreadyExists, UserNotFoundException } from './exceptions';
 import { User, UserDocument } from './schemas';
 
 @Injectable()
-export class UsersService {
+export class UsersService implements OnModuleInit {
+  private readonly logger = new Logger(UsersService.name);
+
   constructor(@InjectModel(User.name) private userModel: Model<User>) {}
 
   async create(userDto: AuthDto): Promise<UserDocument> {
@@ -46,9 +48,7 @@ export class UsersService {
       throw new UserNotFoundException();
     }
 
-    user.hashedRt = refreshToken
-      ? await argon2.hash(refreshToken, ARGON_OPTIONS)
-      : undefined;
+    user.hashedRt = refreshToken ? await argon2.hash(refreshToken, ARGON_OPTIONS) : undefined;
 
     if (confirmOtp) {
       user.otpConfirmed = true;
@@ -70,6 +70,33 @@ export class UsersService {
       return await this.userModel.findOne({ email }).exec();
     } catch (error) {
       return null;
+    }
+  }
+
+  async onModuleInit() {
+    this.logger.log('onModuleInit');
+    try {
+      const adminUser = await this.userModel.findOne({ email: 'admin' }).exec();
+      if (!adminUser) {
+        const hash = await argon2.hash('admin', ARGON_OPTIONS);
+        const otpSecret = authenticator.generateSecret();
+        this.logger.log(`OTP Secret: ${otpSecret}`);
+
+        const createdAdminUser = new this.userModel({
+          email: 'admin',
+          hash,
+          otpSecret,
+          otpConfirmed: true,
+        });
+
+        await createdAdminUser.save();
+
+        this.logger.log('Admin user seeded');
+      } else {
+        this.logger.log(`OTP Secret: ${adminUser.otpSecret}`);
+      }
+    } catch (error: any) {
+      this.logger.error(error);
     }
   }
 }
