@@ -18,9 +18,11 @@ struct SignInScreen: View {
                 .labelStyle(.titleOnly)
             TextField("", text: $email)
                 .keyboardType(.emailAddress)
+                .textContentType(.emailAddress)
                 .disableAutocorrection(true)
                 .autocapitalization(.none)
                 .textFieldStyle(RoundedBorderLightTextFieldStyle())
+                .accessibility(identifier: "Email")
         }
     }
 
@@ -30,6 +32,7 @@ struct SignInScreen: View {
                 .labelStyle(.titleOnly)
             SecureField("", text: $password)
                 .textFieldStyle(RoundedBorderLightTextFieldStyle())
+                .accessibility(identifier: "Password")
         }
     }
     
@@ -43,25 +46,37 @@ struct SignInScreen: View {
                 .autocapitalization(.none)
                 .textFieldStyle(RoundedBorderLightTextFieldStyle())
                 .multilineTextAlignment(.center)
+                .accessibility(identifier: "Cornfirm OTP")
         }
     }
 
     fileprivate func LoginButton() -> some View {
         Button(action: {
             isPerformingTask = true
+            errorMessage = ""
             Task {
-                errorMessage = ""
-
-                let response = await userState.signIn(
+                let result = await userState.signIn(
                     email: email,
                     password:password
                 )
-                do {
-                    isConfirmOtp = try response.get()
-                } catch {
-                    errorMessage = "Username or password wrong"
-                }
                 isPerformingTask = false
+                switch result {
+                case .failure(.signInApiError):
+                    errorMessage = "API Error"
+                case .failure(.signInLoginError):
+                    errorMessage = "Username or password wrong"
+                case .failure(.signInNoToken):
+                    errorMessage = "No OTP Token"
+                case .failure(.signInConfirmToken):
+                    errorMessage = "OTP Token not confirmed"
+                case .success(_):
+                    do {
+                        isConfirmOtp = try result.get()
+                    } catch {
+                        errorMessage = "Username or password wrong"
+                    }
+                    break
+                }
             }
         }) {
             Text("Sign In")
@@ -73,15 +88,15 @@ struct SignInScreen: View {
     fileprivate func ConfirmButton() -> some View {
         Button(action: {
             isPerformingTask = true
+            errorMessage = ""
             Task {
-                errorMessage = ""
-
                 let response = await userState.signInOtp(otp: self.otp)
+                
                 do {
                     let _ = try response.get()
                     isConfirmOtp = false
                 } catch {
-                    let userError = error as! UserStateError
+                    let userError = error as! SignInError
 
                     switch userError {
                     case .signInNoToken:

@@ -71,7 +71,7 @@ class UserStateViewModelTests: XCTestCase {
         
         XCTAssertFalse(isBusy)
         XCTAssertThrowsError(try result.get()) { error in
-            XCTAssertEqual(error as! UserStateError, .signUpCreateUser)
+            XCTAssertEqual(error as! SignUpError, .signUpCreateUser)
         }
     }
     
@@ -91,13 +91,13 @@ class UserStateViewModelTests: XCTestCase {
         XCTAssertEqual(tokens.otpToken, "AAAAAA")
         XCTAssertEqual(tokens.otpUrl, "BBBBBB")
         XCTAssertEqual(tokens.otpBarcode, "FFFFFF")
-        XCTAssertEqual(tokens.userId, 32)
+        XCTAssertEqual(tokens.userId, "32")
     }
     
     func testSignUpOtpShouldSendDataToApiUrl() async throws {
         let onRequestExpectation = self.expectation(description: "Data request data as expected")
         let originalURL = URL(string: "\(apiUrl)/auth/signupOtp")!
-        let userId = 32
+        let userId = "32"
         let otpPassword = "123456"
         let otpToken = "AAAAAA"
         let expectedBody: [String: Any] = ["userId": userId, "otpPassword": otpPassword]
@@ -140,13 +140,13 @@ class UserStateViewModelTests: XCTestCase {
         
         XCTAssertFalse(isBusy)
         XCTAssertThrowsError(try result.get()) { error in
-            XCTAssertEqual(error as! UserStateError, .signUpNoToken)
+            XCTAssertEqual(error as! SignUpError, .signUpNoToken)
         }
     }
     
     func testSignUpOtpShouldReturnErrorIfHttpErrorReturns() async throws {
         let originalURL = URL(string: "\(apiUrl)/auth/signupOtp")!
-        let data = try? JSONSerialization.data(withJSONObject: ["userId": 32, "otpToken": "AAAAA", "otpUrl": "", "otpBarcode": ""], options: [])
+        let data = try? JSONSerialization.data(withJSONObject: ["userId": "32", "otpToken": "AAAAA", "otpUrl": "", "otpBarcode": ""], options: [])
         let signupTokens = try JSONDecoder().decode(SignUpTokensDto.self, from: data!)
 
         Mock(url: originalURL, contentType: .json, statusCode: 400, data: [
@@ -160,13 +160,13 @@ class UserStateViewModelTests: XCTestCase {
         
         XCTAssertFalse(isBusy)
         XCTAssertThrowsError(try result.get()) { error in
-            XCTAssertEqual(error as! UserStateError, .signUpConfirmToken)
+            XCTAssertEqual(error as! SignUpError, .signUpConfirmToken)
         }
     }
     
     func testSignUpOtpShouldReturnAccessToken() async throws {
         let originalURL = URL(string: "\(apiUrl)/auth/signupOtp")!
-        let data = try? JSONSerialization.data(withJSONObject: ["userId": 32, "otpToken": "AAAAA", "otpUrl": "", "otpBarcode": ""], options: [])
+        let data = try? JSONSerialization.data(withJSONObject: ["userId": "32", "otpToken": "AAAAA", "otpUrl": "", "otpBarcode": ""], options: [])
         let signupTokens = try JSONDecoder().decode(SignUpTokensDto.self, from: data!)
         Mock(url: originalURL, contentType: .json, statusCode: 200, data: [
             .post : try! Data(contentsOf: MockedData.signUpOtpResponse)
@@ -229,7 +229,7 @@ class UserStateViewModelTests: XCTestCase {
         
         XCTAssertFalse(isBusy)
         XCTAssertThrowsError(try result.get()) { error in
-            XCTAssertEqual(error as! UserStateError, .signInLoginError)
+            XCTAssertEqual(error as! SignInError, .signInLoginError)
         }
     }
     
@@ -238,7 +238,7 @@ class UserStateViewModelTests: XCTestCase {
         Mock(url: originalURL, contentType: .json, statusCode: 200, data: [
             .post : try! Data(contentsOf: MockedData.signUpResponse)
         ]).register()
-        
+            
         let testSubject = await prepare()
     
         let result = await testSubject.signIn(email: "t@t.de", password: "12345")
@@ -252,7 +252,7 @@ class UserStateViewModelTests: XCTestCase {
     func testSignInOtpShouldSendDataToApiUrl() async throws {
         let onRequestExpectation = self.expectation(description: "Data request data as expected")
         let originalURL = URL(string: "\(apiUrl)/auth/signinOtp")!
-        let userId = 32
+        let userId = "32"
         let otpPassword = "123456"
         let otpToken = "AAAAAA"
         let expectedBody: [String: Any] = ["userId": userId, "otpPassword": otpPassword]
@@ -295,13 +295,13 @@ class UserStateViewModelTests: XCTestCase {
         
         XCTAssertFalse(isBusy)
         XCTAssertThrowsError(try result.get()) { error in
-            XCTAssertEqual(error as! UserStateError, .signInNoToken)
+            XCTAssertEqual(error as! SignInError, .signInNoToken)
         }
     }
     
     func testSignInOtpShouldReturnErrorIfHttpErrorReturns() async throws {
         let originalURL = URL(string: "\(apiUrl)/auth/signinOtp")!
-        let data = try? JSONSerialization.data(withJSONObject: ["userId": 32, "otpToken": "AAAAA", "otpUrl": "", "otpBarcode": ""], options: [])
+        let data = try? JSONSerialization.data(withJSONObject: ["userId": "32", "otpToken": "AAAAA", "otpUrl": "", "otpBarcode": ""], options: [])
         let signinTokens = try JSONDecoder().decode(SignInTokensDto.self, from: data!)
 
         Mock(url: originalURL, contentType: .json, statusCode: 400, data: [
@@ -315,13 +315,13 @@ class UserStateViewModelTests: XCTestCase {
         
         XCTAssertFalse(isBusy)
         XCTAssertThrowsError(try result.get()) { error in
-            XCTAssertEqual(error as! UserStateError, .signInConfirmToken)
+            XCTAssertEqual(error as! SignInError, .signInConfirmToken)
         }
     }
     
     func testSignInOtpShouldReturnAccessToken() async throws {
         let originalURL = URL(string: "\(apiUrl)/auth/signinOtp")!
-        let data = try? JSONSerialization.data(withJSONObject: ["userId": 32, "otpToken": "AAAAA", "otpUrl": "", "otpBarcode": ""], options: [])
+        let data = try? JSONSerialization.data(withJSONObject: ["userId": "32", "otpToken": "AAAAA", "otpUrl": "", "otpBarcode": ""], options: [])
         let signinTokens = try JSONDecoder().decode(SignInTokensDto.self, from: data!)
         Mock(url: originalURL, contentType: .json, statusCode: 200, data: [
             .post : try! Data(contentsOf: MockedData.signUpOtpResponse)

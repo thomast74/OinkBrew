@@ -21,6 +21,7 @@ struct PreferenceScreen: View {
                 .disableAutocorrection(true)
                 .autocapitalization(.none)
                 .textFieldStyle(RoundedBorderLightTextFieldStyle())
+                .accessibility(identifier: "API Url")
                 .onAppear {
                     self.apiUrl = preference.apiUrl
                 }

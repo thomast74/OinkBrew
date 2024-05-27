@@ -3,13 +3,23 @@ import SwiftUI
 import Argon2Swift
 
 enum UserStateError: Error {
-    case signUpCreateUser,
-         signUpNoToken,
-         signUpConfirmToken,
+    case signOutError
+}
+
+enum SignInError: Error {
+    case signInApiError,
          signInLoginError,
          signInNoToken,
-         signInConfirmToken,
-         signOutError
+         signInConfirmToken
+}
+
+enum SignUpError: Error {
+    case signUpApiError,
+         signUpNoEmail,
+         signUpNoPassword,
+         signUpCreateUser,
+         signUpNoToken,
+         signUpConfirmToken
 }
 
 struct AccessTokens: Codable {
@@ -21,12 +31,12 @@ struct SignUpTokensDto: Codable {
     var otpToken: String
     var otpUrl: String
     var otpBarcode: String
-    var userId: Int
+    var userId: String
 }
 
 struct SignInTokensDto: Codable {
     var otpToken: String
-    var userId: Int
+    var userId: String
 }
 
 @MainActor
@@ -49,9 +59,17 @@ class UserStateViewModel: ObservableObject {
         self.signinTokens = signinTokens
     }
     
-    func signUp(email: String, password: String) async -> Result<SignUpTokensDto, UserStateError>  {
-        isBusy = true
+    func signUp(email: String, password: String) async -> Result<SignUpTokensDto, SignUpError>  {
         do {
+            if email.isEmpty {
+                return .failure(.signUpNoEmail)
+            }
+
+            if password.isEmpty {
+                return .failure(.signUpNoPassword)
+            }
+
+            isBusy = true
             let url = URL(string: "\(preferences.correctedApiUrl())/auth/signup")!
             
             var request = URLRequest(url: url)
@@ -74,11 +92,11 @@ class UserStateViewModel: ObservableObject {
             return .failure(.signUpCreateUser)
         } catch {
             isBusy = false
-            return .failure(.signUpCreateUser)
+            return .failure(.signUpApiError)
         }
     }
     
-    func signUpOtp(otp: String) async -> Result<Bool, UserStateError> {
+    func signUpOtp(otp: String) async -> Result<Bool, SignUpError> {
         isBusy = true
         do {
             if signupTokens == nil {
@@ -97,7 +115,7 @@ class UserStateViewModel: ObservableObject {
                 "otpPassword": otp
             ])
             
-            let (data, response) = try await session.data(for: request)
+            let (data, response) = try await session.data (for: request)
 
             if let httpResponse = response.http, httpResponse.statusCode == 200 {
                 accessTokens = try JSONDecoder().decode(AccessTokens.self, from: data)
@@ -116,7 +134,7 @@ class UserStateViewModel: ObservableObject {
         }
     }
     
-    func signIn(email: String, password: String) async -> Result<Bool, UserStateError>  {
+    func signIn(email: String, password: String) async -> Result<Bool, SignInError>  {
         isBusy = true
         do {
             let url = URL(string: "\(preferences.correctedApiUrl())/auth/signin")!
@@ -128,6 +146,7 @@ class UserStateViewModel: ObservableObject {
             let (data, response) = try await session.data(for: request)
                         
             if let httpResponse = response.http, httpResponse.statusCode == 200 {
+                print(String(data: data, encoding: .utf8)!)
                 signinTokens = try JSONDecoder().decode(SignInTokensDto.self, from: data)
                 
                 isBusy = false
@@ -138,11 +157,11 @@ class UserStateViewModel: ObservableObject {
             return .failure(.signInLoginError)
         } catch {
             isBusy = false
-            return .failure(.signInLoginError)
+            return .failure(.signInApiError)
         }
     }
     
-    func signInOtp(otp: String) async -> Result<Bool, UserStateError> {
+    func signInOtp(otp: String) async -> Result<Bool, SignInError> {
         isBusy = true
         do {
             if signinTokens == nil {

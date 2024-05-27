@@ -34,7 +34,13 @@
 		D397A20C26934327008F724D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D397A20B26934327008F724D /* Assets.xcassets */; };
 		D397A20F26934327008F724D /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D397A20E26934327008F724D /* Preview Assets.xcassets */; };
 		D397A21726934509008F724D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D397A21626934509008F724D /* AppDelegate.swift */; };
+		D3A715282BF73E0E00BB824C /* SignInScreenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3A715272BF73E0E00BB824C /* SignInScreenTests.swift */; };
 		D3B4E0FD282804CE0063BEE8 /* PreferenceScreenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3B4E0FC282804CE0063BEE8 /* PreferenceScreenTests.swift */; };
+		D3BF87282C03785D00693E8D /* SwiftOTP in Frameworks */ = {isa = PBXBuildFile; productRef = D3BF87272C03785D00693E8D /* SwiftOTP */; };
+		D3BF872A2C03785D00693E8D /* SwiftOTP-Dynamic in Frameworks */ = {isa = PBXBuildFile; productRef = D3BF87292C03785D00693E8D /* SwiftOTP-Dynamic */; };
+		D3BF872C2C037D3400693E8D /* SignUpScreenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3BF872B2C037D3400693E8D /* SignUpScreenTests.swift */; };
+		D3BF872F2C03821000693E8D /* Fakery in Frameworks */ = {isa = PBXBuildFile; productRef = D3BF872E2C03821000693E8D /* Fakery */; };
+		D3BF87312C046D3400693E8D /* Launch.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D3BF87302C046D3400693E8D /* Launch.storyboard */; };
 		DAE675476DE0F0687DB299A1 /* Pods_OinkBrew_Mobile_Tests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F283108827C070C926FB8716 /* Pods_OinkBrew_Mobile_Tests.framework */; };
 /* End PBXBuildFile section */
 
@@ -87,8 +93,11 @@
 		D397A20E26934327008F724D /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		D397A21026934327008F724D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D397A21626934509008F724D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		D3A715272BF73E0E00BB824C /* SignInScreenTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInScreenTests.swift; sourceTree = "<group>"; };
 		D3B4E0F12828044A0063BEE8 /* OinkBrew MobileUI Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "OinkBrew MobileUI Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D3B4E0FC282804CE0063BEE8 /* PreferenceScreenTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreferenceScreenTests.swift; sourceTree = "<group>"; };
+		D3BF872B2C037D3400693E8D /* SignUpScreenTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpScreenTests.swift; sourceTree = "<group>"; };
+		D3BF87302C046D3400693E8D /* Launch.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Launch.storyboard; sourceTree = "<group>"; };
 		F283108827C070C926FB8716 /* Pods_OinkBrew_Mobile_Tests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_OinkBrew_Mobile_Tests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F7C3457A6FFE308F0E317835 /* Pods-OinkBrew Mobile.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OinkBrew Mobile.release.xcconfig"; path = "Target Support Files/Pods-OinkBrew Mobile/Pods-OinkBrew Mobile.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -116,6 +125,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D3BF872A2C03785D00693E8D /* SwiftOTP-Dynamic in Frameworks */,
+				D3BF87282C03785D00693E8D /* SwiftOTP in Frameworks */,
+				D3BF872F2C03821000693E8D /* Fakery in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -267,6 +279,7 @@
 				D397A21626934509008F724D /* AppDelegate.swift */,
 				D369511728264FD900D51C3B /* Constants.swift */,
 				D397A20726934326008F724D /* OinkBrew_MobileApp.swift */,
+				D3BF87302C046D3400693E8D /* Launch.storyboard */,
 				D397A20B26934327008F724D /* Assets.xcassets */,
 				D397A21026934327008F724D /* Info.plist */,
 				D397A20D26934327008F724D /* Preview Content */,
@@ -287,6 +300,8 @@
 			children = (
 				D35D60472829327B00F6710F /* Helpers */,
 				D3B4E0FC282804CE0063BEE8 /* PreferenceScreenTests.swift */,
+				D3A715272BF73E0E00BB824C /* SignInScreenTests.swift */,
+				D3BF872B2C037D3400693E8D /* SignUpScreenTests.swift */,
 			);
 			path = "OinkBrew MobileUI Tests";
 			sourceTree = "<group>";
@@ -351,6 +366,11 @@
 				D3B4E0F82828044A0063BEE8 /* PBXTargetDependency */,
 			);
 			name = "OinkBrew MobileUI Tests";
+			packageProductDependencies = (
+				D3BF87272C03785D00693E8D /* SwiftOTP */,
+				D3BF87292C03785D00693E8D /* SwiftOTP-Dynamic */,
+				D3BF872E2C03821000693E8D /* Fakery */,
+			);
 			productName = "OinkBrew MobileUI Tests";
 			productReference = D3B4E0F12828044A0063BEE8 /* OinkBrew MobileUI Tests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
@@ -390,6 +410,8 @@
 			packageReferences = (
 				D367650D2BDEEB4200D5373D /* XCRemoteSwiftPackageReference "Argon2Swift" */,
 				D36765102BDEED2700D5373D /* XCRemoteSwiftPackageReference "Mocker" */,
+				D3BF87262C03785D00693E8D /* XCRemoteSwiftPackageReference "SwiftOTP" */,
+				D3BF872D2C03821000693E8D /* XCRemoteSwiftPackageReference "Fakery" */,
 			);
 			productRefGroup = D397A20526934326008F724D /* Products */;
 			projectDirPath = "";
@@ -418,6 +440,7 @@
 			files = (
 				D397A20F26934327008F724D /* Preview Assets.xcassets in Resources */,
 				D397A20C26934327008F724D /* Assets.xcassets in Resources */,
+				D3BF87312C046D3400693E8D /* Launch.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -515,8 +538,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D3A715282BF73E0E00BB824C /* SignInScreenTests.swift in Sources */,
 				D3B4E0FD282804CE0063BEE8 /* PreferenceScreenTests.swift in Sources */,
 				D35D60492829329A00F6710F /* XCUIApplication.UserDefaults.swift in Sources */,
+				D3BF872C2C037D3400693E8D /* SignUpScreenTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -838,6 +863,22 @@
 				minimumVersion = 3.0.2;
 			};
 		};
+		D3BF87262C03785D00693E8D /* XCRemoteSwiftPackageReference "SwiftOTP" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/lachlanbell/SwiftOTP.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.0.2;
+			};
+		};
+		D3BF872D2C03821000693E8D /* XCRemoteSwiftPackageReference "Fakery" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/vadymmarkov/Fakery";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.1.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -850,6 +891,21 @@
 			isa = XCSwiftPackageProductDependency;
 			package = D36765102BDEED2700D5373D /* XCRemoteSwiftPackageReference "Mocker" */;
 			productName = Mocker;
+		};
+		D3BF87272C03785D00693E8D /* SwiftOTP */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D3BF87262C03785D00693E8D /* XCRemoteSwiftPackageReference "SwiftOTP" */;
+			productName = SwiftOTP;
+		};
+		D3BF87292C03785D00693E8D /* SwiftOTP-Dynamic */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D3BF87262C03785D00693E8D /* XCRemoteSwiftPackageReference "SwiftOTP" */;
+			productName = "SwiftOTP-Dynamic";
+		};
+		D3BF872E2C03821000693E8D /* Fakery */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D3BF872D2C03821000693E8D /* XCRemoteSwiftPackageReference "Fakery" */;
+			productName = Fakery;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

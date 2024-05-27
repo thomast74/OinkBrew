@@ -16,7 +16,8 @@ class PreferenceScreenTests: XCTestCase {
         setup(apiUrl: "")
         app.textFields["API Url"].tap()
         app.textFields["API Url"].typeText("http://localhost:4100")
-        
+        app.dismissKeyboardIfPresent()
+
         app.buttons["Save"].tap()
         
         XCTAssertFalse(app.staticTexts["Preferences"].exists, "Did not change screen")
@@ -26,6 +27,7 @@ class PreferenceScreenTests: XCTestCase {
         setup(apiUrl: "")
         app.textFields["API Url"].tap()
         app.textFields["API Url"].typeText("Faulty Url")
+        app.dismissKeyboardIfPresent()
         
         app.buttons["Save"].tap()
         

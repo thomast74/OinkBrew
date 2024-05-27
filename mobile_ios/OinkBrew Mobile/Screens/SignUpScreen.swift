@@ -7,6 +7,7 @@ struct SignUpScreen: View {
     @State var password = ""
     @State var otp = ""
     @State var otpUrl = ""
+    @State var otpSecret = ""
     @State private var isPerformingTask = false
     @State private var isConfirmOtp = false
     @State private var barcode = UIImage()
@@ -23,6 +24,7 @@ struct SignUpScreen: View {
                 .disableAutocorrection(true)
                 .autocapitalization(.none)
                 .textFieldStyle(RoundedBorderLightTextFieldStyle())
+                .accessibility(identifier: "Email")
         }
     }
 
@@ -32,6 +34,7 @@ struct SignUpScreen: View {
                 .labelStyle(.titleOnly)
             SecureField("", text: $password)
                 .textFieldStyle(RoundedBorderLightTextFieldStyle())
+                .accessibility(identifier: "Password")
         }
     }
     
@@ -45,26 +48,47 @@ struct SignUpScreen: View {
                 .autocapitalization(.none)
                 .textFieldStyle(RoundedBorderLightTextFieldStyle())
                 .multilineTextAlignment(.center)
+                .accessibility(identifier: "Cornfirm OTP")
         }
     }
 
     fileprivate func CreateButton() -> some View {
         Button(action: {
             isPerformingTask = true
+            errorMessage = ""
             Task {
                 let response = await userState.signUp(
                     email: email,
-                    password:password
+                    password: password
                 )
-                    
-                let tokens = try response.get()
-                otpUrl = tokens.otpUrl
-                if let data = Data(base64Encoded: tokens.otpBarcode), let uiImage = UIImage(data: data) {
-                    self.barcode = uiImage
-                }
-                self.isConfirmOtp = true
-                    
+                
                 isPerformingTask = false
+                switch response {
+                case .failure(.signUpNoEmail):
+                    errorMessage = "You must provide an email"
+                case .failure(.signUpNoPassword):
+                    errorMessage = "You must provide a password"
+                case .failure(.signUpApiError):
+                    errorMessage = "API Error"
+                case .failure(.signUpCreateUser):
+                    errorMessage = "User could not be created"
+                case .failure(.signUpNoToken):
+                    errorMessage = "No OTP token received"
+                case .failure(.signUpConfirmToken):
+                    errorMessage = "OTP is not correct"
+                case .success(_):
+                    do {
+                        let tokens = try response.get()
+                        otpUrl = tokens.otpUrl
+                        otpSecret = getQueryStringParameter(url: tokens.otpUrl, param: "secret") ?? ""
+                        if let data = Data(base64Encoded: tokens.otpBarcode), let uiImage = UIImage(data: data) {
+                            self.barcode = uiImage
+                        }
+                        self.isConfirmOtp = true
+                    } catch {
+                        errorMessage = "User could not be created"
+                    }
+                }
             }
         }) {
             Text("Create")
@@ -73,11 +97,32 @@ struct SignUpScreen: View {
         .disabled(isPerformingTask)
     }
     
+    fileprivate func getQueryStringParameter(url: String, param: String) -> String? {
+      guard let url = URLComponents(string: url) else { return nil }
+      return url.queryItems?.first(where: { $0.name == param })?.value
+    }
+    
     fileprivate func ConfirmButton() -> some View {
         Button(action: {
             isPerformingTask = true
+            errorMessage = ""
             Task {
-                let _ = await userState.signUpOtp(otp: self.otp)
+                let response = await userState.signUpOtp(otp: self.otp)
+                
+                do {
+                    let _ = try response.get()
+                    isConfirmOtp = false
+                } catch {
+                    let userError = error as! SignUpError
+
+                    switch userError {
+                    case .signUpNoToken:
+                        errorMessage = "No OTP token received"
+                    default:
+                        errorMessage = "OTP is not correct"
+                    }
+                }
+                
                 isPerformingTask = false
             }
         }) {
@@ -109,17 +154,20 @@ struct SignUpScreen: View {
                             Text(errorMessage)
                                 .font(.headline)
                                 .foregroundColor(.red)
-                                .foregroundColor(.white)
                                 .padding(.top, 0)
                                 .padding(.bottom, 10)
                         }
                         Image(uiImage: barcode)
                             .resizable()
                             .aspectRatio(contentMode: .fit)
-                            .frame(width:178, height:178)
+                            .frame(width:90, height:90)
                             .padding(.top, 12)
-                        Link("Open in your OTP app",
-                              destination: URL(string: otpUrl)!)
+                        Text("Manual: \(otpSecret)")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .padding(.top, 0)
+                            .padding(.bottom, 10)
+                            .accessibilityIdentifier("Manual Secret")
                         ConfirmOtpInput()
                             .padding(.top, 22)
                             .padding(.horizontal, 66)
