@@ -12,7 +12,7 @@ export class LogInStrategy extends PassportStrategy(Strategy, 'log-in') {
   }
 
   async validate(email: string, password: string): Promise<any> {
-    Logger.log(`validate => ${password}`);
+    Logger.log(`validate => ${email}`);
     const user = await this.authService.validateUser(email, password);
 
     if (!user) {
