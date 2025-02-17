@@ -207,3 +207,8 @@ struct SignUpScreen: View {
 
     }
 }
+
+#Preview {
+    SignUpScreen()
+        .environmentObject(UserStateViewModel())
+}

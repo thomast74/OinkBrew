@@ -3,17 +3,28 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		8646849D68F756B8CEED3D57 /* Pods_OinkBrew_Mobile.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B225B74C864C2E2B2555E4CF /* Pods_OinkBrew_Mobile.framework */; };
+		D300B9182E38D32E0024D0C7 /* InputPropertyRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = D300B9172E38D32B0024D0C7 /* InputPropertyRow.swift */; };
 		D312D0C32817FB6E00A91252 /* UserStateViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D312D0C22817FB6E00A91252 /* UserStateViewModel.swift */; };
 		D312D0C52817FD4E00A91252 /* PreferenceViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D312D0C42817FD4E00A91252 /* PreferenceViewModel.swift */; };
 		D312D0C7281800D300A91252 /* PreferenceScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D312D0C6281800D300A91252 /* PreferenceScreen.swift */; };
 		D312D0C9281800EA00A91252 /* SignInScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D312D0C8281800EA00A91252 /* SignInScreen.swift */; };
 		D312D0CB281800FE00A91252 /* SignUpScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D312D0CA281800FE00A91252 /* SignUpScreen.swift */; };
 		D312D0CD2818011400A91252 /* HomeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D312D0CC2818011400A91252 /* HomeScreen.swift */; };
+		D31B6EC22D29DB880044E360 /* SideMenuScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D31B6EC12D29DB800044E360 /* SideMenuScreen.swift */; };
+		D31B6EC42D29DC080044E360 /* SideMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D31B6EC32D29DC010044E360 /* SideMenuView.swift */; };
+		D31B6EC62D29DD0D0044E360 /* ConfigurationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D31B6EC52D29DD020044E360 /* ConfigurationsView.swift */; };
+		D31B6ED22D2AE0FF0044E360 /* DevicesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D31B6ED12D2AE0F70044E360 /* DevicesViewModel.swift */; };
+		D33DC32B2E1A6CAD005FCD6F /* PropertyRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33DC32A2E1A6CA9005FCD6F /* PropertyRow.swift */; };
+		D341BAE42C0C8B6E00E50E56 /* BeerConfigurationRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D341BAE32C0C8B6E00E50E56 /* BeerConfigurationRowView.swift */; };
+		D341BAE62C0CA2BF00E50E56 /* previewBeerConfigurations.swift in Sources */ = {isa = PBXBuildFile; fileRef = D341BAE52C0CA2BF00E50E56 /* previewBeerConfigurations.swift */; };
+		D341BAE82C0CAB5B00E50E56 /* BeerConfigurationListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D341BAE72C0CAB5B00E50E56 /* BeerConfigurationListView.swift */; };
+		D341BAEA2C0CAC7500E50E56 /* BrewDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D341BAE92C0CAC7500E50E56 /* BrewDetailView.swift */; };
+		D341BAEC2C0CAC9100E50E56 /* FermentationDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D341BAEB2C0CAC9100E50E56 /* FermentationDetailView.swift */; };
 		D34327A328E583BE00B19689 /* URLResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = D34327A228E583BE00B19689 /* URLResponse.swift */; };
 		D34327A528E6CA4200B19689 /* UserStateViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D34327A428E6CA4100B19689 /* UserStateViewModelTests.swift */; };
 		D34327A728E6D27600B19689 /* Preferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = D34327A628E6D27600B19689 /* Preferences.swift */; };
@@ -30,6 +41,9 @@
 		D3695103281E5BFE00D51C3B /* ViewStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3695102281E5BFE00D51C3B /* ViewStyles.swift */; };
 		D369511228264B7500D51C3B /* PreferenceViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D369511128264B7500D51C3B /* PreferenceViewModelTests.swift */; };
 		D369511828264FD900D51C3B /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = D369511728264FD900D51C3B /* Constants.swift */; };
+		D384699B2CF90BBC00479823 /* ConfigurationsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D384699A2CF90BAD00479823 /* ConfigurationsViewModel.swift */; };
+		D38469A12CFA246200479823 /* AddConfigurationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D38469A02CFA244B00479823 /* AddConfigurationView.swift */; };
+		D38469A32CFA3D0A00479823 /* Modal.swift in Sources */ = {isa = PBXBuildFile; fileRef = D38469A22CFA3D0400479823 /* Modal.swift */; };
 		D397A20826934326008F724D /* OinkBrew_MobileApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D397A20726934326008F724D /* OinkBrew_MobileApp.swift */; };
 		D397A20C26934327008F724D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D397A20B26934327008F724D /* Assets.xcassets */; };
 		D397A20F26934327008F724D /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D397A20E26934327008F724D /* Preview Assets.xcassets */; };
@@ -41,6 +55,9 @@
 		D3BF872C2C037D3400693E8D /* SignUpScreenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3BF872B2C037D3400693E8D /* SignUpScreenTests.swift */; };
 		D3BF872F2C03821000693E8D /* Fakery in Frameworks */ = {isa = PBXBuildFile; productRef = D3BF872E2C03821000693E8D /* Fakery */; };
 		D3BF87312C046D3400693E8D /* Launch.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D3BF87302C046D3400693E8D /* Launch.storyboard */; };
+		D3BF87332C05E10100693E8D /* BeerConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3BF87322C05E10100693E8D /* BeerConfiguration.swift */; };
+		D3BF87352C05E1F800693E8D /* Device.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3BF87342C05E1F800693E8D /* Device.swift */; };
+		D3BF87372C05E20600693E8D /* ConnectedDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3BF87362C05E20600693E8D /* ConnectedDevice.swift */; };
 		DAE675476DE0F0687DB299A1 /* Pods_OinkBrew_Mobile_Tests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F283108827C070C926FB8716 /* Pods_OinkBrew_Mobile_Tests.framework */; };
 /* End PBXBuildFile section */
 
@@ -66,12 +83,23 @@
 		A67EAF68524A2199408F2310 /* Pods-OinkBrew Mobile Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OinkBrew Mobile Tests.debug.xcconfig"; path = "Target Support Files/Pods-OinkBrew Mobile Tests/Pods-OinkBrew Mobile Tests.debug.xcconfig"; sourceTree = "<group>"; };
 		B225B74C864C2E2B2555E4CF /* Pods_OinkBrew_Mobile.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_OinkBrew_Mobile.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D1209AE12A0B4581EE702E09 /* Pods-OinkBrew Mobile.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OinkBrew Mobile.debug.xcconfig"; path = "Target Support Files/Pods-OinkBrew Mobile/Pods-OinkBrew Mobile.debug.xcconfig"; sourceTree = "<group>"; };
+		D300B9172E38D32B0024D0C7 /* InputPropertyRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputPropertyRow.swift; sourceTree = "<group>"; };
 		D312D0C22817FB6E00A91252 /* UserStateViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserStateViewModel.swift; sourceTree = "<group>"; };
 		D312D0C42817FD4E00A91252 /* PreferenceViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferenceViewModel.swift; sourceTree = "<group>"; };
 		D312D0C6281800D300A91252 /* PreferenceScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferenceScreen.swift; sourceTree = "<group>"; };
 		D312D0C8281800EA00A91252 /* SignInScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInScreen.swift; sourceTree = "<group>"; };
 		D312D0CA281800FE00A91252 /* SignUpScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpScreen.swift; sourceTree = "<group>"; };
 		D312D0CC2818011400A91252 /* HomeScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeScreen.swift; sourceTree = "<group>"; };
+		D31B6EC12D29DB800044E360 /* SideMenuScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SideMenuScreen.swift; sourceTree = "<group>"; };
+		D31B6EC32D29DC010044E360 /* SideMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SideMenuView.swift; sourceTree = "<group>"; };
+		D31B6EC52D29DD020044E360 /* ConfigurationsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigurationsView.swift; sourceTree = "<group>"; };
+		D31B6ED12D2AE0F70044E360 /* DevicesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevicesViewModel.swift; sourceTree = "<group>"; };
+		D33DC32A2E1A6CA9005FCD6F /* PropertyRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PropertyRow.swift; sourceTree = "<group>"; };
+		D341BAE32C0C8B6E00E50E56 /* BeerConfigurationRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeerConfigurationRowView.swift; sourceTree = "<group>"; };
+		D341BAE52C0CA2BF00E50E56 /* previewBeerConfigurations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = previewBeerConfigurations.swift; sourceTree = "<group>"; };
+		D341BAE72C0CAB5B00E50E56 /* BeerConfigurationListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeerConfigurationListView.swift; sourceTree = "<group>"; };
+		D341BAE92C0CAC7500E50E56 /* BrewDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrewDetailView.swift; sourceTree = "<group>"; };
+		D341BAEB2C0CAC9100E50E56 /* FermentationDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FermentationDetailView.swift; sourceTree = "<group>"; };
 		D34327A228E583BE00B19689 /* URLResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLResponse.swift; sourceTree = "<group>"; };
 		D34327A428E6CA4100B19689 /* UserStateViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserStateViewModelTests.swift; sourceTree = "<group>"; };
 		D34327A628E6D27600B19689 /* Preferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Preferences.swift; path = "OinkBrew Mobile Tests/ViewModels/Preferences.swift"; sourceTree = SOURCE_ROOT; };
@@ -87,6 +115,9 @@
 		D369510828264AE800D51C3B /* OinkBrew Mobile Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "OinkBrew Mobile Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D369511128264B7500D51C3B /* PreferenceViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferenceViewModelTests.swift; sourceTree = "<group>"; };
 		D369511728264FD900D51C3B /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		D384699A2CF90BAD00479823 /* ConfigurationsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigurationsViewModel.swift; sourceTree = "<group>"; };
+		D38469A02CFA244B00479823 /* AddConfigurationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddConfigurationView.swift; sourceTree = "<group>"; };
+		D38469A22CFA3D0400479823 /* Modal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Modal.swift; sourceTree = "<group>"; };
 		D397A20426934326008F724D /* OinkBrew Mobile.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "OinkBrew Mobile.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D397A20726934326008F724D /* OinkBrew_MobileApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OinkBrew_MobileApp.swift; sourceTree = "<group>"; };
 		D397A20B26934327008F724D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -98,9 +129,18 @@
 		D3B4E0FC282804CE0063BEE8 /* PreferenceScreenTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreferenceScreenTests.swift; sourceTree = "<group>"; };
 		D3BF872B2C037D3400693E8D /* SignUpScreenTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpScreenTests.swift; sourceTree = "<group>"; };
 		D3BF87302C046D3400693E8D /* Launch.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Launch.storyboard; sourceTree = "<group>"; };
+		D3BF87322C05E10100693E8D /* BeerConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeerConfiguration.swift; sourceTree = "<group>"; };
+		D3BF87342C05E1F800693E8D /* Device.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Device.swift; sourceTree = "<group>"; };
+		D3BF87362C05E20600693E8D /* ConnectedDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectedDevice.swift; sourceTree = "<group>"; };
 		F283108827C070C926FB8716 /* Pods_OinkBrew_Mobile_Tests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_OinkBrew_Mobile_Tests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F7C3457A6FFE308F0E317835 /* Pods-OinkBrew Mobile.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OinkBrew Mobile.release.xcconfig"; path = "Target Support Files/Pods-OinkBrew Mobile/Pods-OinkBrew Mobile.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		D31B6EC72D2ACD110044E360 /* Devices */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Devices; sourceTree = "<group>"; };
+		D33DC32C2E1ACE7A005FCD6F /* Configurations */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Configurations; sourceTree = "<group>"; };
+		D384699C2CF90C7400479823 /* Services */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Services; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		D369510528264AE700D51C3B /* Frameworks */ = {
@@ -157,11 +197,11 @@
 		D310EC4027D9F75800994AD6 /* Screens */ = {
 			isa = PBXGroup;
 			children = (
+				D31B6EC12D29DB800044E360 /* SideMenuScreen.swift */,
 				D312D0C6281800D300A91252 /* PreferenceScreen.swift */,
 				D312D0C8281800EA00A91252 /* SignInScreen.swift */,
 				D312D0CA281800FE00A91252 /* SignUpScreen.swift */,
 				D312D0CC2818011400A91252 /* HomeScreen.swift */,
-				D36950FB281AC1C900D51C3B /* BackgroundStartUpView.swift */,
 				D3695100281E518C00D51C3B /* DeviceRotationViewModifier.swift */,
 			);
 			path = Screens;
@@ -170,10 +210,30 @@
 		D310EC4127D9F76800994AD6 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
+				D31B6ED12D2AE0F70044E360 /* DevicesViewModel.swift */,
+				D384699A2CF90BAD00479823 /* ConfigurationsViewModel.swift */,
 				D312D0C22817FB6E00A91252 /* UserStateViewModel.swift */,
 				D312D0C42817FD4E00A91252 /* PreferenceViewModel.swift */,
 			);
 			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		D341BAE22C0C8A8B00E50E56 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				D33DC32C2E1ACE7A005FCD6F /* Configurations */,
+				D31B6EC72D2ACD110044E360 /* Devices */,
+				D31B6EC52D29DD020044E360 /* ConfigurationsView.swift */,
+				D31B6EC32D29DC010044E360 /* SideMenuView.swift */,
+				D38469A22CFA3D0400479823 /* Modal.swift */,
+				D38469A02CFA244B00479823 /* AddConfigurationView.swift */,
+				D36950FB281AC1C900D51C3B /* BackgroundStartUpView.swift */,
+				D341BAE32C0C8B6E00E50E56 /* BeerConfigurationRowView.swift */,
+				D341BAE72C0CAB5B00E50E56 /* BeerConfigurationListView.swift */,
+				D341BAE92C0CAC7500E50E56 /* BrewDetailView.swift */,
+				D341BAEB2C0CAC9100E50E56 /* FermentationDetailView.swift */,
+			);
+			path = Views;
 			sourceTree = "<group>";
 		};
 		D34327A128E5839B00B19689 /* Extensions */ = {
@@ -213,6 +273,8 @@
 		D36950FD281E3FEC00D51C3B /* Styles */ = {
 			isa = PBXGroup;
 			children = (
+				D300B9172E38D32B0024D0C7 /* InputPropertyRow.swift */,
+				D33DC32A2E1A6CA9005FCD6F /* PropertyRow.swift */,
 				D36950FE281E400100D51C3B /* ButtonStyles.swift */,
 				D3695102281E5BFE00D51C3B /* ViewStyles.swift */,
 				D35D604A282A733300F6710F /* TextFieldStyles.swift */,
@@ -242,6 +304,9 @@
 			isa = PBXGroup;
 			children = (
 				D34327A628E6D27600B19689 /* Preferences.swift */,
+				D3BF87322C05E10100693E8D /* BeerConfiguration.swift */,
+				D3BF87342C05E1F800693E8D /* Device.swift */,
+				D3BF87362C05E20600693E8D /* ConnectedDevice.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -272,17 +337,19 @@
 			isa = PBXGroup;
 			children = (
 				D34327A128E5839B00B19689 /* Extensions */,
-				D36950FD281E3FEC00D51C3B /* Styles */,
 				D3752E5127DB465400D66AF4 /* Models */,
-				D310EC4127D9F76800994AD6 /* ViewModels */,
-				D310EC4027D9F75800994AD6 /* Screens */,
-				D397A21626934509008F724D /* AppDelegate.swift */,
-				D369511728264FD900D51C3B /* Constants.swift */,
-				D397A20726934326008F724D /* OinkBrew_MobileApp.swift */,
-				D3BF87302C046D3400693E8D /* Launch.storyboard */,
-				D397A20B26934327008F724D /* Assets.xcassets */,
-				D397A21026934327008F724D /* Info.plist */,
 				D397A20D26934327008F724D /* Preview Content */,
+				D310EC4027D9F75800994AD6 /* Screens */,
+				D384699C2CF90C7400479823 /* Services */,
+				D36950FD281E3FEC00D51C3B /* Styles */,
+				D310EC4127D9F76800994AD6 /* ViewModels */,
+				D341BAE22C0C8A8B00E50E56 /* Views */,
+				D397A21626934509008F724D /* AppDelegate.swift */,
+				D397A20B26934327008F724D /* Assets.xcassets */,
+				D369511728264FD900D51C3B /* Constants.swift */,
+				D397A21026934327008F724D /* Info.plist */,
+				D3BF87302C046D3400693E8D /* Launch.storyboard */,
+				D397A20726934326008F724D /* OinkBrew_MobileApp.swift */,
 			);
 			path = "OinkBrew Mobile";
 			sourceTree = "<group>";
@@ -291,6 +358,7 @@
 			isa = PBXGroup;
 			children = (
 				D397A20E26934327008F724D /* Preview Assets.xcassets */,
+				D341BAE52C0CA2BF00E50E56 /* previewBeerConfigurations.swift */,
 			);
 			path = "Preview Content";
 			sourceTree = "<group>";
@@ -343,6 +411,11 @@
 			buildRules = (
 			);
 			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				D31B6EC72D2ACD110044E360 /* Devices */,
+				D33DC32C2E1ACE7A005FCD6F /* Configurations */,
+				D384699C2CF90C7400479823 /* Services */,
 			);
 			name = "OinkBrew Mobile";
 			packageProductDependencies = (
@@ -518,16 +591,33 @@
 				D36950FC281AC1C900D51C3B /* BackgroundStartUpView.swift in Sources */,
 				D397A21726934509008F724D /* AppDelegate.swift in Sources */,
 				D3695101281E518C00D51C3B /* DeviceRotationViewModifier.swift in Sources */,
+				D3BF87352C05E1F800693E8D /* Device.swift in Sources */,
 				D312D0C52817FD4E00A91252 /* PreferenceViewModel.swift in Sources */,
 				D36950FF281E400100D51C3B /* ButtonStyles.swift in Sources */,
 				D312D0CB281800FE00A91252 /* SignUpScreen.swift in Sources */,
+				D341BAE42C0C8B6E00E50E56 /* BeerConfigurationRowView.swift in Sources */,
 				D3695103281E5BFE00D51C3B /* ViewStyles.swift in Sources */,
+				D31B6EC22D29DB880044E360 /* SideMenuScreen.swift in Sources */,
+				D300B9182E38D32E0024D0C7 /* InputPropertyRow.swift in Sources */,
+				D38469A12CFA246200479823 /* AddConfigurationView.swift in Sources */,
+				D341BAE82C0CAB5B00E50E56 /* BeerConfigurationListView.swift in Sources */,
+				D31B6EC42D29DC080044E360 /* SideMenuView.swift in Sources */,
+				D38469A32CFA3D0A00479823 /* Modal.swift in Sources */,
+				D3BF87372C05E20600693E8D /* ConnectedDevice.swift in Sources */,
 				D35D604B282A733300F6710F /* TextFieldStyles.swift in Sources */,
+				D341BAEA2C0CAC7500E50E56 /* BrewDetailView.swift in Sources */,
+				D31B6EC62D29DD0D0044E360 /* ConfigurationsView.swift in Sources */,
 				D34327A328E583BE00B19689 /* URLResponse.swift in Sources */,
+				D384699B2CF90BBC00479823 /* ConfigurationsViewModel.swift in Sources */,
 				D369511828264FD900D51C3B /* Constants.swift in Sources */,
+				D3BF87332C05E10100693E8D /* BeerConfiguration.swift in Sources */,
+				D341BAE62C0CA2BF00E50E56 /* previewBeerConfigurations.swift in Sources */,
+				D341BAEC2C0CAC9100E50E56 /* FermentationDetailView.swift in Sources */,
 				D312D0C32817FB6E00A91252 /* UserStateViewModel.swift in Sources */,
+				D33DC32B2E1A6CAD005FCD6F /* PropertyRow.swift in Sources */,
 				D312D0CD2818011400A91252 /* HomeScreen.swift in Sources */,
 				D312D0C7281800D300A91252 /* PreferenceScreen.swift in Sources */,
+				D31B6ED22D2AE0FF0044E360 /* DevicesViewModel.swift in Sources */,
 				D397A20826934326008F724D /* OinkBrew_MobileApp.swift in Sources */,
 				D34327A728E6D27600B19689 /* Preferences.swift in Sources */,
 				D312D0C9281800EA00A91252 /* SignInScreen.swift in Sources */,
@@ -733,7 +823,7 @@
 				ENABLE_PREVIEWS = YES;
 				GCC_NO_COMMON_BLOCKS = YES;
 				INFOPLIST_FILE = "OinkBrew Mobile/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -757,7 +847,7 @@
 				ENABLE_PREVIEWS = YES;
 				GCC_NO_COMMON_BLOCKS = YES;
 				INFOPLIST_FILE = "OinkBrew Mobile/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

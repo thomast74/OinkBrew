@@ -1,25 +1,28 @@
 import SwiftUI
 
 struct HomeScreen: View {
-
-    @EnvironmentObject var preference: PreferenceViewModel
-    @EnvironmentObject var userState: UserStateViewModel
-
+    @State var presentSideMenu = false
+    @State var selectedSideMenuTab = 0
+    
     var body: some View {
-        if userState.isBusy {
-            ProgressView()
-        } else {
-            Text("Home Screen")
-                .navigationTitle("Home")
-                .toolbar {
-                    Button {
-                        Task{
-                            await userState.signOut()
-                        }
-                    } label: {
-                        Image(systemName:  "rectangle.portrait.and.arrow.right")
-                    }
-                }
+        ZStack {
+            TabView(selection: $selectedSideMenuTab) {
+                ConfigurationsView(presentSideMenu: $presentSideMenu)
+                    .toolbar(.hidden, for: .tabBar)
+                    .tag(0)
+                DevicesListView(presentSideMenu: $presentSideMenu)
+                    .toolbar(.hidden, for: .tabBar)
+                    .tag(1)
+            }
+            
+            SideMenuScreen(
+                isShowing: $presentSideMenu,
+                content: AnyView(SideMenuView(selectedSideMenuTab: $selectedSideMenuTab,
+                                              presentSideMenu: $presentSideMenu)))
         }
     }
+}
+
+#Preview {
+    HomeScreen().environmentObject(DevicesViewModel())
 }

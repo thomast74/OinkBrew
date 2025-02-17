@@ -193,3 +193,8 @@ struct SignInScreen: View {
          .preferredColorScheme(.dark)
     }
 }
+
+#Preview {
+    SignInScreen()
+        .environmentObject(UserStateViewModel())
+}

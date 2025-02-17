@@ -85,3 +85,9 @@ struct PreferenceScreen: View {
          .preferredColorScheme(.dark)
     }
 }
+
+#Preview {
+    PreferenceScreen()
+        .environmentObject(PreferenceViewModel(userDefaults: UserDefaults.standard))
+        .environmentObject(UserStateViewModel())
+}

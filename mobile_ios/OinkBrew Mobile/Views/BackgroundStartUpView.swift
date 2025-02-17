@@ -11,3 +11,7 @@ struct BackgroundStartUpView: View {
         }
     }
 }
+
+#Preview {
+    BackgroundStartUpView()
+}

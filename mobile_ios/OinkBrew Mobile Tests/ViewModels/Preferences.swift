@@ -5,6 +5,7 @@ class Preferences {
     static let shared = Preferences()
     
     var apiUrl: String = ""
+    var accessTokens: AccessTokens? = nil
     
     private init() {}
     

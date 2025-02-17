@@ -48,7 +48,6 @@ class UserStateViewModel: ObservableObject {
     
     private let preferences = Preferences.shared
     
-    private(set) var accessTokens: AccessTokens?
     private var signupTokens: SignUpTokensDto?
     private var signinTokens: SignInTokensDto?
     private let session: URLSession
@@ -118,7 +117,7 @@ class UserStateViewModel: ObservableObject {
             let (data, response) = try await session.data (for: request)
 
             if let httpResponse = response.http, httpResponse.statusCode == 200 {
-                accessTokens = try JSONDecoder().decode(AccessTokens.self, from: data)
+                preferences.accessTokens = try JSONDecoder().decode(AccessTokens.self, from: data)
                 
                 isSignedIn = true
                 needsSignUp = false
@@ -183,7 +182,7 @@ class UserStateViewModel: ObservableObject {
             let (data, response) = try await session.data(for: request)
                         
             if let httpResponse = response.http, httpResponse.statusCode == 200 {
-                accessTokens = try JSONDecoder().decode(AccessTokens.self, from: data)
+                preferences.accessTokens = try JSONDecoder().decode(AccessTokens.self, from: data)
                 
                 isSignedIn = true
                 isBusy = false
@@ -202,7 +201,7 @@ class UserStateViewModel: ObservableObject {
         isBusy = true
         do {
             try await Task.sleep(nanoseconds: 1_000_000_000)
-            accessTokens = nil
+            preferences.accessTokens = nil
             signupTokens = nil
             signinTokens = nil
             

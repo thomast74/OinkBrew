@@ -6,7 +6,9 @@ struct OinkBrew_MobileApp: App {
     
     @StateObject var preferenceViewModel = PreferenceViewModel(userDefaults: UserDefaults.standard)
     @StateObject var userStateViewModel = UserStateViewModel()
-    
+    @StateObject var devicesViewModel = DevicesViewModel()
+    @StateObject var configurationsViewModel = ConfigurationsViewModel()
+
     var body: some Scene {
         WindowGroup {
             NavigationView{
@@ -15,6 +17,8 @@ struct OinkBrew_MobileApp: App {
             .navigationViewStyle(.stack)
             .environmentObject(preferenceViewModel)
             .environmentObject(userStateViewModel)
+            .environmentObject(devicesViewModel)
+            .environmentObject(configurationsViewModel)
         }
     }
 }
