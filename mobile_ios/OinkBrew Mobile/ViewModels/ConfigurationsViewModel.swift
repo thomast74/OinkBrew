@@ -19,7 +19,7 @@ class ConfigurationsViewModel: ObservableObject {
             return
         }
 
-        guard let data = try?  await  APIService().getConfigurations() else {
+        guard let data = try?  await  APIService.shared.getConfigurations() else {
             self.configurations = []
             self.hasError = true
             self.errorMessage  = "Server Error"

@@ -1,6 +1,6 @@
 ---
 name: Token refresh and auth flow
-overview: "Implement refresh-token flow in the iOS app: tokens stored only in UserStateViewModel (not Preferences); UserStateViewModel gains a refresh method; APIService gets token via callback, retry-on-401 with single refresh, sign-out on notSignedIn and second 401, and resettable 401 counter."
+overview: "Implement refresh-token flow in the iOS app: tokens stored only in UserStateViewModel (not Preferences); UserStateViewModel gains a refresh method; APIService gets token via callback, retry-on-401 with single refresh, sign-out on notSignedIn and second 401, and resettable 401 counter. Step 10: persistent secure token storage (Keychain + Touch ID/Face ID), splash screen on startup while restoring tokens, clear storage on sign-out and 401."
 todos: []
 isProject: false
 ---
@@ -22,6 +22,19 @@ APIService currently has no reference to `UserStateViewModel`. To keep a single 
 - Use a **shared APIService instance** configured at app launch with closures that call into `UserStateViewModel`: `getAccessToken` returns the view model's current access token; `onRefresh` / `onSignOut` call the view model's refresh and sign-out. View models and call sites will use this shared instance instead of `APIService()`.
 
 Because `UserStateViewModel` is `@MainActor`, the closures should dispatch to the main actor when calling it (e.g. `await MainActor.run { … }` inside the closure).
+
+### Persistent secure token storage
+
+- Tokens will be persisted in **iOS Keychain** with an access control that requires **Touch ID or Face ID** (e.g. `kSecAccessControlTouchIDCurrentSet` / `kSecAccessControlBiometryCurrentSet`) so they survive app restart but are only readable after biometric unlock.
+- A dedicated **SecureTokenStorage** in **Services** will encapsulate: save tokens, load tokens (triggering biometric), delete tokens. This keeps Keychain and LocalAuthentication details out of `UserStateViewModel`.
+- **When to save**: after every successful acquisition of tokens — in `signUpOtp`, `signInOtp`, and `refreshAccessToken` (immediately after setting `storedAccessTokens`).
+- **When to delete**: in `performSignOut()` (so both manual sign-out and 401-driven sign-out clear storage, since both go through `performSignOut()`).
+
+### App startup flow
+
+- On app launch, **before** deciding which root screen to show (Preference / SignUp / SignIn / Home), the app must **attempt to restore tokens** from secure storage.
+- Restore flow: call SecureTokenStorage to load tokens (this may present Face ID / Touch ID). If tokens are returned, set them on `UserStateViewModel` (e.g. inject or call a `restoreTokens(_:)` method) and set `isSignedIn = true`. If no tokens or user cancels biometric, leave `isSignedIn` false.
+- To avoid flashing SignIn then switching to Home, show a **splash screen** during the restoration phase. The app displays the splash screen until the first restore attempt has completed, then shows `ApplicationSwitcher`. Only after restore is done should the app show Preference / SignUp / SignIn / Home.
 
 ---
 
@@ -92,14 +105,15 @@ Each step is buildable on its own; dependencies are only on previous steps.
 | Step  | Description                                                  | Depends on |
 | ----- | ------------------------------------------------------------ | ---------- |
 | **1** | UserStateViewModel: token storage in VM only ✅               | —          |
-| **2** | UserStateViewModel: refresh method                           | 1          |
-| **3** | APIService: shared instance and callback properties          | —          |
-| **4** | App: wire shared APIService to UserStateViewModel            | 1, 2, 3    |
-| **5** | APIService: use getAccessToken; onSignOut before notSignedIn | 3, 4       |
-| **6** | APIService: authenticated-request helper with 401 retry      | 5          |
-| **7** | APIService: refactor endpoints to use helper                 | 6          |
-| **8** | Call sites: use APIService.shared                            | 4          |
-| **9** | Preferences: remove accessTokens                             | 5          |
+| **2** | UserStateViewModel: refresh method ✅                         | 1          |
+| **3** | APIService: shared instance and callback properties ✅        | —          |
+| **4** | App: wire shared APIService to UserStateViewModel ✅           | 1, 2, 3    |
+| **5** | APIService: use getAccessToken; onSignOut before notSignedIn ✅ | 3, 4       |
+| **6** | APIService: authenticated-request helper with 401 retry ✅   | 5          |
+| **7** | APIService: refactor endpoints to use helper ✅                 | 6          |
+| **8** | Call sites: use APIService.shared ✅                           | 4          |
+| **9** | Preferences: remove accessTokens ✅                            | 5          |
+| **10** | Secure token storage and app startup restoration              | 1, 2, 4    |
 
 
 ---
@@ -121,7 +135,7 @@ Each step is buildable on its own; dependencies are only on previous steps.
 
 ---
 
-### Step 2 – UserStateViewModel: refresh method
+### Step 2 – UserStateViewModel: refresh method ✅ Done
 
 **Depends on:** Step 1.
 
@@ -138,7 +152,7 @@ Each step is buildable on its own; dependencies are only on previous steps.
 
 ---
 
-### Step 3 – APIService: shared instance and callback properties
+### Step 3 – APIService: shared instance and callback properties ✅ Done
 
 **Depends on:** none.
 
@@ -152,7 +166,7 @@ Each step is buildable on its own; dependencies are only on previous steps.
 
 ---
 
-### Step 4 – App: wire shared APIService to UserStateViewModel
+### Step 4 – App: wire shared APIService to UserStateViewModel ✅ Done
 
 **Depends on:** Steps 1, 2, 3.
 
@@ -168,7 +182,7 @@ Each step is buildable on its own; dependencies are only on previous steps.
 
 ---
 
-### Step 5 – APIService: use getAccessToken; onSignOut before notSignedIn
+### Step 5 – APIService: use getAccessToken; onSignOut before notSignedIn ✅ Done
 
 **Depends on:** Steps 3, 4.
 
@@ -181,7 +195,7 @@ Each step is buildable on its own; dependencies are only on previous steps.
 
 ---
 
-### Step 6 – APIService: authenticated-request helper with 401 retry
+### Step 6 – APIService: authenticated-request helper with 401 retry ✅ Done
 
 **Depends on:** Step 5.
 
@@ -199,7 +213,7 @@ Each step is buildable on its own; dependencies are only on previous steps.
 
 ---
 
-### Step 7 – APIService: refactor endpoints to use helper
+### Step 7 – APIService: refactor endpoints to use helper ✅ Done
 
 **Depends on:** Step 6.
 
@@ -214,7 +228,7 @@ Each step is buildable on its own; dependencies are only on previous steps.
 
 ---
 
-### Step 8 – Call sites: use APIService.shared
+### Step 8 – Call sites: use APIService.shared ✅ Done
 
 **Depends on:** Step 4.
 
@@ -226,7 +240,7 @@ Each step is buildable on its own; dependencies are only on previous steps.
 
 ---
 
-### Step 9 – Preferences: remove accessTokens
+### Step 9 – Preferences: remove accessTokens ✅ Done
 
 **Depends on:** Step 5 (no remaining readers in APIService or UserStateViewModel).
 
@@ -236,6 +250,26 @@ Each step is buildable on its own; dependencies are only on previous steps.
 - If any test or other code still references `preferences.accessTokens`, update it to use UserStateViewModel or the shared APIService as appropriate.
 
 **Verification:** App and tests compile; no references to `preferences.accessTokens`; token flow is entirely via UserStateViewModel and APIService callbacks.
+
+---
+
+### Step 10 – Secure token storage and app startup restoration
+
+**Depends on:** Steps 1, 2, 4.
+
+- **10a – SecureTokenStorage service**  
+  New type in **Services** ([SecureTokenStorage.swift](mobile_ios/OinkBrew Mobile/Services/SecureTokenStorage.swift)): Keychain write/read/delete for `AccessTokens` (or encoded JSON), with `kSecAccessControl` set so that read (and optionally write) require Touch ID / Face ID. Use `LocalAuthentication` (LAContext) for the biometric prompt when reading. Expose: `save(_ tokens: AccessTokens)`, `load() -> AccessTokens?`, `delete()`.
+
+- **10b – UserStateViewModel: persist and clear**  
+  Inject or create a dependency on SecureTokenStorage. After setting `storedAccessTokens` in `signUpOtp`, `signInOtp`, and `refreshAccessToken`, call `secureTokenStorage.save(tokens)`. In `performSignOut()`, call `secureTokenStorage.delete()` after clearing in-memory state (so both manual sign-out and 401-driven sign-out clear storage).
+
+- **10c – App startup: restore before showing root UI**  
+  Show a **splash screen** while restoring. Before rendering `ApplicationSwitcher`, run an async restore: call `SecureTokenStorage.load()` (handling biometric cancel). If tokens exist, set them on `UserStateViewModel` and set `isSignedIn = true`. Keep the splash screen visible until restore has finished, then show `ApplicationSwitcher`.
+
+- **10d – 401 / sign-out clear storage**  
+  No new call sites are needed: `performSignOut()` already runs on 401 (via refresh failure and `onSignOut`); extending `performSignOut()` to call `secureTokenStorage.delete()` (in 10b) ensures storage is cleared on both manual sign-out and 401.
+
+**Verification:** App restarts with stored tokens show biometric prompt then Home; sign-out and 401 clear storage; next launch shows SignIn.
 
 ---
 
@@ -282,7 +316,7 @@ sequenceDiagram
     end
 ```
 
-
+Note: On sign-out (manual or after 401), `performSignOut()` also clears tokens from secure storage (Step 10).
 
 ---
 
@@ -291,12 +325,13 @@ sequenceDiagram
 
 | File                                                                                                 | Steps                                                                                                 |
 | ---------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| [UserStateViewModel.swift](mobile_ios/OinkBrew Mobile/ViewModels/UserStateViewModel.swift)           | 1 (token storage, performSignOut, currentAccessToken), 2 (refreshAccessToken)                         |
+| [UserStateViewModel.swift](mobile_ios/OinkBrew Mobile/ViewModels/UserStateViewModel.swift)           | 1 (token storage, performSignOut, currentAccessToken), 2 (refreshAccessToken), 10 (persist, delete in performSignOut) |
 | [ApiServices.swift](mobile_ios/OinkBrew Mobile/Services/ApiServices.swift)                           | 3 (shared + callbacks, Bearer fix), 5 (getAccessToken, onSignOut), 6 (helper), 7 (refactor to helper) |
-| [OinkBrew_MobileApp.swift](mobile_ios/OinkBrew Mobile/OinkBrew_MobileApp.swift)                      | 4 (wire callbacks)                                                                                    |
+| [OinkBrew_MobileApp.swift](mobile_ios/OinkBrew Mobile/OinkBrew_MobileApp.swift)                      | 4 (wire callbacks), 10 (restore on launch, splash screen)                                             |
 | [DevicesViewModel.swift](mobile_ios/OinkBrew Mobile/ViewModels/DevicesViewModel.swift)               | 8 (use shared)                                                                                        |
 | [ConfigurationsViewModel.swift](mobile_ios/OinkBrew Mobile/ViewModels/ConfigurationsViewModel.swift) | 8 (use shared)                                                                                        |
 | [Preferences.swift](mobile_ios/OinkBrew Mobile Tests/ViewModels/Preferences.swift)                   | 9 (remove accessTokens)                                                                               |
+| [SecureTokenStorage.swift](mobile_ios/OinkBrew Mobile/Services/SecureTokenStorage.swift)            | 10 (new: Keychain + biometric)                                                                        |
 
 
 Tests in [UserStateViewModelTests](mobile_ios/OinkBrew Mobile Tests/ViewModels/UserStateViewModelTests.swift) and any APIService tests should be updated or extended to cover refresh and the new callback behavior (after the steps that introduce them).

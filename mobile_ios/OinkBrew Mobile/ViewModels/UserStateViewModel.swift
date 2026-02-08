@@ -4,6 +4,7 @@ import Argon2Swift
 
 enum UserStateError: Error {
     case signOutError
+    case refreshAccessTokenError
 }
 
 enum SignInError: Error {
@@ -61,7 +62,13 @@ class UserStateViewModel: ObservableObject {
         self.signupTokens = signupTokens
         self.signinTokens = signinTokens
     }
-    
+
+    /// Restores signed-in state from tokens loaded from secure storage (e.g. on app launch).
+    func restoreTokens(_ tokens: AccessTokens) {
+        storedAccessTokens = tokens
+        isSignedIn = true
+    }
+
     func signUp(email: String, password: String) async -> Result<SignUpTokensDto, SignUpError>  {
         do {
             if email.isEmpty {
@@ -121,7 +128,9 @@ class UserStateViewModel: ObservableObject {
             let (data, response) = try await session.data (for: request)
 
             if let httpResponse = response.http, httpResponse.statusCode == 200 {
-                storedAccessTokens = try JSONDecoder().decode(AccessTokens.self, from: data)
+                let tokens = try JSONDecoder().decode(AccessTokens.self, from: data)
+                storedAccessTokens = tokens
+                _ = SecureTokenStorage.save(tokens)
                 isSignedIn = true
                 needsSignUp = false
                 isBusy = false
@@ -185,7 +194,9 @@ class UserStateViewModel: ObservableObject {
             let (data, response) = try await session.data(for: request)
                         
             if let httpResponse = response.http, httpResponse.statusCode == 200 {
-                storedAccessTokens = try JSONDecoder().decode(AccessTokens.self, from: data)
+                let tokens = try JSONDecoder().decode(AccessTokens.self, from: data)
+                storedAccessTokens = tokens
+                _ = SecureTokenStorage.save(tokens)
                 isSignedIn = true
                 isBusy = false
                 return .success(true)
@@ -199,7 +210,32 @@ class UserStateViewModel: ObservableObject {
         }
     }
 
-    func signOut() async -> Result<Bool, UserStateError>  {
+    func refreshAccessToken() async -> Result<Bool, UserStateError> {
+        guard let refreshToken = storedAccessTokens?.refreshToken else {
+            performSignOut()
+            return .failure(.refreshAccessTokenError)
+        }
+        do {
+            let url = URL(string: "\(preferences.correctedApiUrl())/auth/refresh")!
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.setValue("Bearer \(refreshToken)", forHTTPHeaderField: "Authorization")
+            let (data, response) = try await session.data(for: request)
+            if let httpResponse = response.http, httpResponse.statusCode == 200 {
+                let decoded = try JSONDecoder().decode(AccessTokens.self, from: data)
+                storedAccessTokens = decoded
+                _ = SecureTokenStorage.save(decoded)
+                return .success(true)
+            }
+            performSignOut()
+            return .failure(.refreshAccessTokenError)
+        } catch {
+            performSignOut()
+            return .failure(.refreshAccessTokenError)
+        }
+    }
+    
+        func signOut() async -> Result<Bool, UserStateError>  {
         isBusy = true
         do {
             try await Task.sleep(nanoseconds: 1_000_000_000)
@@ -217,8 +253,9 @@ class UserStateViewModel: ObservableObject {
         signupTokens = nil
         signinTokens = nil
         isSignedIn = false
+        SecureTokenStorage.delete()
     }
-    
+
     private func createBodyData(from rawData: [String: Any]) -> Data? {
         return try? JSONSerialization.data(withJSONObject: rawData)
     }

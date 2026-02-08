@@ -8,7 +8,7 @@ class DevicesViewModel: ObservableObject {
     @Published var hasError = false
     
     func loadDevices() async {
-        guard let data = try?  await  APIService().getDevices() else {
+        guard let data = try?  await  APIService.shared.getDevices() else {
             self.devices = []
             self.hasError = true
             self.errorMessage  = "Server Error"
@@ -19,7 +19,7 @@ class DevicesViewModel: ObservableObject {
     }
 
     func saveDevice(id: String, name: String, notes: String?) async throws {
-        try await APIService().updateDevice(id: id, name: name, notes: notes)
+        try await APIService.shared.updateDevice(id: id, name: name, notes: notes)
         updateDevice(id: id, name: name, notes: notes)
     }
 

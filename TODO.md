@@ -46,7 +46,7 @@
 |      | Listen to SSE                                     | If active start listening to sensor data via SSE and chart new values                                       |
 |      | Sensor & Actuator data update                     | Allow the update of sensor & actuator with backend update                                                   |
 | X)   | Create Settings screen                            | Create screen to allow default parameter for each new configuration                                         |
-| ->   | Save login access tokens until 401 error          | To avoid re-login all the time, save access tokens and return to login screen when 401 received             |
+| X)   | Save login access tokens until 401 error          | To avoid re-login all the time, save access tokens and return to login screen when 401 received             |
 | X)   | Add side menu                                     | Add a side menu to be able to select Configurations, Devices, Preferences                                   |
 | X)   | Split home screen                                 | Split home screen into sub screens (Configurations, Devices & Preferences) depending on side menu selection |
 |      | Refactor Configuration                            | Refactor Configuration into three files each (listView, row view and detail view)                           |
