@@ -92,7 +92,7 @@ export class ParticleService {
       ),
       map((response) => {
         this.logger.log(`Name and notes for device ${deviceId} updated successful`);
-        this.logger.error(JSON.stringify(response));
+        this.logger.log(JSON.stringify(response));
         return { isSuccessful: true };
       }),
       catchError((error: any) => {
