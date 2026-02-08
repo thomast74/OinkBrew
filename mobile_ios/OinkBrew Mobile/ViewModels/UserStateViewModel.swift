@@ -48,6 +48,10 @@ class UserStateViewModel: ObservableObject {
     
     private let preferences = Preferences.shared
     
+    private var storedAccessTokens: AccessTokens?
+    var currentAccessToken: String? { storedAccessTokens?.accessToken }
+    var accessTokens: AccessTokens? { storedAccessTokens } // Exposed for tests only
+    
     private var signupTokens: SignUpTokensDto?
     private var signinTokens: SignInTokensDto?
     private let session: URLSession
@@ -117,8 +121,7 @@ class UserStateViewModel: ObservableObject {
             let (data, response) = try await session.data (for: request)
 
             if let httpResponse = response.http, httpResponse.statusCode == 200 {
-                preferences.accessTokens = try JSONDecoder().decode(AccessTokens.self, from: data)
-                
+                storedAccessTokens = try JSONDecoder().decode(AccessTokens.self, from: data)
                 isSignedIn = true
                 needsSignUp = false
                 isBusy = false
@@ -182,8 +185,7 @@ class UserStateViewModel: ObservableObject {
             let (data, response) = try await session.data(for: request)
                         
             if let httpResponse = response.http, httpResponse.statusCode == 200 {
-                preferences.accessTokens = try JSONDecoder().decode(AccessTokens.self, from: data)
-                
+                storedAccessTokens = try JSONDecoder().decode(AccessTokens.self, from: data)
                 isSignedIn = true
                 isBusy = false
                 return .success(true)
@@ -201,17 +203,20 @@ class UserStateViewModel: ObservableObject {
         isBusy = true
         do {
             try await Task.sleep(nanoseconds: 1_000_000_000)
-            preferences.accessTokens = nil
-            signupTokens = nil
-            signinTokens = nil
-            
-            isSignedIn = false
+            performSignOut()
             isBusy = false
             return .success(true)
         } catch {
             isBusy = false
             return .failure(.signOutError)
         }
+    }
+    
+    private func performSignOut() {
+        storedAccessTokens = nil
+        signupTokens = nil
+        signinTokens = nil
+        isSignedIn = false
     }
     
     private func createBodyData(from rawData: [String: Any]) -> Data? {
