@@ -18,6 +18,7 @@
 		D31B6EC22D29DB880044E360 /* SideMenuScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D31B6EC12D29DB800044E360 /* SideMenuScreen.swift */; };
 		D31B6EC42D29DC080044E360 /* SideMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D31B6EC32D29DC010044E360 /* SideMenuView.swift */; };
 		D31B6EC62D29DD0D0044E360 /* ConfigurationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D31B6EC52D29DD020044E360 /* ConfigurationsView.swift */; };
+		D31B6ED42D2AE1010044E360 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D31B6ED32D2AE1000044E360 /* SettingsView.swift */; };
 		D31B6ED22D2AE0FF0044E360 /* DevicesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D31B6ED12D2AE0F70044E360 /* DevicesViewModel.swift */; };
 		D33DC32B2E1A6CAD005FCD6F /* PropertyRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33DC32A2E1A6CA9005FCD6F /* PropertyRow.swift */; };
 		D341BAE42C0C8B6E00E50E56 /* BeerConfigurationRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D341BAE32C0C8B6E00E50E56 /* BeerConfigurationRowView.swift */; };
@@ -93,6 +94,7 @@
 		D31B6EC12D29DB800044E360 /* SideMenuScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SideMenuScreen.swift; sourceTree = "<group>"; };
 		D31B6EC32D29DC010044E360 /* SideMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SideMenuView.swift; sourceTree = "<group>"; };
 		D31B6EC52D29DD020044E360 /* ConfigurationsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigurationsView.swift; sourceTree = "<group>"; };
+		D31B6ED32D2AE1000044E360 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		D31B6ED12D2AE0F70044E360 /* DevicesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevicesViewModel.swift; sourceTree = "<group>"; };
 		D33DC32A2E1A6CA9005FCD6F /* PropertyRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PropertyRow.swift; sourceTree = "<group>"; };
 		D341BAE32C0C8B6E00E50E56 /* BeerConfigurationRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeerConfigurationRowView.swift; sourceTree = "<group>"; };
@@ -224,6 +226,7 @@
 				D33DC32C2E1ACE7A005FCD6F /* Configurations */,
 				D31B6EC72D2ACD110044E360 /* Devices */,
 				D31B6EC52D29DD020044E360 /* ConfigurationsView.swift */,
+				D31B6ED32D2AE1000044E360 /* SettingsView.swift */,
 				D31B6EC32D29DC010044E360 /* SideMenuView.swift */,
 				D38469A22CFA3D0400479823 /* Modal.swift */,
 				D38469A02CFA244B00479823 /* AddConfigurationView.swift */,
@@ -607,6 +610,7 @@
 				D35D604B282A733300F6710F /* TextFieldStyles.swift in Sources */,
 				D341BAEA2C0CAC7500E50E56 /* BrewDetailView.swift in Sources */,
 				D31B6EC62D29DD0D0044E360 /* ConfigurationsView.swift in Sources */,
+				D31B6ED42D2AE1010044E360 /* SettingsView.swift in Sources */,
 				D34327A328E583BE00B19689 /* URLResponse.swift in Sources */,
 				D384699B2CF90BBC00479823 /* ConfigurationsViewModel.swift in Sources */,
 				D369511828264FD900D51C3B /* Constants.swift in Sources */,

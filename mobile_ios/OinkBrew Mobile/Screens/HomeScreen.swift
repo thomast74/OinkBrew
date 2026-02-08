@@ -13,6 +13,9 @@ struct HomeScreen: View {
                 DevicesListView(presentSideMenu: $presentSideMenu)
                     .toolbar(.hidden, for: .tabBar)
                     .tag(1)
+                SettingsView(presentSideMenu: $presentSideMenu)
+                    .toolbar(.hidden, for: .tabBar)
+                    .tag(2)
             }
             
             SideMenuScreen(
@@ -24,5 +27,7 @@ struct HomeScreen: View {
 }
 
 #Preview {
-    HomeScreen().environmentObject(DevicesViewModel())
+    HomeScreen()
+        .environmentObject(DevicesViewModel())
+        .environmentObject(PreferenceViewModel(userDefaults: UserDefaults.standard))
 }
