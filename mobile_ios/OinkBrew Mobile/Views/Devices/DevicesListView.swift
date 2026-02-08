@@ -46,9 +46,10 @@ struct DevicesListView: View {
                     }
                 }
  
-            } detail: {
-                if selectedDevice != nil {
-                    DeviceDetailView(device: selectedDevice!)
+            }             detail: {
+                if let selected = selectedDevice {
+                    let device = vm.devices.first(where: { $0.id == selected.id }) ?? selected
+                    DeviceDetailView(device: device)
                 } else {
                     Text("Please select a device from list")
                 }

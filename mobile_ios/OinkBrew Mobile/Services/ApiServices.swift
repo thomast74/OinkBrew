@@ -1,7 +1,8 @@
 import Foundation
 
-enum APIError: Error{
+enum APIError: Error {
     case invalidUrl, requestError, decodingError, statusNotOk, notSignedIn
+    case serverMessage(String)
 }
 
 enum DateError: String, Error {
@@ -107,5 +108,46 @@ struct APIService {
             print("error: ", error)
             throw APIError.decodingError
         }
+    }
+
+    func updateDevice(id: String, name: String, notes: String? = nil) async throws {
+        guard let accessTokens = preferences.accessTokens else {
+            throw APIError.notSignedIn
+        }
+        guard let url = URL(string: "\(preferences.correctedApiUrl())/devices/\(id)") else {
+            throw APIError.invalidUrl
+        }
+        var body: [String: String] = ["name": name]
+        if let notes = notes {
+            body["notes"] = notes
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        request.setValue("Bearer \(accessTokens.accessToken)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try? JSONEncoder().encode(body)
+
+        let (data, response): (Data, URLResponse)
+        do {
+            (data, response) = try await URLSession.shared.data(for: request)
+        } catch {
+            throw APIError.requestError
+        }
+
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw APIError.requestError
+        }
+        if httpResponse.isSuccessful {
+            return
+        }
+
+        let message: String
+        if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+           let msg = json["message"] as? String {
+            message = msg
+        } else {
+            message = "Update failed"
+        }
+        throw APIError.serverMessage(message)
     }
 }

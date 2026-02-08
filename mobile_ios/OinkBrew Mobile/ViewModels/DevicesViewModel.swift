@@ -17,5 +17,18 @@ class DevicesViewModel: ObservableObject {
         
         self.devices = data
     }
+
+    func saveDevice(id: String, name: String, notes: String?) async throws {
+        try await APIService().updateDevice(id: id, name: name, notes: notes)
+        updateDevice(id: id, name: name, notes: notes)
+    }
+
+    func updateDevice(id: String, name: String, notes: String?) {
+        guard let index = devices.firstIndex(where: { $0.id == id }) else { return }
+        var device = devices[index]
+        device.name = name
+        device.notes = notes
+        devices[index] = device
+    }
 }
 

@@ -52,4 +52,4 @@
 |      | Refactor Configuration                            | Refactor Configuration into three files each (listView, row view and detail view)                           |
 |      | Refactor Side Menu View                           | Refactor Side Menu View into three files each (listView, row view and detail view)                          |
 | X)   | Add Device List and Detail View                   | Split screen to show all stored devices and the details                                                     |
-|      | Device Name Change                                | Allows to change the device name, with updating backend and cloud                                           |
+| X)   | Device Name and Notes Change                      | Allows to change the device name and notes, with updating backend and cloud                                 |
