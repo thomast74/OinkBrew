@@ -21,8 +21,8 @@ export class DevicesProcessor {
   async refresh(job: Job) {
     this.logger.log('Start refreshing...');
     try {
-      const devices = await this.particle.listDevices();
-      this.logger.log(`Retrieved ${devices.length} devices`);
+      const devices = (await this.particle.listDevices()) ?? [];
+      this.logger.log(`Retrieved ${devices?.length ?? 0} devices`);
       for (const device of devices) {
         let storedDevice: Device;
         try {
@@ -52,7 +52,7 @@ export class DevicesProcessor {
 
           const connectedDevices = ConnectedDeviceHelper.parseArray(
             JSON.parse(
-              await this.particle.getVariable(storedDevice.id, 'Devices'),
+              (await this.particle.getVariable(storedDevice.id, 'Devices')) ?? '[]',
             ),
           );
           this.updateConnectedDevices(storedDevice, connectedDevices);

@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 
 import * as argon2 from 'argon2';
 import { Model } from 'mongoose';
-import { authenticator } from 'otplib';
+import { generateSecret as otpGenerateSecret } from 'otplib';
 
 import { AuthDto } from '../auth/dtos';
 import { ARGON_OPTIONS } from '../constants';
@@ -18,7 +18,7 @@ export class UsersService implements OnModuleInit {
 
   async create(userDto: AuthDto): Promise<UserDocument> {
     const hash = await argon2.hash(userDto.password, ARGON_OPTIONS);
-    const otpSecret = authenticator.generateSecret();
+    const otpSecret = otpGenerateSecret();
 
     const newUser = {
       email: userDto.email,
@@ -79,7 +79,7 @@ export class UsersService implements OnModuleInit {
       const adminUser = await this.userModel.findOne({ email: 'admin' }).exec();
       if (!adminUser) {
         const hash = await argon2.hash('admin', ARGON_OPTIONS);
-        const otpSecret = authenticator.generateSecret();
+        const otpSecret = otpGenerateSecret();
         this.logger.log(`OTP Secret: ${otpSecret}`);
 
         const createdAdminUser = new this.userModel({

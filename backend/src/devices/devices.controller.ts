@@ -65,9 +65,9 @@ export class DevicesController implements OnApplicationBootstrap {
 
   @Put('/refresh')
   @HttpCode(HttpStatus.OK)
-  refresh(): Promise<boolean> {
-    this.devicesQueue.add('refresh');
-    return Promise.resolve(true);
+  async refresh(): Promise<boolean> {
+    await this.devicesQueue.add('refresh');
+    return true;
   }
 
   @Put('/:id')

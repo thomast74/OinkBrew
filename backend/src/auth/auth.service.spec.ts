@@ -3,7 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
 
-import { authenticator } from 'otplib';
+import { generate as otpGenerate } from 'otplib';
 
 import { createUserFromAuthDto, userDto } from '../users/tests/users-helper.mock';
 import { UsersService } from '../users/users.service';
@@ -122,7 +122,7 @@ describe('AuthService', () => {
         },
         {
           secret: process.env.JWT_OTP_TOKEN_SECRET,
-          expiresIn: `${process.env.JWT_OTP_TOKEN_EXPIRATION_TIME}m`,
+          expiresIn: `${process.env.JWT_OTP_TOKEN_EXPIRATION_TIME}minutes`,
         },
       );
     });
@@ -145,7 +145,7 @@ describe('AuthService', () => {
       expect(response).toEqual({
         otpToken: 'new_otp_token',
         otpUrl: expect.stringMatching(
-          /otpauth:\/\/totp\/OinkBrew:test%40user\.de\?secret=.*&period=30&digits=6&algorithm=SHA1&issuer=OinkBrew/,
+          /otpauth:\/\/totp\/OinkBrew:test%40user\.de\?secret=.*&issuer=OinkBrew&algorithm=SHA256/,
         ),
         otpBarcode: expect.any(String),
         userId: '3',
@@ -157,7 +157,7 @@ describe('AuthService', () => {
     it('should load user from user service', async () => {
       const dbUser = await createUserFromAuthDto(userDto);
       (userService.findById as jest.Mock).mockResolvedValue(dbUser);
-      const otpPassword = authenticator.generate(dbUser.otpSecret);
+      const otpPassword = await otpGenerate({ secret: dbUser.otpSecret });
 
       await service.confirmOtp({ userId: dbUser.id, otpPassword }, true);
 
@@ -215,7 +215,7 @@ describe('AuthService', () => {
     it('should return tokens if otp password is valid', async () => {
       const dbUser = await createUserFromAuthDto(userDto);
       (userService.findById as jest.Mock).mockResolvedValue(dbUser);
-      const otpPassword = authenticator.generate(dbUser.otpSecret);
+      const otpPassword = await otpGenerate({ secret: dbUser.otpSecret });
 
       const response = await service.confirmOtp(
         {
@@ -234,7 +234,7 @@ describe('AuthService', () => {
     it('should update user with new refresh token and otp confirmed', async () => {
       const dbUser = await createUserFromAuthDto(userDto);
       (userService.findById as jest.Mock).mockResolvedValue(dbUser);
-      const otpPassword = authenticator.generate(dbUser.otpSecret);
+      const otpPassword = await otpGenerate({ secret: dbUser.otpSecret });
 
       await service.confirmOtp(
         {
@@ -254,7 +254,7 @@ describe('AuthService', () => {
     it('should update user with new refresh token and not update otp confirmed', async () => {
       const dbUser = await createUserFromAuthDto(userDto, 'rt', true);
       (userService.findById as jest.Mock).mockResolvedValue(dbUser);
-      const otpPassword = authenticator.generate(dbUser.otpSecret);
+      const otpPassword = await otpGenerate({ secret: dbUser.otpSecret });
 
       await service.confirmOtp(
         {

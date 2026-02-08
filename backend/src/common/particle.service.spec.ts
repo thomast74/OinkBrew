@@ -392,7 +392,7 @@ describe('ParticleService', () => {
 
       testSubject.eventStream().subscribe();
 
-      expect(ParticleMock.mockGetEventStream).toBeCalledWith({
+      expect(ParticleMock.mockGetEventStream).toHaveBeenCalledWith({
         deviceId: 'mine',
         name: 'oinkbrew',
         auth: '123456',

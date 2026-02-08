@@ -80,10 +80,9 @@ ConfigurationSchema.methods.hasConnectedDevice = function (
   return false;
 };
 
-ConfigurationSchema.pre('save', function (next) {
+ConfigurationSchema.pre('save', function () {
   if (this.isNew) {
     this.createdAt = new Date();
   }
   this.updatedAt = new Date();
-  next();
 });

@@ -1,6 +1,6 @@
 import * as argon2 from 'argon2';
 import { Model } from 'mongoose';
-import { authenticator } from 'otplib';
+import { generateSecret as otpGenerateSecret } from 'otplib';
 
 import { AuthDto } from '../../auth/dtos';
 import { ARGON_OPTIONS } from '../../constants';
@@ -13,7 +13,7 @@ export const userDto = {
 
 export async function createUser(otpConfirmed): Promise<User> {
   const hash = await argon2.hash(userDto.password, ARGON_OPTIONS);
-  const otpSecret = authenticator.generateSecret();
+  const otpSecret = otpGenerateSecret();
 
   return {
     email: userDto.email,
@@ -31,7 +31,7 @@ export async function createUserFromAuthDto(
 ) {
   const hash = await argon2.hash(user.password, ARGON_OPTIONS);
   const hashedRt = await argon2.hash(refreshToken, ARGON_OPTIONS);
-  otpSecret = otpSecret ?? authenticator.generateSecret();
+  otpSecret = otpSecret ?? otpGenerateSecret();
 
   return {
     id: '3',

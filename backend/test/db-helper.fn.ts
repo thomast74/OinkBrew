@@ -13,20 +13,22 @@ import { ConfigurationType } from '../src/configurations/types';
 import { Device, DeviceSchema } from '../src/devices/schemas';
 import { User, UserSchema } from '../src/users/schemas';
 
-const mongod = new MongoMemoryServer();
+let mongod: MongoMemoryServer | undefined;
 
 const defaultHasConnectedDevice = (pinNr: number, hwAddress: string) => {
   return pinNr === 0 && hwAddress === '28FF5C92711503AF';
 };
 
 export async function connectDatabase() {
-  if (mongod.state !== 'running' && mongod.state !== 'starting') {
-    await mongod.start();
-  } else {
-    return;
+  if (mongod === undefined) {
+    mongod = await MongoMemoryServer.create();
   }
 
-  const uri = await mongod.getUri();
+  if (mongod.state !== 'running' && mongod.state !== 'starting') {
+    await mongod.start();
+  }
+
+  const uri = mongod.getUri();
 
   await mongoose.connect(uri);
 }
@@ -63,8 +65,10 @@ export async function clearDatabase() {
   const collections = mongoose.connection.collections;
 
   for (const key in collections) {
-    const collection = collections[key];
-    await collection.deleteMany();
+    try {
+      const collection = collections[key];
+      await collection.deleteMany();
+    } catch (error) {}
   }
 }
 
@@ -79,7 +83,9 @@ export async function clearDatabaseCollections() {
 
 export async function disconnectDatabase() {
   await mongoose.disconnect();
-  await mongod.stop();
+  if (mongod !== undefined) {
+    await mongod.stop();
+  }
 }
 
 export async function closeDatabase() {

@@ -103,11 +103,9 @@ DeviceSchema.set('toJSON', {
   virtuals: true,
 });
 
-DeviceSchema.pre<Device>('findOneAndUpdate', function (next) {
+DeviceSchema.pre<Device>('findOneAndUpdate', function () {
   if (!this.createdAt) {
     this.createdAt = new Date();
   }
   this.updatedAt = new Date();
-
-  next();
 });

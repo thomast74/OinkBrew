@@ -4,7 +4,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import * as argon2 from 'argon2';
 import { Model } from 'mongoose';
-import { authenticator } from 'otplib';
+import { generate as otpGenerate } from 'otplib';
 import request from 'supertest';
 
 import {
@@ -140,7 +140,7 @@ describe('AuthController (e2e)', () => {
 
     it('should return access and refres token if otp password is valid', async () => {
       const otpToken = await createOtpToken(jwt, user?.id, user?.email);
-      const otpPassword = authenticator.generate(user?.otpSecret ?? '');
+      const otpPassword = await otpGenerate({ secret: user?.otpSecret ?? '' });
 
       const response = await request(app.getHttpServer())
         .post('/auth/signupOtp')
@@ -153,7 +153,7 @@ describe('AuthController (e2e)', () => {
 
     it('should set users refresh token', async () => {
       const otpToken = await createOtpToken(jwt, user?.id, user?.email);
-      const otpPassword = authenticator.generate(user?.otpSecret ?? '');
+      const otpPassword = await otpGenerate({ secret: user?.otpSecret ?? '' });
 
       await request(app.getHttpServer())
         .post('/auth/signupOtp')
@@ -167,7 +167,7 @@ describe('AuthController (e2e)', () => {
 
     it('should set user as otp cofirmed', async () => {
       const otpToken = await createOtpToken(jwt, user?.id, user?.email);
-      const otpPassword = authenticator.generate(user?.otpSecret ?? '');
+      const otpPassword = await otpGenerate({ secret: user?.otpSecret ?? '' });
 
       await request(app.getHttpServer())
         .post('/auth/signupOtp')
@@ -283,7 +283,7 @@ describe('AuthController (e2e)', () => {
 
     it('should return access and refresh token if otp password is valid', async () => {
       const otpToken = await createOtpToken(jwt, user?.id, user?.email);
-      const otpPassword = authenticator.generate(user?.otpSecret ?? '');
+      const otpPassword = await otpGenerate({ secret: user?.otpSecret ?? '' });
 
       const response = await request(app.getHttpServer())
         .post('/auth/signinOtp')
@@ -296,7 +296,7 @@ describe('AuthController (e2e)', () => {
 
     it('should set users refresh token', async () => {
       const otpToken = await createOtpToken(jwt, user?.id, user?.email);
-      const otpPassword = authenticator.generate(user?.otpSecret ?? '');
+      const otpPassword = await otpGenerate({ secret: user?.otpSecret ?? '' });
 
       await request(app.getHttpServer())
         .post('/auth/signinOtp')

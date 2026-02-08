@@ -17,7 +17,7 @@ export class JwtOtpStrategy extends PassportStrategy(Strategy, 'jwt-otp') {
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
       passReqToCallback: true,
-      secretOrKey: jwt.otpTokenSecret,
+      secretOrKey: jwt.otpTokenSecret!,
     });
   }
 

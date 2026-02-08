@@ -9,10 +9,9 @@ import { ConfigType } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 
 import * as argon2 from 'argon2';
-import { authenticator } from 'otplib';
+import { verify as otpVerify, generateURI as otpGenerateURI } from 'otplib';
 import * as qrcode from 'qrcode';
 
-import { ARGON_OPTIONS } from '../constants';
 import { User } from '../users/schemas';
 import { UsersService } from '../users/users.service';
 import jwtConfig from './config/jwt.config';
@@ -62,15 +61,15 @@ export class AuthService {
     const user = await this.usersService.findById(dto.userId);
     const otpConfirmedNotCorrect = confirmOtp
       ? user?.otpConfirmed ?? true
-      : !user?.otpConfirmed ?? true;
+      : !(user?.otpConfirmed ?? true);
 
     if (!user || !user.otpSecret || otpConfirmedNotCorrect) {
       throw new BadRequestException('User not valid');
     }
 
-    const otpValid = authenticator.check(dto.otpPassword, user.otpSecret);
+    const otpValid = await otpVerify({ token: dto.otpPassword, secret: user.otpSecret });
 
-    if (!otpValid) {
+    if (!otpValid?.valid) {
       throw new ForbiddenException('Access Denied');
     }
 
@@ -124,7 +123,7 @@ export class AuthService {
 
     const otp = await this.jwtService.signAsync(jwtPayload, {
       secret: this.jwt.otpTokenSecret,
-      expiresIn: `${this.jwt.otpTokenExpiration}m`,
+      expiresIn: `${this.jwt.otpTokenExpiration}minutes` as any
     });
 
     return {
@@ -134,7 +133,7 @@ export class AuthService {
   }
 
   private getOtpUrl(email: string, otpSecret: string): string {
-    return authenticator.keyuri(email, OTP_SERVICE_NAME, otpSecret);
+    return otpGenerateURI({ label: email, issuer: OTP_SERVICE_NAME, secret: otpSecret, algorithm: "sha256", digits: 6, period: 30 });
   }
 
   private async getOtpBarcode(otpUrl: string): Promise<any> {
@@ -161,11 +160,11 @@ export class AuthService {
     const [at, rt] = await Promise.all([
       this.jwtService.signAsync(jwtPayload, {
         secret: this.jwt.accessTokenSecret,
-        expiresIn: `${this.jwt.accessTokenExpiration}m`,
+        expiresIn: `${this.jwt.accessTokenExpiration}m` as any,
       }),
       this.jwtService.signAsync(jwtPayload, {
         secret: this.jwt.refreshTokenSecret,
-        expiresIn: `${this.jwt.refreshTokenExpiration}d`,
+        expiresIn: `${this.jwt.refreshTokenExpiration}d` as any,
       }),
     ]);
 

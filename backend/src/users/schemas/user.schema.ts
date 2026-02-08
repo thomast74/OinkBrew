@@ -44,10 +44,9 @@ UserSchema.set('toJSON', {
   virtuals: true,
 });
 
-UserSchema.pre('save', function (next) {
+UserSchema.pre('save', function () {
   if (this.isNew) {
     this.createdAt = new Date();
   }
   this.updatedAt = new Date();
-  next();
 });

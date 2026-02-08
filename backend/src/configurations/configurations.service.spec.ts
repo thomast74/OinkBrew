@@ -291,7 +291,9 @@ describe('ConfigurationsService', () => {
         ...dbConf?.toObject(),
         device: {
           ...(dbConf?.device as any).toObject(),
-          configurations: [],
+          configurations: [
+            expect.anything()
+          ],
         },
       });
     });
@@ -443,7 +445,9 @@ describe('ConfigurationsService', () => {
         ...dbConf?.toObject(),
         device: {
           ...(dbConf?.device as any).toObject(),
-          configurations: [],
+          configurations: [
+            expect.anything()
+          ],
         },
       });
     });

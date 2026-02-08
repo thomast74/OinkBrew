@@ -58,7 +58,7 @@ export class ConfigurationsService {
 
       const configurations = await this.configurationModel
         .find({
-          device: device._id,
+          device: device,
         })
         .populate({ path: 'device' })
         .exec();
