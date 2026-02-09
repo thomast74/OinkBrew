@@ -1,0 +1,8 @@
+---
+alwaysApply: true
+---
+
+- for planning use OVERVIEW.md as base of project structure an project details
+- plan document should be stored in the workspace root in folder .tasks/plans
+- plans should include implementation steps that are independant work items
+- plan should allow for each step to be build individually but with a dependency on previous step
