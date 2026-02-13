@@ -101,7 +101,11 @@ var devices = [
         default_build_target: "",
         functions: [],
         variables: [:],
-        connectedDevices: []
+        connectedDevices: [
+            ConnectedDevice(type: 1, pinNr: 17, hwAddress: "000000000000", connected: true, name: "Heater Relay", offset: 0.0, deviceOffset: 0.0),
+            ConnectedDevice(type: 2, pinNr: 18, hwAddress: "000000000000", connected: true, name: "Cooling Fan", offset: 0.0, deviceOffset: 0.0),
+            ConnectedDevice(type: 3, pinNr: 0, hwAddress: "28FF5C92711503AF", connected: true, name: "Chamber Temp", offset: -0.5, deviceOffset: 0.2)
+        ]
     ),
     Device(
         _id: "weqweqwe",

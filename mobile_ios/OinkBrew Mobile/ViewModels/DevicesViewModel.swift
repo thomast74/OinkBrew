@@ -30,5 +30,23 @@ class DevicesViewModel: ObservableObject {
         device.notes = notes
         devices[index] = device
     }
+
+    /// Updates connected device on the backend, then updates local state so the UI reflects the change without refetch.
+    func saveConnectedDevice(deviceId: String, pinNr: Int, hwAddress: String, name: String, offset: Double) async throws {
+        try await APIService.shared.updateConnectedDevice(deviceId: deviceId, pinNr: pinNr, hwAddress: hwAddress, name: name, offset: offset)
+        updateFontEndConnectedDevice(deviceId: deviceId, pinNr: pinNr, hwAddress: hwAddress, name: name, offset: offset)
+    }
+
+    /// Updates name and offset for a connected device in local `devices` so the UI reflects the change without refetch.
+    func updateFontEndConnectedDevice(deviceId: String, pinNr: Int, hwAddress: String, name: String, offset: Double) {
+        guard let deviceIndex = devices.firstIndex(where: { $0.id == deviceId }) else { return }
+        guard let cdIndex = devices[deviceIndex].connectedDevices.firstIndex(where: { $0.pinNr == pinNr && $0.hwAddress == hwAddress }) else { return }
+        var device = devices[deviceIndex]
+        var connected = device.connectedDevices[cdIndex]
+        connected.name = name
+        connected.offset = offset
+        device.connectedDevices[cdIndex] = connected
+        devices[deviceIndex] = device
+    }
 }
 

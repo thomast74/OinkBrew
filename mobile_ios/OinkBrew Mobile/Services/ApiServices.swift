@@ -152,4 +152,26 @@ class APIService {
             parseResponse: { _, _ in () }
         )
     }
+
+    /// PUT /devices/{id}/{hwAddress}/{pinNr} with body { name, offset }. Updates connected device name and offset.
+    func updateConnectedDevice(deviceId: String, pinNr: Int, hwAddress: String, name: String, offset: Double) async throws {
+        let encodedHw = hwAddress.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? hwAddress
+        let path = "\(preferences.correctedApiUrl())/devices/\(deviceId)/\(encodedHw)/\(pinNr)"
+        guard let url = URL(string: path) else {
+            throw APIError.invalidUrl
+        }
+        let body: [String: Any] = ["name": name, "offset": offset]
+        let bodyData = try JSONSerialization.data(withJSONObject: body)
+        let _: Void = try await performAuthenticatedRequest(
+            buildingRequest: { token in
+                var request = URLRequest(url: url)
+                request.httpMethod = "PUT"
+                request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+                request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+                request.httpBody = bodyData
+                return request
+            },
+            parseResponse: { _, _ in () }
+        )
+    }
 }
