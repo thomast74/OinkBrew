@@ -37,7 +37,7 @@ var beerConfigurations = [
         createdAt: Date.now,
         updatedAt: Date.now,
         name: "Fermentation Configration",
-        archived: false,
+        archived: true,
         device: devices[0],
         temperature: 65.0,
         heatActuator: ConnectedDevice(

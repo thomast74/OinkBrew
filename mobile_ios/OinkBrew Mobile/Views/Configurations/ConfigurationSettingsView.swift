@@ -21,10 +21,6 @@ struct ConfigurationSettingsView: View {
                     PropertyRow(label: "Archived", value: configuration.archived ? "Yes" : "No")
                     PropertyRow(label: "Device", value: configuration.device.name ?? "Unknown")
                 }
-                Section(header: Text("Timestamps")) {
-                    PropertyRow(label: "Created At", value: isoFormatter.string(from: configuration.createdAt))
-                    PropertyRow(label: "Updated At", value: isoFormatter.string(from: configuration.updatedAt))
-                }
                 if configuration.type == BeerConfgurationType.Brew.rawValue {
                     Section(header: Text("Settings")) {
                         PropertyRow(label: "Temperatur", value: configuration.temperature.description)
@@ -43,6 +39,10 @@ struct ConfigurationSettingsView: View {
                         PropertyRow(label: "Cooling On Time", value: configuration.coolingOnTime?.description ?? "0")
                         PropertyRow(label: "Cooling Off Time", value: configuration.coolingOffTime?.description ?? "0")
                     }
+                }
+                Section(header: Text("Timestamps")) {
+                    PropertyRow(label: "Created At", value: isoFormatter.string(from: configuration.createdAt))
+                    PropertyRow(label: "Updated At", value: isoFormatter.string(from: configuration.updatedAt))
                 }
             }
         }

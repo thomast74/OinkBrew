@@ -5,6 +5,19 @@ struct ConfigurationsListView: View {
     @Binding var presentSideMenu: Bool
 
     @State private var selectedConfiguration: BeerConfiguration?
+    @State private var searchText = ""
+
+    private var sortedConfigurations: [BeerConfiguration] {
+        cm.configurations.sorted { $0.updatedAt > $1.updatedAt }
+    }
+
+    private var filteredConfigurations: [BeerConfiguration] {
+        let trimmed = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty {
+            return sortedConfigurations
+        }
+        return sortedConfigurations.filter { $0.name.localizedCaseInsensitiveContains(trimmed) }
+    }
 
     var body: some View {
         VStack{
@@ -25,7 +38,7 @@ struct ConfigurationsListView: View {
                     .font(.headline)
             }
             NavigationSplitView {
-                List(cm.configurations, selection: $selectedConfiguration) { configuration in
+                List(filteredConfigurations, selection: $selectedConfiguration) { configuration in
                     NavigationLink(value: configuration) {
                         ConfigurationRowView(configuration: configuration, isSelected: configuration.id == selectedConfiguration?.id)
                     }
@@ -36,16 +49,30 @@ struct ConfigurationsListView: View {
                 }
                 .listStyle(.plain)
                 .tint(.white.opacity(0.0))
+                .searchable(text: $searchText, prompt: "Search by name")
                 .overlay {
-                    if cm.configurations.count == 0 {
-                        ContentUnavailableView {
-                            Label("No configurations found", systemImage: "doc.richtext.fill")
-                        } description: {
-                            Text("Create a new configruation to start brewing")
+                    if filteredConfigurations.isEmpty {
+                        if sortedConfigurations.isEmpty {
+                            ContentUnavailableView {
+                                Label("No configurations found", systemImage: "doc.richtext.fill")
+                            } description: {
+                                Text("Create a new configuration to start brewing")
+                            }
+                        } else {
+                            ContentUnavailableView.search(text: searchText)
                         }
                     }
+                }.toolbar {
+                    Button {
+                        Task {
+                            await cm.toggleArchiveFilter()
+                        }
+                    } label: {
+                        Image(cm.showArchivedOnly ? "archive" : "archiveCrossed")
+                            .resizable()
+                            .frame(width: 28, height: 28)
+                    }
                 }
- 
             } detail: {
                 if selectedConfiguration != nil {
                     ConfigurationDetailView(configuration: selectedConfiguration!)
@@ -56,9 +83,18 @@ struct ConfigurationsListView: View {
             .onAppear {
                 Task {
                     await cm.loadConfigurations()
-                    if selectedConfiguration == nil && cm.configurations.count > 0 {
-                        selectedConfiguration = cm.configurations.first
+                    if selectedConfiguration == nil && !sortedConfigurations.isEmpty {
+                        selectedConfiguration = sortedConfigurations.first
                     }
+                }
+            }
+            .onChange(of: cm.configurations) { _, newConfigurations in
+                if let sel = selectedConfiguration,
+                   !newConfigurations.contains(where: { $0.id == sel.id }) {
+                    selectedConfiguration = newConfigurations.sorted { $0.updatedAt > $1.updatedAt }.first
+                }
+                if selectedConfiguration == nil, let first = newConfigurations.sorted(by: { $0.updatedAt > $1.updatedAt }).first {
+                    selectedConfiguration = first
                 }
             }
         }
@@ -73,4 +109,3 @@ struct ConfigurationsListView: View {
     ConfigurationsListView(presentSideMenu: $mockPresentSideMenu)
         .environmentObject(mockCM)
 }
-

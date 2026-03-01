@@ -71,8 +71,10 @@ class APIService {
         return (data, httpResponse)
     }
 
-    func getConfigurations() async throws -> [BeerConfiguration] {
-        guard let url = URL(string: "\(preferences.correctedApiUrl())/configurations") else {
+    func getConfigurations(archived: Bool = false) async throws -> [BeerConfiguration] {
+        var components = URLComponents(string: "\(preferences.correctedApiUrl())/configurations")
+        components?.queryItems = [URLQueryItem(name: "archived", value: archived ? "true" : "false")]
+        guard let url = components?.url else {
             throw APIError.invalidUrl
         }
         return try await performAuthenticatedRequest(

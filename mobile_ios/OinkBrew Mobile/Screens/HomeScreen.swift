@@ -7,7 +7,7 @@ struct HomeScreen: View {
     var body: some View {
         ZStack {
             TabView(selection: $selectedSideMenuTab) {
-                ConfigurationsView(presentSideMenu: $presentSideMenu)
+                ConfigurationsListView(presentSideMenu: $presentSideMenu)
                     .toolbar(.hidden, for: .tabBar)
                     .tag(0)
                 DevicesListView(presentSideMenu: $presentSideMenu)
@@ -27,7 +27,12 @@ struct HomeScreen: View {
 }
 
 #Preview {
+    @Previewable @State var mockPresentSideMenu = false
+
+    let mockCM = ConfigurationsViewModel(withMockData: true)
+    
     HomeScreen()
         .environmentObject(DevicesViewModel())
         .environmentObject(PreferenceViewModel(userDefaults: UserDefaults.standard))
+        .environmentObject(mockCM)
 }

@@ -17,15 +17,10 @@
 		D312D0CD2818011400A91252 /* HomeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D312D0CC2818011400A91252 /* HomeScreen.swift */; };
 		D31B6EC22D29DB880044E360 /* SideMenuScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D31B6EC12D29DB800044E360 /* SideMenuScreen.swift */; };
 		D31B6EC42D29DC080044E360 /* SideMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D31B6EC32D29DC010044E360 /* SideMenuView.swift */; };
-		D31B6EC62D29DD0D0044E360 /* ConfigurationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D31B6EC52D29DD020044E360 /* ConfigurationsView.swift */; };
 		D31B6ED22D2AE0FF0044E360 /* DevicesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D31B6ED12D2AE0F70044E360 /* DevicesViewModel.swift */; };
 		D31B6ED42D2AE1010044E360 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D31B6ED32D2AE1000044E360 /* SettingsView.swift */; };
 		D33DC32B2E1A6CAD005FCD6F /* PropertyRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33DC32A2E1A6CA9005FCD6F /* PropertyRow.swift */; };
-		D341BAE42C0C8B6E00E50E56 /* BeerConfigurationRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D341BAE32C0C8B6E00E50E56 /* BeerConfigurationRowView.swift */; };
 		D341BAE62C0CA2BF00E50E56 /* previewBeerConfigurations.swift in Sources */ = {isa = PBXBuildFile; fileRef = D341BAE52C0CA2BF00E50E56 /* previewBeerConfigurations.swift */; };
-		D341BAE82C0CAB5B00E50E56 /* BeerConfigurationListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D341BAE72C0CAB5B00E50E56 /* BeerConfigurationListView.swift */; };
-		D341BAEA2C0CAC7500E50E56 /* BrewDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D341BAE92C0CAC7500E50E56 /* BrewDetailView.swift */; };
-		D341BAEC2C0CAC9100E50E56 /* FermentationDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D341BAEB2C0CAC9100E50E56 /* FermentationDetailView.swift */; };
 		D34327A328E583BE00B19689 /* URLResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = D34327A228E583BE00B19689 /* URLResponse.swift */; };
 		D34327A528E6CA4200B19689 /* UserStateViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D34327A428E6CA4100B19689 /* UserStateViewModelTests.swift */; };
 		D34327A728E6D27600B19689 /* Preferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = D34327A628E6D27600B19689 /* Preferences.swift */; };
@@ -43,7 +38,6 @@
 		D369511228264B7500D51C3B /* PreferenceViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D369511128264B7500D51C3B /* PreferenceViewModelTests.swift */; };
 		D369511828264FD900D51C3B /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = D369511728264FD900D51C3B /* Constants.swift */; };
 		D384699B2CF90BBC00479823 /* ConfigurationsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D384699A2CF90BAD00479823 /* ConfigurationsViewModel.swift */; };
-		D38469A12CFA246200479823 /* AddConfigurationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D38469A02CFA244B00479823 /* AddConfigurationView.swift */; };
 		D38469A32CFA3D0A00479823 /* Modal.swift in Sources */ = {isa = PBXBuildFile; fileRef = D38469A22CFA3D0400479823 /* Modal.swift */; };
 		D397A20826934326008F724D /* OinkBrew_MobileApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D397A20726934326008F724D /* OinkBrew_MobileApp.swift */; };
 		D397A20C26934327008F724D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D397A20B26934327008F724D /* Assets.xcassets */; };
@@ -93,15 +87,10 @@
 		D312D0CC2818011400A91252 /* HomeScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeScreen.swift; sourceTree = "<group>"; };
 		D31B6EC12D29DB800044E360 /* SideMenuScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SideMenuScreen.swift; sourceTree = "<group>"; };
 		D31B6EC32D29DC010044E360 /* SideMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SideMenuView.swift; sourceTree = "<group>"; };
-		D31B6EC52D29DD020044E360 /* ConfigurationsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigurationsView.swift; sourceTree = "<group>"; };
 		D31B6ED12D2AE0F70044E360 /* DevicesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevicesViewModel.swift; sourceTree = "<group>"; };
 		D31B6ED32D2AE1000044E360 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		D33DC32A2E1A6CA9005FCD6F /* PropertyRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PropertyRow.swift; sourceTree = "<group>"; };
-		D341BAE32C0C8B6E00E50E56 /* BeerConfigurationRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeerConfigurationRowView.swift; sourceTree = "<group>"; };
 		D341BAE52C0CA2BF00E50E56 /* previewBeerConfigurations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = previewBeerConfigurations.swift; sourceTree = "<group>"; };
-		D341BAE72C0CAB5B00E50E56 /* BeerConfigurationListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeerConfigurationListView.swift; sourceTree = "<group>"; };
-		D341BAE92C0CAC7500E50E56 /* BrewDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrewDetailView.swift; sourceTree = "<group>"; };
-		D341BAEB2C0CAC9100E50E56 /* FermentationDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FermentationDetailView.swift; sourceTree = "<group>"; };
 		D34327A228E583BE00B19689 /* URLResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLResponse.swift; sourceTree = "<group>"; };
 		D34327A428E6CA4100B19689 /* UserStateViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserStateViewModelTests.swift; sourceTree = "<group>"; };
 		D34327A628E6D27600B19689 /* Preferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Preferences.swift; path = "OinkBrew Mobile Tests/ViewModels/Preferences.swift"; sourceTree = SOURCE_ROOT; };
@@ -118,7 +107,6 @@
 		D369511128264B7500D51C3B /* PreferenceViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferenceViewModelTests.swift; sourceTree = "<group>"; };
 		D369511728264FD900D51C3B /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		D384699A2CF90BAD00479823 /* ConfigurationsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigurationsViewModel.swift; sourceTree = "<group>"; };
-		D38469A02CFA244B00479823 /* AddConfigurationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddConfigurationView.swift; sourceTree = "<group>"; };
 		D38469A22CFA3D0400479823 /* Modal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Modal.swift; sourceTree = "<group>"; };
 		D397A20426934326008F724D /* OinkBrew Mobile.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "OinkBrew Mobile.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D397A20726934326008F724D /* OinkBrew_MobileApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OinkBrew_MobileApp.swift; sourceTree = "<group>"; };
@@ -225,16 +213,10 @@
 			children = (
 				D33DC32C2E1ACE7A005FCD6F /* Configurations */,
 				D31B6EC72D2ACD110044E360 /* Devices */,
-				D31B6EC52D29DD020044E360 /* ConfigurationsView.swift */,
 				D31B6ED32D2AE1000044E360 /* SettingsView.swift */,
 				D31B6EC32D29DC010044E360 /* SideMenuView.swift */,
 				D38469A22CFA3D0400479823 /* Modal.swift */,
-				D38469A02CFA244B00479823 /* AddConfigurationView.swift */,
 				D36950FB281AC1C900D51C3B /* BackgroundStartUpView.swift */,
-				D341BAE32C0C8B6E00E50E56 /* BeerConfigurationRowView.swift */,
-				D341BAE72C0CAB5B00E50E56 /* BeerConfigurationListView.swift */,
-				D341BAE92C0CAC7500E50E56 /* BrewDetailView.swift */,
-				D341BAEB2C0CAC9100E50E56 /* FermentationDetailView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -598,25 +580,19 @@
 				D312D0C52817FD4E00A91252 /* PreferenceViewModel.swift in Sources */,
 				D36950FF281E400100D51C3B /* ButtonStyles.swift in Sources */,
 				D312D0CB281800FE00A91252 /* SignUpScreen.swift in Sources */,
-				D341BAE42C0C8B6E00E50E56 /* BeerConfigurationRowView.swift in Sources */,
 				D3695103281E5BFE00D51C3B /* ViewStyles.swift in Sources */,
 				D31B6EC22D29DB880044E360 /* SideMenuScreen.swift in Sources */,
 				D300B9182E38D32E0024D0C7 /* InputPropertyRow.swift in Sources */,
-				D38469A12CFA246200479823 /* AddConfigurationView.swift in Sources */,
-				D341BAE82C0CAB5B00E50E56 /* BeerConfigurationListView.swift in Sources */,
 				D31B6EC42D29DC080044E360 /* SideMenuView.swift in Sources */,
 				D38469A32CFA3D0A00479823 /* Modal.swift in Sources */,
 				D3BF87372C05E20600693E8D /* ConnectedDevice.swift in Sources */,
 				D35D604B282A733300F6710F /* TextFieldStyles.swift in Sources */,
-				D341BAEA2C0CAC7500E50E56 /* BrewDetailView.swift in Sources */,
-				D31B6EC62D29DD0D0044E360 /* ConfigurationsView.swift in Sources */,
 				D31B6ED42D2AE1010044E360 /* SettingsView.swift in Sources */,
 				D34327A328E583BE00B19689 /* URLResponse.swift in Sources */,
 				D384699B2CF90BBC00479823 /* ConfigurationsViewModel.swift in Sources */,
 				D369511828264FD900D51C3B /* Constants.swift in Sources */,
 				D3BF87332C05E10100693E8D /* BeerConfiguration.swift in Sources */,
 				D341BAE62C0CA2BF00E50E56 /* previewBeerConfigurations.swift in Sources */,
-				D341BAEC2C0CAC9100E50E56 /* FermentationDetailView.swift in Sources */,
 				D312D0C32817FB6E00A91252 /* UserStateViewModel.swift in Sources */,
 				D33DC32B2E1A6CAD005FCD6F /* PropertyRow.swift in Sources */,
 				D312D0CD2818011400A91252 /* HomeScreen.swift in Sources */,
