@@ -40,4 +40,25 @@ class ConfigurationsViewModel: ObservableObject {
         showArchivedOnly.toggle()
         await loadConfigurations()
     }
+
+    /// Sets the archived state of a configuration (archive or unarchive), then refetches the list.
+    func setArchived(_ configuration: BeerConfiguration, archived: Bool) async {
+        if withMockData {
+            await loadConfigurations()
+            return
+        }
+        do {
+            if archived {
+                try await APIService.shared.archiveConfiguration(id: configuration.id)
+            } else {
+                var unarchived = configuration
+                unarchived.archived = false
+                try await APIService.shared.updateConfiguration(unarchived)
+            }
+            await loadConfigurations()
+        } catch {
+            hasError = true
+            errorMessage = (error as? APIError)?.localizedDescription ?? "Request failed"
+        }
+    }
 }

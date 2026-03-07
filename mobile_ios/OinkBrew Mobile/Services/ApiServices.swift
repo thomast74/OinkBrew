@@ -92,6 +92,77 @@ class APIService {
             }
         )
     }
+
+    /// Archives a configuration. Calls DELETE /configurations/{id}.
+    func archiveConfiguration(id: Int) async throws {
+        guard let url = URL(string: "\(preferences.correctedApiUrl())/configurations/\(id)") else {
+            throw APIError.invalidUrl
+        }
+        let _: Void = try await performAuthenticatedRequest(
+            buildingRequest: { token in
+                var request = URLRequest(url: url)
+                request.httpMethod = "DELETE"
+                request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+                return request
+            },
+            parseResponse: { _, _ in () }
+        )
+    }
+
+    /// Updates a configuration (e.g. to set archived: false). Calls PUT /configurations/{id} with full body.
+    func updateConfiguration(_ configuration: BeerConfiguration) async throws {
+        guard let url = URL(string: "\(preferences.correctedApiUrl())/configurations/\(configuration.id)") else {
+            throw APIError.invalidUrl
+        }
+        let body = buildConfigurationRequestBody(configuration)
+        let bodyData = try JSONSerialization.data(withJSONObject: body)
+        let _: Void = try await performAuthenticatedRequest(
+            buildingRequest: { token in
+                var request = URLRequest(url: url)
+                request.httpMethod = "PUT"
+                request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+                request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+                request.httpBody = bodyData
+                return request
+            },
+            parseResponse: { _, _ in () }
+        )
+    }
+
+    /// Builds the request body for PUT /configurations/:id (deviceId, required/optional fields per type, archived).
+    private func buildConfigurationRequestBody(_ configuration: BeerConfiguration) -> [String: Any] {
+        func connectedDeviceDto(_ device: ConnectedDevice) -> [String: Any] {
+            ["type": device.type, "pinNr": device.pinNr, "hwAddress": device.hwAddress]
+        }
+        var body: [String: Any] = [
+            "type": configuration.type,
+            "deviceId": configuration.device.id,
+            "name": configuration.name,
+            "temperature": configuration.temperature,
+            "heatActuator": connectedDeviceDto(configuration.heatActuator),
+            "tempSensor": connectedDeviceDto(configuration.tempSensor),
+            "heatingPeriod": configuration.heatingPeriod,
+            "p": configuration.p,
+            "i": configuration.i,
+            "d": configuration.d,
+            "archived": configuration.archived,
+        ]
+        if configuration.type == 1 {
+            if let pump1 = configuration.pump1Actuator { body["pump1Actuator"] = connectedDeviceDto(pump1) }
+            if let pump2 = configuration.pump2Actuator { body["pump2Actuator"] = connectedDeviceDto(pump2) }
+            if let v = configuration.heaterPwm { body["heaterPwm"] = v }
+            if let v = configuration.pump1Pwm { body["pump1Pwm"] = v }
+            if let v = configuration.pump2Pwm { body["pump2Pwm"] = v }
+        } else if configuration.type == 2 {
+            if let cool = configuration.coolActuator { body["coolActuator"] = connectedDeviceDto(cool) }
+            if let fan = configuration.fanActuator { body["fanActuator"] = connectedDeviceDto(fan) }
+            if let v = configuration.fanPwm { body["fanPwm"] = v }
+            body["coolingPeriod"] = configuration.coolingPeriod ?? 0
+            body["coolingOnTime"] = configuration.coolingOnTime ?? 0
+            body["coolingOffTime"] = configuration.coolingOffTime ?? 0
+        }
+        return body
+    }
     
     private static let deviceDateDecoder: JSONDecoder = {
         let formatter = DateFormatter()
