@@ -85,10 +85,13 @@ class APIService {
                 return request
             },
             parseResponse: { data, _ in
-                guard let result = try? JSONDecoder().decode([BeerConfiguration].self, from: data) else {
+                do {
+                    let result = try Self.responseJSONDecoder.decode([BeerConfiguration].self, from: data)
+                    return result
+                } catch {
+                    print("\(error)")
                     throw APIError.decodingError
                 }
-                return result
             }
         )
     }
@@ -129,42 +132,91 @@ class APIService {
         )
     }
 
-    /// Builds the request body for PUT /configurations/:id (deviceId, required/optional fields per type, archived).
-    private func buildConfigurationRequestBody(_ configuration: BeerConfiguration) -> [String: Any] {
+    /// Creates a configuration. POST /configurations. Returns the created configuration with device populated.
+    func createConfiguration(_ payload: CreateConfigurationPayload) async throws -> BeerConfiguration {
+        guard let url = URL(string: "\(preferences.correctedApiUrl())/configurations") else {
+            throw APIError.invalidUrl
+        }
+        let body = buildConfigurationRequestBody(payload)
+        let bodyData = try JSONSerialization.data(withJSONObject: body)
+        return try await performAuthenticatedRequest(
+            buildingRequest: { token in
+                var request = URLRequest(url: url)
+                request.httpMethod = "POST"
+                request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+                request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+                request.httpBody = bodyData
+                return request
+            },
+            parseResponse: { data, _ in
+                do {
+                    let result = try Self.responseJSONDecoder.decode(BeerConfiguration.self, from: data)
+                    return result
+                } catch {
+                    print("\(error)")
+                    throw APIError.decodingError
+                }
+            }
+        )
+    }
+    
+    /// PUT /devices/{id}/{hwAddress}/{pinNr} with body { name, offset }. Updates connected device name and offset.
+    func updateConnectedDevice(deviceId: String, pinNr: Int, hwAddress: String, name: String, offset: Double) async throws {
+        let encodedHw = hwAddress.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? hwAddress
+        let path = "\(preferences.correctedApiUrl())/devices/\(deviceId)/\(encodedHw)/\(pinNr)"
+        guard let url = URL(string: path) else {
+            throw APIError.invalidUrl
+        }
+        let body: [String: Any] = ["name": name, "offset": offset]
+        let bodyData = try JSONSerialization.data(withJSONObject: body)
+        let _: Void = try await performAuthenticatedRequest(
+            buildingRequest: { token in
+                var request = URLRequest(url: url)
+                request.httpMethod = "PUT"
+                request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+                request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+                request.httpBody = bodyData
+                return request
+            },
+            parseResponse: { _, _ in () }
+        )
+    }
+    
+    private func buildConfigurationRequestBody(_ source: ConfigurationBodyConvertible) -> [String: Any] {
         func connectedDeviceDto(_ device: ConnectedDevice) -> [String: Any] {
             ["type": device.type, "pinNr": device.pinNr, "hwAddress": device.hwAddress]
         }
         var body: [String: Any] = [
-            "type": configuration.type,
-            "deviceId": configuration.device.id,
-            "name": configuration.name,
-            "temperature": configuration.temperature,
-            "heatActuator": connectedDeviceDto(configuration.heatActuator),
-            "tempSensor": connectedDeviceDto(configuration.tempSensor),
-            "heatingPeriod": configuration.heatingPeriod,
-            "p": configuration.p,
-            "i": configuration.i,
-            "d": configuration.d,
-            "archived": configuration.archived,
+            "type": source.type,
+            "deviceId": source.deviceId,
+            "name": source.name,
+            "temperature": source.temperature,
+            "heatActuator": connectedDeviceDto(source.heatActuator),
+            "tempSensor": connectedDeviceDto(source.tempSensor),
+            "heatingPeriod": source.heatingPeriod,
+            "p": source.p,
+            "i": source.i,
+            "d": source.d,
+            "archived": source.archived,
         ]
-        if configuration.type == 1 {
-            if let pump1 = configuration.pump1Actuator { body["pump1Actuator"] = connectedDeviceDto(pump1) }
-            if let pump2 = configuration.pump2Actuator { body["pump2Actuator"] = connectedDeviceDto(pump2) }
-            if let v = configuration.heaterPwm { body["heaterPwm"] = v }
-            if let v = configuration.pump1Pwm { body["pump1Pwm"] = v }
-            if let v = configuration.pump2Pwm { body["pump2Pwm"] = v }
-        } else if configuration.type == 2 {
-            if let cool = configuration.coolActuator { body["coolActuator"] = connectedDeviceDto(cool) }
-            if let fan = configuration.fanActuator { body["fanActuator"] = connectedDeviceDto(fan) }
-            if let v = configuration.fanPwm { body["fanPwm"] = v }
-            body["coolingPeriod"] = configuration.coolingPeriod ?? 0
-            body["coolingOnTime"] = configuration.coolingOnTime ?? 0
-            body["coolingOffTime"] = configuration.coolingOffTime ?? 0
+        if source.type == 1 {
+            if let pump1 = source.pump1Actuator { body["pump1Actuator"] = connectedDeviceDto(pump1) }
+            if let pump2 = source.pump2Actuator { body["pump2Actuator"] = connectedDeviceDto(pump2) }
+            if let v = source.heaterPwm { body["heaterPwm"] = v }
+            if let v = source.pump1Pwm { body["pump1Pwm"] = v }
+            if let v = source.pump2Pwm { body["pump2Pwm"] = v }
+        } else if source.type == 2 {
+            if let cool = source.coolActuator { body["coolActuator"] = connectedDeviceDto(cool) }
+            if let fan = source.fanActuator { body["fanActuator"] = connectedDeviceDto(fan) }
+            if let v = source.fanPwm { body["fanPwm"] = v }
+            body["coolingPeriod"] = source.coolingPeriod ?? 0
+            body["coolingOnTime"] = source.coolingOnTime ?? 0
+            body["coolingOffTime"] = source.coolingOffTime ?? 0
         }
         return body
     }
     
-    private static let deviceDateDecoder: JSONDecoder = {
+    private static let responseJSONDecoder: JSONDecoder = {
         let formatter = DateFormatter()
         formatter.calendar = Calendar(identifier: .iso8601)
         formatter.locale = Locale(identifier: "en_US_POSIX")
@@ -195,7 +247,7 @@ class APIService {
             },
             parseResponse: { data, _ in
                 do {
-                    return try Self.deviceDateDecoder.decode([Device].self, from: data)
+                    return try Self.responseJSONDecoder.decode([Device].self, from: data)
                 } catch {
                     throw APIError.decodingError
                 }
@@ -220,28 +272,6 @@ class APIService {
                 request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
                 request.setValue("application/json", forHTTPHeaderField: "Content-Type")
                 request.httpBody = try? JSONEncoder().encode(body)
-                return request
-            },
-            parseResponse: { _, _ in () }
-        )
-    }
-
-    /// PUT /devices/{id}/{hwAddress}/{pinNr} with body { name, offset }. Updates connected device name and offset.
-    func updateConnectedDevice(deviceId: String, pinNr: Int, hwAddress: String, name: String, offset: Double) async throws {
-        let encodedHw = hwAddress.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? hwAddress
-        let path = "\(preferences.correctedApiUrl())/devices/\(deviceId)/\(encodedHw)/\(pinNr)"
-        guard let url = URL(string: path) else {
-            throw APIError.invalidUrl
-        }
-        let body: [String: Any] = ["name": name, "offset": offset]
-        let bodyData = try JSONSerialization.data(withJSONObject: body)
-        let _: Void = try await performAuthenticatedRequest(
-            buildingRequest: { token in
-                var request = URLRequest(url: url)
-                request.httpMethod = "PUT"
-                request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-                request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-                request.httpBody = bodyData
                 return request
             },
             parseResponse: { _, _ in () }

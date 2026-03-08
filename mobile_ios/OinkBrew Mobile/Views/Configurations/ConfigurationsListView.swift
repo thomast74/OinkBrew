@@ -2,10 +2,12 @@ import SwiftUI
 
 struct ConfigurationsListView: View {
     @EnvironmentObject var cm: ConfigurationsViewModel
+    @EnvironmentObject var devicesViewModel: DevicesViewModel
     @Binding var presentSideMenu: Bool
 
     @State private var selectedConfiguration: BeerConfiguration?
     @State private var searchText = ""
+    @State private var showAddConfiguration = false
 
     private var sortedConfigurations: [BeerConfiguration] {
         cm.configurations.sorted { $0.updatedAt > $1.updatedAt }
@@ -64,6 +66,13 @@ struct ConfigurationsListView: View {
                     }
                 }.toolbar {
                     Button {
+                        showAddConfiguration = true
+                    } label: {
+                        Image(systemName: "plus.circle.fill")
+                            .resizable()
+                            .frame(width: 28, height: 28)
+                    }
+                    Button {
                         Task {
                             await cm.toggleArchiveFilter()
                         }
@@ -72,6 +81,18 @@ struct ConfigurationsListView: View {
                             .resizable()
                             .frame(width: 28, height: 28)
                     }
+                }
+                .sheet(isPresented: $showAddConfiguration) {
+                    AddConfigurationView(
+                        onDismiss: { showAddConfiguration = false },
+                        onCreated: {
+                            Task { await cm.loadConfigurations() }
+                            showAddConfiguration = false
+                        }
+                    )
+                    .environmentObject(devicesViewModel)
+                    .environmentObject(cm)
+                    .interactiveDismissDisabled()
                 }
             } detail: {
                 if selectedConfiguration != nil {
@@ -105,7 +126,9 @@ struct ConfigurationsListView: View {
     @Previewable @State var mockPresentSideMenu = false
 
     let mockCM = ConfigurationsViewModel(withMockData: true)
-    
+    let mockDM = DevicesViewModel()
+
     ConfigurationsListView(presentSideMenu: $mockPresentSideMenu)
         .environmentObject(mockCM)
+        .environmentObject(mockDM)
 }
