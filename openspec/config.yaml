@@ -1,0 +1,25 @@
+schema: spec-driven
+
+context: |
+  OinkBrew is a brewing/fermentation control system with three components:
+  - Backend (backend/): NestJS 11.x, TypeScript 5.9, MongoDB 7.0 (Mongoose), JWT auth, Bull queues, Particle Cloud integration
+  - Mobile iOS (mobile_ios/): Swift 5.0, SwiftUI, MVVM, iOS 15.0+, CocoaPods (migrating to SPM)
+  - Firmware (firmware/): C++ on Particle IoT (Photon/Electron), PID controllers, OneWire sensors
+
+  Architecture: iOS app ↔ REST/SSE ↔ NestJS backend ↔ Particle Cloud ↔ Firmware devices
+  Database: MongoDB replica set (3 nodes) with Mongoose ODM
+  Auth: JWT access/refresh tokens, OTP 2FA, Argon2 hashing
+  Domain: Devices (Particle hardware with sensors/actuators), Configurations (Brew/Fridge control profiles), Sensor Data (time-series)
+
+  Conventions:
+  - Commits: [SCOPE]: Description (BACKEND, MOBILE, FIRMWARE, CHORE)
+  - Backend: feature-based NestJS modules, DTOs with class-validator, Prettier (single quotes, trailing commas)
+  - iOS: MVVM with @MainActor ViewModels, async/await, separate Views/ViewModels/Models/Services
+  - Import order (backend): @nestjs → rxjs → mongoose → third-party → relative
+
+  See openspec/project.md for full project context.
+
+rules:
+  tasks:
+    - Group tasks by component (Backend, Mobile iOS, Firmware) when a change spans multiple components
+    - Reference specific files and modules in task descriptions
