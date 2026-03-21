@@ -57,6 +57,14 @@ export function getConfigurationModel(
   return confModel;
 }
 
+export function getBrewConfigurationModel(): Model<BrewConfiguration> {
+  return mongoose.connection.model<BrewConfiguration>(BrewConfiguration.name);
+}
+
+export function getFridgeConfigurationModel(): Model<FridgeConfiguration> {
+  return mongoose.connection.model<FridgeConfiguration>(FridgeConfiguration.name);
+}
+
 export async function clearDatabase() {
   if (mongoose.connection.readyState === 0) {
     await connectDatabase();

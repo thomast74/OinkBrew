@@ -168,6 +168,7 @@ export class ParticleEventListener implements OnApplicationBootstrap, OnApplicat
         });
       }
 
+      configuration.markModified('sensorData')
       await configuration.save();
     });
   }

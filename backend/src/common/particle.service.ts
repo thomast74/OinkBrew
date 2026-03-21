@@ -173,6 +173,10 @@ export class ParticleService {
           }),
         ),
       ),
+      catchError((error) => {
+        this.logger.error(`Could not set config ${configuration.name}`, error);
+        return of('');
+      }),
       map(() => void 0),
     );
 

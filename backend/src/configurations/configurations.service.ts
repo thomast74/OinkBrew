@@ -16,11 +16,14 @@ import { Device, DeviceDocument } from '../devices/schemas';
 import { getErrorMessage } from '../helpers/error.converter';
 import { ConfigurationDto, ConnectedDeviceDto } from './dtos';
 import {
+  BrewConfiguration,
   Configuration,
   ConfigurationDocument,
   ConfigurationSensorData,
   EventSensorData,
+  FridgeConfiguration,
 } from './schemas';
+import { ConfigurationType } from './types';
 
 @Injectable()
 export class ConfigurationsService {
@@ -29,6 +32,8 @@ export class ConfigurationsService {
 
   constructor(
     @InjectModel(Configuration.name) private configurationModel: Model<Configuration>,
+    @InjectModel(BrewConfiguration.name) private brewConfigurationModel: Model<BrewConfiguration>,
+    @InjectModel(FridgeConfiguration.name) private fridgeConfigurationModel: Model<FridgeConfiguration>,
     @InjectModel(Device.name) private deviceModel: Model<Device>,
     private device: DevicesService,
     private particle: ParticleService,
@@ -108,7 +113,8 @@ export class ConfigurationsService {
 
   async saveDocument(configuration: Configuration): Promise<ConfigurationDocument> {
     try {
-      const configurationDoc = await this.configurationModel
+      const model = this.getModelForType(configuration.type);
+      const configurationDoc = await model
         .findOneAndUpdate({ id: configuration.id }, configuration, {
           new: true,
           upsert: true,
@@ -134,6 +140,7 @@ export class ConfigurationsService {
 
       return configurationDoc;
     } catch (error) {
+      this.logger.error(`Error saving configuration: ${JSON.stringify(error.message)}`);
       throw new InternalServerErrorException(getErrorMessage(error));
     }
   }
@@ -210,6 +217,17 @@ export class ConfigurationsService {
       });
   }
 
+  private getModelForType(type: ConfigurationType): Model<any> {
+    switch (type) {
+      case ConfigurationType.BREW:
+        return this.brewConfigurationModel;
+      case ConfigurationType.FRIDGE:
+        return this.fridgeConfigurationModel;
+      default:
+        return this.configurationModel;
+    }
+  }
+
   private async getNextId(): Promise<number> {
     const maxId = await this.configurationModel
       .findOne()
@@ -227,6 +245,6 @@ export class ConfigurationsService {
       return;
     }
 
-    await this.particle.sendConfiguration(configuration);
+    await this.particle.sendConfiguration(configuration.toObject());
   }
 }

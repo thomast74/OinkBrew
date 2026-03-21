@@ -13,6 +13,7 @@ import {
   FridgeConfiguration,
   FridgeConfigurationSchema,
 } from './schemas';
+import { ConfigurationType } from './types';
 
 const modelDefinition: ModelDefinition[] = [
   {
@@ -22,10 +23,12 @@ const modelDefinition: ModelDefinition[] = [
       {
         name: BrewConfiguration.name,
         schema: BrewConfigurationSchema,
+        value: String(ConfigurationType.BREW),
       },
       {
         name: FridgeConfiguration.name,
         schema: FridgeConfigurationSchema,
+        value: String(ConfigurationType.FRIDGE),
       },
     ],
   },

@@ -12,8 +12,10 @@ import {
   closeDatabase,
   connectDatabase,
   disconnectDatabase,
+  getBrewConfigurationModel,
   getConfigurationModel,
   getDeviceModel,
+  getFridgeConfigurationModel,
 } from '../../test/db-helper.fn';
 import { sleep } from '../../test/helper.fn';
 import { ParticleService } from '../common/particle.service';
@@ -27,7 +29,7 @@ import {
   mockDeviceOnlineNotUsed,
 } from '../devices/tests/devices.mock';
 import { ConfigurationsService } from './configurations.service';
-import { Configuration, EventSensorData } from './schemas';
+import { BrewConfiguration, Configuration, EventSensorData, FridgeConfiguration } from './schemas';
 import {
   mockBrewArchived,
   mockBrewNotArchived,
@@ -71,6 +73,14 @@ describe('ConfigurationsService', () => {
         {
           provide: getModelToken(Configuration.name),
           useValue: confModel,
+        },
+        {
+          provide: getModelToken(BrewConfiguration.name),
+          useValue: getBrewConfigurationModel(),
+        },
+        {
+          provide: getModelToken(FridgeConfiguration.name),
+          useValue: getFridgeConfigurationModel(),
         },
         {
           provide: getModelToken(Device.name),
