@@ -6,7 +6,10 @@ services:
     container_name: oinkbrew-api
     build: backend/.
     command: npm run start:dev
-    depends_on: [cache, mongo1, mongo2, mongo3]
+    restart: "on-failure"
+    depends_on: [cache, mongo1, mongo2, mongo3, mongoinit]
+    networks:
+      - mongo-cluster-network
     ports:
       - "3000:3000"
     environment:
@@ -16,7 +19,11 @@ services:
       JWT_ACCESS_TOKEN_EXPIRATION_TIME: "15"
       JWT_REFRESH_TOKEN_SECRET: "bfc23553-ab7a-4d01-b7d7-9602a00db09b"
       JWT_REFRESH_TOKEN_EXPIRATION_TIME: "7"
-      DATABASE_URL: "postgresql://postgres:123@localhost:5432/oinkbrew?schema=public"
+      DATABASE_URL: "mongodb://mongoroot:secretpwd@mongo1:27021,mongo2:27022,mongo3:27023/oinkbrew?authSource=admin&replicaSet=oinkbrewReplSet&retryWrites=true&w=majority"
+      REDIS_HOST: "cache"
+      REDIS_PWD: "eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81"
+      PARTICLE_CLIENT_ID: "oinkbrew-backend-8994"
+      PARTICLE_CLIENT_SECRET: "2815daf06b4e2192ebff9b0ef038514f050f6347"
     volumes:
       - ./backend/.:/opt/app
       - /opt/app/node_modules
@@ -135,6 +142,8 @@ services:
     image: redis:7.2.4-alpine
     container_name: oinkbrew-cache
     restart: always
+    networks:
+      - mongo-cluster-network
     ports:
       - "6379:6379"
     volumes:
