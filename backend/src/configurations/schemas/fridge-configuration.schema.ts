@@ -58,3 +58,10 @@ FridgeConfigurationSchema.methods.hasConnectedDevice = function (
 
   return false;
 };
+
+FridgeConfigurationSchema.pre('save', function () {
+  if (!this.createdAt) {
+    this.createdAt = new Date();
+  }
+  this.updatedAt = new Date();
+});

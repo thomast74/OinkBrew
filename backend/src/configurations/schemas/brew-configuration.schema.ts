@@ -55,3 +55,10 @@ BrewConfigurationSchema.methods.hasConnectedDevice = function (
 
   return false;
 };
+
+BrewConfigurationSchema.pre('save', function () {
+  if (!this.createdAt) {
+    this.createdAt = new Date();
+  }
+  this.updatedAt = new Date();
+});

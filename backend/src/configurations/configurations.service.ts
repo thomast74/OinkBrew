@@ -45,6 +45,7 @@ export class ConfigurationsService {
         .find({
           archived,
         })
+        .populate({ path: 'device' })
         .exec();
     } catch (error) {
       return [];
@@ -237,7 +238,7 @@ export class ConfigurationsService {
       .select({ id: 1 })
       .exec();
 
-    return maxId === null ? 1 : maxId.id;
+    return maxId === null ? 1 : maxId.id + 1;
   }
 
   private async sendConfigurationToParticle(configuration: ConfigurationDocument): Promise<void> {
