@@ -81,7 +81,7 @@ ConfigurationSchema.methods.hasConnectedDevice = function (
 };
 
 ConfigurationSchema.pre('save', function () {
-  if (this.isNew) {
+  if (!this.createdAt) {
     this.createdAt = new Date();
   }
   this.updatedAt = new Date();

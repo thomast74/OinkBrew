@@ -5,7 +5,7 @@ import { Subscription } from 'rxjs';
 
 import { ParticleService } from '../common/particle.service';
 import { ConfigurationsService } from '../configurations/configurations.service';
-import { Configuration } from '../configurations/schemas';
+import { Configuration, ConfigurationDocument } from '../configurations/schemas';
 import { DevicesService } from '../devices/devices.service';
 import { ConnectedDeviceHelper } from '../devices/helpers';
 import { ConnectedDevice, Device } from '../devices/schemas';
@@ -67,7 +67,7 @@ export class ParticleEventListener implements OnApplicationBootstrap, OnApplicat
   private eventProcessor(eventData: EventData) {
     switch (eventData.name) {
       case 'oinkbrew/start':
-        this.oinkbrewStart(eventData);
+        setTimeout(() => this.oinkbrewStart(eventData), 5000);
         break;
       case 'oinkbrew/devices/new':
         this.oinkbrewNewConnectedDevice(eventData);
@@ -90,8 +90,14 @@ export class ParticleEventListener implements OnApplicationBootstrap, OnApplicat
 
       await device.populate('configurations');
 
+
       for (const configuration of device.configurations) {
-        this.sendConfiguration(deviceId, configuration);
+        const configurationDoc = configuration as ConfigurationDocument;
+        const confToSend = configurationDoc.toObject();
+
+        confToSend.device = { id: deviceId } as any;
+
+        this.sendConfiguration(deviceId, confToSend);
       }
     } catch (error) {
       this.logger.error(error);

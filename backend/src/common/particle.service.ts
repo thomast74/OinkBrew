@@ -155,24 +155,27 @@ export class ParticleService {
   public sendConfiguration(configuration: Configuration): Promise<void> {
     const confToSend = { ...configuration } as any;
     delete confToSend.device;
+    delete confToSend.sensorData;
 
     const data = {
       command: 2,
       data: confToSend,
     };
+    const argument = JSON.stringify(data);
 
     const $source = this.tokenInfo.pipe(
-      tap(() => this.logger.debug('callFunction: UPDATE_CONFIGURATION')),
+      tap(() => this.logger.log(`callFunction: UPDATE_CONFIGURATION -> ${configuration.name} / ${configuration.device.id}`, argument)),
       switchMap((tokens: any) =>
         from(
           this.particle.callFunction({
             deviceId: configuration.device.id,
             name: 'setConfig',
-            argument: JSON.stringify(data),
+            argument,
             auth: tokens.access_token,
           }),
         ),
       ),
+      tap(() => this.logger.log(`callFunction: UPDATE_CONFIGURATION -> ${configuration.name} / ${configuration.device.id} successful`)),
       catchError((error) => {
         this.logger.error(`Could not set config ${configuration.name}`, error);
         return of('');
