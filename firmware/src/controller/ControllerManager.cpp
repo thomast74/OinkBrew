@@ -3,6 +3,7 @@
 #include "ControllerConfiguration.h"
 #include "BrewController.h"
 #include "FridgeController.h"
+#include "../utils/Helper.h"
 
 ControllerManager::ControllerManager() {}
 
@@ -15,7 +16,7 @@ void ControllerManager::setupVariable()
 void ControllerManager::process()
 {
     for (short i = 0; i < registered_controllers; i++)
-    {
+    {      
         active_controllers[i]->process();
     }
 }
@@ -38,6 +39,7 @@ bool ControllerManager::changeController(ControllerConfiguration configuration)
         if (active_controllers[index]->getConfig().type == configuration.type)
         {
             active_controllers[index]->setConfig(configuration);
+            Particle.publish("oinkbrew/controller/updated", String(configuration.id));
         }
         else
         {
@@ -80,6 +82,8 @@ void ControllerManager::createController(ControllerConfiguration configuration, 
     {
         registered_controllers++;
     }
+
+    Particle.publish("oinkbrew/controller/created", String(configuration.id) + " -> " + String(registered_controllers));
 }
 
 bool ControllerManager::removeController(int id)
@@ -96,6 +100,8 @@ bool ControllerManager::removeController(int id)
             delete active_controllers[i];
 
             removed = true;
+
+            Particle.publish("oinkbrew/controller/removed", String(id));
         }
         else
         {
@@ -112,6 +118,7 @@ bool ControllerManager::removeController(int id)
     else
     {
         Log.info("Configuration with id %d not found", id);
+        Particle.publish("oinkbrew/controller/not_found", String(id));
     }
 
     return removed;
@@ -133,6 +140,7 @@ int ControllerManager::findController(int id)
 String ControllerManager::getConfigurationsJson()
 {
     char buf[512];
+    char hwAddressBuf[17];
     JSONBufferWriter writer(buf, sizeof(buf));
 
     writer.beginArray();
@@ -148,13 +156,31 @@ String ControllerManager::getConfigurationsJson()
         writer.name("p").value(active_controllers[i]->getConfig().p);
         writer.name("i").value(active_controllers[i]->getConfig().i);
         writer.name("d").value(active_controllers[i]->getConfig().d);
-        writer.name("heatActuator").beginObject().name("pin_nr").value(active_controllers[i]->getConfig().heatActuator.pin_nr).name("hw_address").value(active_controllers[i]->getConfig().heatActuator.hw_address).endObject();
-        writer.name("tempSensor").beginObject().name("pin_nr").value(active_controllers[i]->getConfig().tempSensor.pin_nr).name("hw_address").value(active_controllers[i]->getConfig().tempSensor.hw_address).endObject();
+
+        Helper::getBytes(active_controllers[i]->getConfig().heatActuator.hw_address, 8, hwAddressBuf);
+        writer.name("heatActuator").beginObject()
+            .name("pin_nr").value(active_controllers[i]->getConfig().heatActuator.pin_nr)
+            .name("hw_address").value(hwAddressBuf)
+            .endObject();
+
+        Helper::getBytes(active_controllers[i]->getConfig().tempSensor.hw_address, 8, hwAddressBuf);
+        writer.name("tempSensor").beginObject()
+            .name("pin_nr").value(active_controllers[i]->getConfig().tempSensor.pin_nr)
+            .name("hw_address").value(hwAddressBuf)
+            .endObject();
 
         if (active_controllers[i]->getConfig().type == ControllerType::TYPE_BREW)
         {
-            writer.name("pump1Actuator").beginObject().name("pin_nr").value(active_controllers[i]->getConfig().pump1Actuator.pin_nr).name("hw_address").value(active_controllers[i]->getConfig().pump1Actuator.hw_address).endObject();
-            writer.name("pump2Actuator").beginObject().name("pin_nr").value(active_controllers[i]->getConfig().pump2Actuator.pin_nr).name("hw_address").value(active_controllers[i]->getConfig().pump2Actuator.hw_address).endObject();
+            Helper::getBytes(active_controllers[i]->getConfig().pump1Actuator.hw_address, 8, hwAddressBuf);
+            writer.name("pump1Actuator").beginObject()
+                .name("pin_nr").value(active_controllers[i]->getConfig().pump1Actuator.pin_nr)
+                .name("hw_address").value(hwAddressBuf)
+                .endObject();
+            Helper::getBytes(active_controllers[i]->getConfig().pump2Actuator.hw_address, 8, hwAddressBuf);
+            writer.name("pump2Actuator").beginObject()
+                .name("pin_nr").value(active_controllers[i]->getConfig().pump2Actuator.pin_nr)
+                .name("hw_address").value(hwAddressBuf)
+                .endObject();
             writer.name("heaterPwm").value(active_controllers[i]->getConfig().heaterPwm);
             writer.name("pump1Pwm").value(active_controllers[i]->getConfig().pump1Pwm);
             writer.name("pump2Pwm").value(active_controllers[i]->getConfig().pump2Pwm);
@@ -162,8 +188,16 @@ String ControllerManager::getConfigurationsJson()
 
         if (active_controllers[i]->getConfig().type == ControllerType::TYPE_FRIDGE)
         {
-            writer.name("coolActuator").beginObject().name("pin_nr").value(active_controllers[i]->getConfig().coolActuator.pin_nr).name("hw_address").value(active_controllers[i]->getConfig().coolActuator.hw_address).endObject();
-            writer.name("fanActuator").beginObject().name("pin_nr").value(active_controllers[i]->getConfig().fanActuator.pin_nr).name("hw_address").value(active_controllers[i]->getConfig().fanActuator.hw_address).endObject();
+            Helper::getBytes(active_controllers[i]->getConfig().coolActuator.hw_address, 8, hwAddressBuf);
+            writer.name("coolActuator").beginObject()
+                .name("pin_nr").value(active_controllers[i]->getConfig().coolActuator.pin_nr)
+                .name("hw_address").value(buf)
+                .endObject();
+            Helper::getBytes(active_controllers[i]->getConfig().fanActuator.hw_address, 8, hwAddressBuf);
+            writer.name("fanActuator").beginObject()
+                .name("pin_nr").value(active_controllers[i]->getConfig().fanActuator.pin_nr)
+                .name("hw_address").value(buf)
+                .endObject();
             writer.name("fanPwm").value(active_controllers[i]->getConfig().fanPwm);
             writer.name("coolingPeriod").value(active_controllers[i]->getConfig().coolingPeriod);
             writer.name("coolingOnTime").value(active_controllers[i]->getConfig().coolingOnTime);

@@ -8,8 +8,8 @@
 
 SerialLogHandler logHandler;
 Buzzer buzzer;
-DeviceManager deviceManager = DeviceManager::getInstance();
-ControllerManager controllerManager = ControllerManager::getInstance();
+DeviceManager& deviceManager = DeviceManager::getInstance();
+ControllerManager& controllerManager = ControllerManager::getInstance();
 
 unsigned long lastRun = -1000;
 unsigned long lastLog = 0;
@@ -26,7 +26,7 @@ void setup()
   deviceManager.init();
   deviceManager.findNewDevices();
 
-  Particle.function("setConfig", receiveConfiguration);
+  Particle.function("setConfig", receiveCommand);
 
   delay(1000);
   bool published = Particle.publish("oinkbrew/start", "true");
@@ -73,9 +73,9 @@ void detectNewDevices(unsigned long time)
   }
 }
 
-int receiveConfiguration(String funtionData)
+int receiveCommand(String funtionData)
 {
-  Log.info("New configuration received");
+  Log.info("New command received");
 
   ReceivedConfig config = ConfigManager::parse(funtionData);
   processCommand(config);

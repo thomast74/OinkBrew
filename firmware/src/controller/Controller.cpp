@@ -1,6 +1,8 @@
+#include "Particle.h"
 #include "Controller.h"
 #include "../devices/DeviceManager.h"
 #include "../devices/DallasTemperatureSensor.h"
+#include "../utils/Helper.h"
 
 Controller::Controller()
 {
@@ -63,11 +65,13 @@ ControllerConfiguration &Controller::getConfig()
 
 void Controller::process()
 {
-    if (pid->GetMode() == PID_MANUAL)
+    if (pid->GetMode() == PID_MANUAL) {
         return;
-
+    }
+    
     Device tempSensorDevice;
     DeviceManager::getInstance().getDevice(this->tempSensor.pin_nr, this->tempSensor.hw_address, tempSensorDevice);
+
     if (tempSensorDevice.value > DEVICE_DISCONNECTED_C)
     {
         this->currentTemperature = tempSensorDevice.value;
