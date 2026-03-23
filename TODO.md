@@ -38,13 +38,13 @@
 | X)   | Make configuration detail fragment                | Selected configuration from list is presented with general information                                      |
 |      | Add option for advanced configurations parameters | Each configuration has default paramters which should be hidden but editable if needed                      |
 | X)   | Add list search and filter                        | Configuration list needs to filters by archive/non-archived and searchable                                  |
-| ->   | Make configuration detail editable                | Configuration details need to be editable for at least base information                                     |
+| X)   | Make configuration detail editable                | Configuration details need to be editable for at least base information                                     |
 | X)   | Archive/un-archive configuration                  | Add button to archive a configuration                                                                       |
 | X)   | New configuration                                 | Add button to create a new configuration                                                                    |
 |      | Create chart screen                               | Make screen and char sensor data                                                                            |
-|      | Add fragment for details                          | Add fragment to show sensor configuration and latest values                                                 |
+|      | Add fragment for details                          | Add fragment on chart view to show sensor configuration and latest values                                   |
 |      | Listen to SSE                                     | If active start listening to sensor data via SSE and chart new values                                       |
-|      | Sensor & Actuator data update                     | Allow the update of sensor & actuator with backend update                                                   |
+| X)   | Sensor & Actuator data update                     | Allow the update of sensor & actuator with backend update                                                   |
 | X)   | On Device Detail Screen show conneted device      | Each device has connected devices, these should be shown in a table form                                    |
 | X)   | Create Settings screen                            | Create screen to allow default parameter for each new configuration                                         |
 | X)   | Save login access tokens until 401 error          | To avoid re-login all the time, save access tokens and return to login screen when 401 received             |

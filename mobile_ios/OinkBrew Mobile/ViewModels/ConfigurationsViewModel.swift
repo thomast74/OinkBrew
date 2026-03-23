@@ -8,6 +8,11 @@ class ConfigurationsViewModel: ObservableObject {
     @Published var hasError = false
     /// When false, show active only (default). When true, show archived only.
     @Published var showArchivedOnly: Bool = false
+
+    // MARK: - Navigation guard state (set by ConfigurationSettingsView, read by ConfigurationsListView)
+    @Published var detailHasUnsavedChanges = false
+    /// Holds the updated configuration built from current edits, used by the navigation guard Save action.
+    var pendingSaveConfiguration: BeerConfiguration?
     
     private var withMockData: Bool = false
     
@@ -55,6 +60,23 @@ class ConfigurationsViewModel: ObservableObject {
                 unarchived.archived = false
                 try await APIService.shared.updateConfiguration(unarchived)
             }
+            await loadConfigurations()
+        } catch {
+            hasError = true
+            errorMessage = (error as? APIError)?.localizedDescription ?? "Request failed"
+        }
+    }
+
+    /// Updates an existing configuration via API, then refreshes the list.
+    func updateConfiguration(_ configuration: BeerConfiguration) async {
+        if withMockData {
+            await loadConfigurations()
+            return
+        }
+        do {
+            try await APIService.shared.updateConfiguration(configuration)
+            hasError = false
+            errorMessage = ""
             await loadConfigurations()
         } catch {
             hasError = true

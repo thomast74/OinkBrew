@@ -9,6 +9,16 @@ struct ConfigurationsListView: View {
     @State private var searchText = ""
     @State private var showAddConfiguration = false
 
+    // Navigation guard state
+    private enum PendingAction {
+        case selectConfiguration(BeerConfiguration)
+        case toggleArchive
+    }
+    @State private var pendingAction: PendingAction?
+    @State private var showNavigationGuard = false
+    @State private var showSaveError = false
+    @State private var saveErrorMessage = ""
+
     private var sortedConfigurations: [BeerConfiguration] {
         cm.configurations.sorted { $0.updatedAt > $1.updatedAt }
     }
@@ -73,8 +83,13 @@ struct ConfigurationsListView: View {
                             .frame(width: 28, height: 28)
                     }
                     Button {
-                        Task {
-                            await cm.toggleArchiveFilter()
+                        if cm.detailHasUnsavedChanges {
+                            pendingAction = .toggleArchive
+                            showNavigationGuard = true
+                        } else {
+                            Task {
+                                await cm.toggleArchiveFilter()
+                            }
                         }
                     } label: {
                         Image(cm.showArchivedOnly ? "archive" : "archiveCrossed")
@@ -118,6 +133,62 @@ struct ConfigurationsListView: View {
                     selectedConfiguration = first
                 }
             }
+            .onChange(of: selectedConfiguration) { oldValue, newValue in
+                // Skip if this change is caused by the guard reverting or completing navigation
+                if pendingAction != nil { return }
+
+                if cm.detailHasUnsavedChanges, let old = oldValue, let new = newValue, new != old {
+                    pendingAction = .selectConfiguration(new)
+                    selectedConfiguration = old
+                    showNavigationGuard = true
+                }
+            }
+            .alert("Unsaved Changes", isPresented: $showNavigationGuard) {
+                Button("Save") {
+                    Task {
+                        if let config = cm.pendingSaveConfiguration {
+                            await cm.updateConfiguration(config)
+                            if !cm.hasError {
+                                cm.detailHasUnsavedChanges = false
+                                cm.pendingSaveConfiguration = nil
+                                completePendingAction()
+                            } else {
+                                saveErrorMessage = cm.errorMessage
+                                showSaveError = true
+                                pendingAction = nil
+                            }
+                        }
+                    }
+                }
+                Button("Discard", role: .destructive) {
+                    cm.detailHasUnsavedChanges = false
+                    cm.pendingSaveConfiguration = nil
+                    completePendingAction()
+                }
+                Button("Cancel", role: .cancel) {
+                    pendingAction = nil
+                }
+            } message: {
+                Text("You have unsaved changes. What would you like to do?")
+            }
+            .alert("Save Error", isPresented: $showSaveError) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(saveErrorMessage)
+            }
+        }
+    }
+
+    private func completePendingAction() {
+        let action = pendingAction
+        pendingAction = nil
+        switch action {
+        case .selectConfiguration(let config):
+            selectedConfiguration = config
+        case .toggleArchive:
+            Task { await cm.toggleArchiveFilter() }
+        case .none:
+            break
         }
     }
 }
@@ -127,7 +198,7 @@ struct ConfigurationsListView: View {
 
     let mockCM = ConfigurationsViewModel(withMockData: true)
     let mockDM = DevicesViewModel()
-
+    
     ConfigurationsListView(presentSideMenu: $mockPresentSideMenu)
         .environmentObject(mockCM)
         .environmentObject(mockDM)

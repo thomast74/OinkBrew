@@ -277,9 +277,9 @@ struct AddConfigurationView: View {
                     .padding(.trailing, 16)
             }
                      
-            actuatorPicker(title: "Heat Actuator", selection: $heatActuator, options: optionsForHeatActuator, labelWidth: labelWidth)
-            tempSensorPicker(labelWidth: labelWidth)
-            sliderField(label: "Set Temperature", labelShort: "C", value: $temperature, labelWidth: labelWidth, min: 0, max: 100, step: 0.5)
+            ActuatorPickerField(title: "Heat Actuator", selection: $heatActuator, options: optionsForHeatActuator, labelWidth: labelWidth)
+            TempSensorPickerField(selection: $tempSensor, sensors: tempSensors, labelWidth: labelWidth)
+            SliderField(label: "Set Temperature", labelShort: "C", value: $temperature, labelWidth: labelWidth, min: 0, max: 100, step: 0.5)
             
             if configurationType == .Brew {
                 brewFields(labelWidth: labelWidth)
@@ -325,105 +325,21 @@ struct AddConfigurationView: View {
 
     @ViewBuilder
     private func brewFields(labelWidth: CGFloat) -> some View {
-        sliderField(label: "Heater PWM", labelShort: "%", value: $heaterPwm, labelWidth: labelWidth, min: 1, max: 100, step: 1)
-        actuatorPicker(title: "Pump 1 Actuator", selection: $pump1Actuator, options: optionsForPump1, labelWidth: labelWidth)
-        actuatorPicker(title: "Pump 2 Actuator", selection: $pump2Actuator, options: optionsForPump2, labelWidth: labelWidth)
-        sliderField(label: "Heating Period", labelShort: "ms", value: $heatingPeriod, labelWidth: labelWidth, min: 1000, max: 10000, step: 100)
+        SliderField(label: "Heater PWM", labelShort: "%", value: $heaterPwm, labelWidth: labelWidth, min: 1, max: 100, step: 1)
+        ActuatorPickerField(title: "Pump 1 Actuator", selection: $pump1Actuator, options: optionsForPump1, labelWidth: labelWidth)
+        ActuatorPickerField(title: "Pump 2 Actuator", selection: $pump2Actuator, options: optionsForPump2, labelWidth: labelWidth)
+        SliderField(label: "Heating Period", labelShort: "ms", value: $heatingPeriod, labelWidth: labelWidth, min: 1000, max: 10000, step: 100)
     }
 
     @ViewBuilder
     private func fermentationFields(labelWidth: CGFloat) -> some View {
-        actuatorPicker(title: "Cool Actuator", selection: $coolActuator, options: optionsForCoolActuator, labelWidth: labelWidth)
-        actuatorPicker(title: "Fan Actuator", selection: $fanActuator, options: optionsForFanActuator, labelWidth: labelWidth)
-        sliderField(label: "Heating Period", labelShort: "ms", value: $heatingPeriod, labelWidth: labelWidth, min: 1000, max: 10000, step: 100)
-        sliderField(label: "Cooling Period", labelShort: "ms", value: $coolingPeriod, labelWidth: labelWidth, min: 1000, max: 999999, step: 1000)
-        sliderField(label: "Cooling On Time", labelShort: "ms", value: $coolingOnTime, labelWidth: labelWidth, min: 1000, max: 999999, step: 1000)
-        sliderField(label: "Cooling Off Time", labelShort: "ms", value: $coolingOffTime, labelWidth: labelWidth, min: 1000, max: 999999, step: 1000)
-        sliderField(label: "Fan PWM", labelShort: "%", value: $fanPwm, labelWidth: labelWidth, min: 1, max: 100, step: 1)
-    }
-    
-    private func tempSensorPicker(labelWidth: CGFloat) -> some View {
-        HStack {
-            Text("Temp Sensor")
-                .frame(width: labelWidth, alignment: .leading)
-            Spacer()
-            Picker("Temp Sensor", selection: $tempSensor) {
-                Text("Temp Sensor").tag(nil as ConnectedDevice?)
-                ForEach(tempSensors, id: \.id) { sensor in
-                    Text(sensor.name ?? sensor.hwAddress)
-                        .tag(sensor as ConnectedDevice?)
-                }
-            }
-            .pickerStyle(.menu)
-        }
-    }
-
-    private func sliderField(label: String, labelShort: String, value: Binding<Int>, labelWidth: CGFloat, min: Int, max: Int, step: Int) -> some View {
-        sliderFieldImpl(label: label, labelShort: labelShort, value: Binding(
-            get: { Double(value.wrappedValue) },
-            set: { value.wrappedValue = Int($0) }
-        ), labelWidth: labelWidth, min: Double(min), max: Double(max), step: Double(step)) {
-            Text("\(value.wrappedValue) \(labelShort)")
-        }
-    }
-
-    private func sliderField(label: String, labelShort: String, value: Binding<Double>, labelWidth: CGFloat, min: Double, max: Double, step: Double) -> some View {
-        sliderFieldImpl(label: label, labelShort: labelShort, value: value, labelWidth: labelWidth, min: min, max: max, step: step) {
-            Text(String(format: "%.1f %@", value.wrappedValue, labelShort))
-        }
-    }
-
-    private func sliderFieldImpl<Label: View>(
-        label: String,
-        labelShort: String,
-        value: Binding<Double>,
-        labelWidth: CGFloat,
-        min: Double,
-        max: Double,
-        step: Double,
-        @ViewBuilder valueLabel: () -> Label
-    ) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack {
-                Text(label)
-                    .frame(width: labelWidth, alignment: .leading)
-                    .font(.body)
-                Spacer()
-                Slider(
-                    value: value,
-                    in: min ... max,
-                    step: step
-                )
-                .frame(width: 250, alignment: .trailing)
-                valueLabel()
-                    .font(.body)
-                    .foregroundColor(.secondary)
-                    .frame(minWidth: 96, alignment: .trailing)
-                    .padding(.trailing, 16)
-            }
-        }
-    }
-
-    private func actuatorPicker(
-        title: String,
-        selection: Binding<ConnectedDevice?>,
-        options: [ConnectedDevice],
-        labelWidth: CGFloat
-    ) -> some View {
-        HStack {
-            Text(title)
-                .frame(width: labelWidth, alignment: .leading)
-                .font(.body)
-            Spacer()
-            Picker(title, selection: selection) {
-                Text("Select").tag(nil as ConnectedDevice?)
-                ForEach(options, id: \.id) { device in
-                    Text(device.name ?? "Pin \(device.pinNr)")
-                        .tag(device as ConnectedDevice?)
-                }
-            }
-            .pickerStyle(.menu)
-        }
+        ActuatorPickerField(title: "Cool Actuator", selection: $coolActuator, options: optionsForCoolActuator, labelWidth: labelWidth)
+        ActuatorPickerField(title: "Fan Actuator", selection: $fanActuator, options: optionsForFanActuator, labelWidth: labelWidth)
+        SliderField(label: "Heating Period", labelShort: "ms", value: $heatingPeriod, labelWidth: labelWidth, min: 1000, max: 10000, step: 100)
+        SliderField(label: "Cooling Period", labelShort: "ms", value: $coolingPeriod, labelWidth: labelWidth, min: 1000, max: 999999, step: 1000)
+        SliderField(label: "Cooling On Time", labelShort: "ms", value: $coolingOnTime, labelWidth: labelWidth, min: 1000, max: 999999, step: 1000)
+        SliderField(label: "Cooling Off Time", labelShort: "ms", value: $coolingOffTime, labelWidth: labelWidth, min: 1000, max: 999999, step: 1000)
+        SliderField(label: "Fan PWM", labelShort: "%", value: $fanPwm, labelWidth: labelWidth, min: 1, max: 100, step: 1)
     }
 
     private func resetFormForType(_ type: BeerConfgurationType) {

@@ -28,6 +28,7 @@ struct ConfigurationDetailView: View {
             
             if selectedView == 0 {
                 ConfigurationSettingsView(configuration: self.configuration)
+                    .id(self.configuration.id)
                     .transition(.opacity)
             } else {
                 ConfigurationChartView(configuration: self.configuration)
@@ -35,23 +36,32 @@ struct ConfigurationDetailView: View {
             }
             Spacer()
         }
-        .navigationTitle(configuration.name)
         .background(colorScheme == .dark ? Color(UIColor.systemBackground) : Color(UIColor.systemGroupedBackground))
         .toolbar {
-            Button(configuration.archived ? "Unarchive" : "Archive") {
-                Task {
-                    isUpdatingArchive = true
-                    await cm.setArchived(configuration, archived: !configuration.archived)
-                    isUpdatingArchive = false
+            ToolbarItem(placement: .confirmationAction) {
+                Button(configuration.archived ? "Unarchive" : "Archive") {
+                    Task {
+                        isUpdatingArchive = true
+                        await cm.setArchived(configuration, archived: !configuration.archived)
+                        isUpdatingArchive = false
+                    }
                 }
+                .foregroundColor(.blue)
+                .disabled(isUpdatingArchive)
             }
-            .disabled(isUpdatingArchive)
         }
     }
 }
 
-#Preview {
+#Preview("Editable Brew") {
+    ConfigurationDetailView(configuration: beerConfigurations[0])
+        .environmentObject(ConfigurationsViewModel(withMockData: true))
+        .environmentObject(DevicesViewModel())
+}
+
+#Preview("Archived Read-Only") {
     ConfigurationDetailView(configuration: beerConfigurations[1])
         .environmentObject(ConfigurationsViewModel(withMockData: true))
+        .environmentObject(DevicesViewModel())
 }
 

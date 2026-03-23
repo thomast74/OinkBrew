@@ -1,5 +1,5 @@
 {
-  "originHash" : "b6b4c0445f13d85e0cb94bf754136a71b6a0b4364df15e8dd49d983e40fc6e03",
+  "originHash" : "cce8d164d0c21e334763d77ad6b54c858aff86af2422067c833fd93a11537724",
   "pins" : [
     {
       "identity" : "argon2swift",
@@ -8,6 +8,15 @@
       "state" : {
         "branch" : "main",
         "revision" : "53543623fefe68461b7eeea03d7f96677c2fd76d"
+      }
+    },
+    {
+      "identity" : "fakery",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/vadymmarkov/Fakery",
+      "state" : {
+        "revision" : "71cb3bf36a808534659d1248780c2bf3c4c4fc91",
+        "version" : "5.1.0"
       }
     },
     {
@@ -26,6 +35,33 @@
       "state" : {
         "branch" : "master",
         "revision" : "f57e61e19229e23c4445b85494dbf7c07de721cb"
+      }
+    },
+    {
+      "identity" : "swift-asn1",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-asn1.git",
+      "state" : {
+        "revision" : "9f542610331815e29cc3821d3b6f488db8715517",
+        "version" : "1.6.0"
+      }
+    },
+    {
+      "identity" : "swift-crypto",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-crypto.git",
+      "state" : {
+        "revision" : "95ba0316a9b733e92bb6b071255ff46263bbe7dc",
+        "version" : "3.15.1"
+      }
+    },
+    {
+      "identity" : "swiftotp",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/lachlanbell/SwiftOTP.git",
+      "state" : {
+        "revision" : "9660551ea3df153c3cbacfa34ac3abbec73a8b84",
+        "version" : "3.0.2"
       }
     }
   ],
