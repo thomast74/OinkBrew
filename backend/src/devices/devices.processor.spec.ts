@@ -7,6 +7,7 @@ import { ParticleService } from '../common/particle.service';
 import { DevicesProcessor } from './devices.processor';
 import { DevicesService } from './devices.service';
 import { Device } from './schemas';
+import { TestingLogger } from '../../test/helper.fn';
 
 describe('DevicesProcessor', () => {
   let processor: DevicesProcessor;
@@ -29,6 +30,7 @@ describe('DevicesProcessor', () => {
       .useValue(mockDevicesService)
       .overrideProvider(ParticleService)
       .useValue(mockParticleService)
+      .setLogger(new TestingLogger())
       .compile();
 
     processor = module.get<DevicesProcessor>(DevicesProcessor);

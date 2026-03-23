@@ -14,6 +14,7 @@ import {
 } from '@nestjs/common/constants';
 import { Test, TestingModule } from '@nestjs/testing';
 
+import { TestingLogger } from '../../test/helper.fn';
 import { IS_PUBLIC_KEY } from '../auth/decorators';
 import { ParticleService } from '../common/particle.service';
 import { DevicesEventListener } from './devices-event.listener';
@@ -52,6 +53,7 @@ describe('DevicesController', () => {
       .useValue(mockDevicesQueue)
       .overrideProvider(DevicesService)
       .useValue(mockDevicesService)
+      .setLogger(new TestingLogger())
       .compile();
   });
 

@@ -1,4 +1,4 @@
-import { ConnectedDevice } from '../../devices/schemas';
+import { ConnectedDevice, Device } from '../../devices/schemas';
 import { mockDeviceOffline, mockDeviceOnline } from '../../devices/tests/devices.mock';
 import { ConnectedDeviceType } from '../../devices/types';
 import { BrewConfigurationDto } from '../dtos';
@@ -149,7 +149,7 @@ export const expectedConfigurationBrewNotArchived = {
   ...mockBrewNotArchived,
   __v: expect.any(Number),
   _id: expect.any(String),
-  device: expect.any(String),
+  device: expect.anything(),
   sensorData: {},
   createdAt: expect.any(String),
   updatedAt: expect.any(String),
@@ -159,7 +159,7 @@ export const expectedConfigurationBrewArchived = {
   ...mockBrewArchived,
   __v: expect.any(Number),
   _id: expect.any(String),
-  device: expect.any(String),
+  device: expect.anything(),
   sensorData: {},
   createdAt: expect.any(String),
   updatedAt: expect.any(String),

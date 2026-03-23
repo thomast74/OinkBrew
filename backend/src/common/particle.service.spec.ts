@@ -7,6 +7,8 @@ import { Configuration } from '../configurations/schemas';
 import { mockBrewNotArchived } from '../configurations/tests/brew-configurations.mock';
 import { mockDeviceOnline } from '../devices/tests/devices.mock';
 import { ParticleService } from './particle.service';
+import { Logger } from '@nestjs/common';
+import { TestingLogger } from '../../test/helper.fn';
 
 describe('ParticleService', () => {
   let testModule: TestingModule;
@@ -29,7 +31,9 @@ describe('ParticleService', () => {
     ParticleMock.mockCallFunction.mockClear();
     testModule = await Test.createTestingModule({
       providers: [ParticleService],
-    }).compile();
+    })
+    .setLogger(new TestingLogger())
+    .compile();
   });
 
   describe('init', () => {
@@ -273,6 +277,9 @@ describe('ParticleService', () => {
       ParticleMock.mockCallFunction.mockResolvedValue({ body: '' });
       const testSubject = testModule.get<ParticleService>(ParticleService);
       const confToSend = { ...mockBrewNotArchived } as any;
+      const confExpected = { ...confToSend };
+      delete confExpected.sensorData;
+      delete confExpected.device;
 
       await testSubject.sendConfiguration(confToSend);
 
@@ -284,7 +291,7 @@ describe('ParticleService', () => {
       expect(ParticleMock.mockCallFunction).toHaveBeenCalledWith({
         deviceId: 'ccc',
         name: 'setConfig',
-        argument: JSON.stringify(data),
+        argument: JSON.stringify({ command: 2, data: confExpected }),
         auth: '123456',
       });
     });
@@ -329,6 +336,7 @@ describe('ParticleService', () => {
       ParticleMock.mockCallFunction.mockRejectedValue(
         new Error('bad api error'),
       );
+
       const testSubject = testModule.get<ParticleService>(ParticleService);
 
       await expect(

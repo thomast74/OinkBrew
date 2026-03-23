@@ -176,10 +176,6 @@ export class ParticleService {
         ),
       ),
       tap(() => this.logger.log(`callFunction: UPDATE_CONFIGURATION -> ${configuration.name} / ${configuration.device.id} successful`)),
-      catchError((error) => {
-        this.logger.error(`Could not set config ${configuration.name}`, error);
-        return of('');
-      }),
       map(() => void 0),
     );
 

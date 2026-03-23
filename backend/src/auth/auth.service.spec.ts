@@ -5,6 +5,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import { generate as otpGenerate } from 'otplib';
 
+import { TestingLogger } from '../../test/helper.fn';
 import { createUserFromAuthDto, userDto } from '../users/tests/users-helper.mock';
 import { UsersService } from '../users/users.service';
 import { AuthService } from './auth.service';
@@ -40,6 +41,7 @@ describe('AuthService', () => {
           };
         }
       })
+      .setLogger(new TestingLogger())
       .compile();
 
     service = module.get<AuthService>(AuthService);

@@ -93,6 +93,7 @@ export async function disconnectDatabase() {
   await mongoose.disconnect();
   if (mongod !== undefined) {
     await mongod.stop();
+    mongod = undefined;
   }
 }
 
@@ -103,7 +104,8 @@ export async function closeDatabase() {
 
   await mongoose.connection.dropDatabase();
   await mongoose.connection.close();
-  await mongod.stop();
+  await mongod?.stop();
+  mongod = undefined;
 }
 
 export async function connectDatabaseE2E() {

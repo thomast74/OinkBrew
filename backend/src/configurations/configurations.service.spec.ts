@@ -17,7 +17,7 @@ import {
   getDeviceModel,
   getFridgeConfigurationModel,
 } from '../../test/db-helper.fn';
-import { sleep } from '../../test/helper.fn';
+import { sleep, TestingLogger } from '../../test/helper.fn';
 import { ParticleService } from '../common/particle.service';
 import { DevicesService } from '../devices/devices.service';
 import { Device, DeviceDocument } from '../devices/schemas';
@@ -95,7 +95,9 @@ describe('ConfigurationsService', () => {
           useValue: mockParticleService,
         },
       ],
-    }).compile();
+    })
+    .setLogger(new TestingLogger())
+    .compile();
 
     service = app.get<ConfigurationsService>(ConfigurationsService);
   });
@@ -336,7 +338,7 @@ describe('ConfigurationsService', () => {
 
       const newConf = await service.save(mockDtoBrewGood);
 
-      expect(mockParticleService.sendConfiguration).toHaveBeenCalledWith(newConf);
+      expect(mockParticleService.sendConfiguration).toHaveBeenCalledWith(newConf.toObject({flattenMaps: true, flattenObjectIds: true, virtuals: true, versionKey: false}) as any);
     });
 
     it('should not send new configuration to Particle if device is offline', async () => {
@@ -471,7 +473,7 @@ describe('ConfigurationsService', () => {
 
       const newConf = await service.update(2, updateConfiguration);
 
-      expect(mockParticleService.sendConfiguration).toHaveBeenCalledWith(newConf);
+      expect(mockParticleService.sendConfiguration).toHaveBeenCalledWith(newConf.toObject({flattenMaps: true, flattenObjectIds: true, virtuals: true, versionKey: false}) as any);
     });
 
     it('should not send new configuration to Particle if device is offline', async () => {

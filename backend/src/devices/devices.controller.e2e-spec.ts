@@ -99,8 +99,8 @@ describe('DevicesController (e2e)', () => {
 
       expect(response.body).toBeArrayOfSize(4);
       expect(response.body).toIncludeAllMembers([
-        expectedDeviceDatabaseOffline,
         expectedDeviceDatabaseOnline,
+        expectedDeviceDatabaseOffline,
         expectedDevice1,
         expectedDevice2,
       ]);

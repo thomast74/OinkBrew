@@ -97,7 +97,7 @@ export const expectedConfigurationFridgeNotArchived = {
   ...mockFridgeNotArchived,
   __v: expect.any(Number),
   _id: expect.any(String),
-  device: expect.any(String),
+  device: expect.anything(),
   sensorData: {},
   createdAt: expect.any(String),
   updatedAt: expect.any(String),

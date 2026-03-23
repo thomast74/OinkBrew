@@ -26,6 +26,7 @@ import {
   newConnectedDevice,
 } from './tests/devices.mock';
 import { ConnectedDeviceType } from './types';
+import { TestingLogger } from '../../test/helper.fn';
 
 describe('DevicesService', () => {
   let service: DevicesService;
@@ -48,7 +49,9 @@ describe('DevicesService', () => {
         { provide: getModelToken(Device.name), useValue: deviceModel },
         { provide: ParticleService, useValue: mockParticleService },
       ],
-    }).compile();
+    })
+    .setLogger(new TestingLogger())
+    .compile();
 
     service = app.get<DevicesService>(DevicesService);
   });

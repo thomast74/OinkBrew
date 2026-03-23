@@ -15,6 +15,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { formatISO } from 'date-fns';
 import { Subject } from 'rxjs';
 
+import { TestingLogger } from '../../test/helper.fn';
 import { IS_PUBLIC_KEY } from '../auth/decorators';
 import { ConfigurationsController } from './configurations.controller';
 import { ConfigurationsService } from './configurations.service';
@@ -43,6 +44,7 @@ describe('ConfigurationsController', () => {
     })
       .overrideProvider(ConfigurationsService)
       .useValue(mockConfigurationsService)
+      .setLogger(new TestingLogger())
       .compile();
   });
 

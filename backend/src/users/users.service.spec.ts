@@ -12,6 +12,7 @@ import {
   connectDatabase,
   getUserModel,
 } from '../../test/db-helper.fn';
+import { TestingLogger } from '../../test/helper.fn';
 import { ARGON_OPTIONS } from '../constants';
 import { UserAlreadyExists, UserNotFoundException } from './exceptions';
 import { User } from './schemas';
@@ -32,7 +33,9 @@ describe('UsersService', () => {
         UsersService,
         { provide: getModelToken(User.name), useValue: userModel },
       ],
-    }).compile();
+    })
+      .setLogger(new TestingLogger())
+      .compile();
 
     service = app.get<UsersService>(UsersService);
   });

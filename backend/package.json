@@ -110,6 +110,7 @@
     "coverageDirectory": "../coverage",
     "testEnvironment": "node",
     "setupFilesAfterEnv": [
+      "../test/setup-silent-console",
       "../test/matcher-extensions"
     ]
   }

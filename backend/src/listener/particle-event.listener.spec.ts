@@ -11,7 +11,7 @@ import {
   getConfigurationModel,
   getDeviceModel,
 } from '../../test/db-helper.fn';
-import { sleep } from '../../test/helper.fn';
+import { TestingLogger, sleep } from '../../test/helper.fn';
 import { ParticleService } from '../common/particle.service';
 import { ConfigurationsService } from '../configurations/configurations.service';
 import { Configuration, SensorData } from '../configurations/schemas';
@@ -27,7 +27,7 @@ import { Device } from '../devices/schemas';
 import { ConnectedDeviceType, EventData } from '../devices/types';
 import { ParticleEventListener } from './particle-event.listener';
 
-describe('DevicesEventListener', () => {
+describe('ParticleEventListener', () => {
   let listener: ParticleEventListener;
   let confModel: Model<Configuration>;
   let deviceModel: Model<Device>;
@@ -91,6 +91,7 @@ describe('DevicesEventListener', () => {
       .useValue(mockDevicesService)
       .overrideProvider(ConfigurationsService)
       .useValue(mockConfigurationsService)
+      .setLogger(new TestingLogger())
       .compile();
     module.useLogger(mockLoggerService);
 
@@ -135,6 +136,15 @@ describe('DevicesEventListener', () => {
   });
 
   describe('event data: oinkbrew/start', () => {
+
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
     it('should get device from event data coreid', async () => {
       const event = {
         data: 'true',
@@ -147,7 +157,7 @@ describe('DevicesEventListener', () => {
 
       listener.onApplicationBootstrap();
       mockEventStream.next(event);
-      await sleep(100);
+      await jest.advanceTimersByTimeAsync(5100);
 
       expect(mockDevicesService.findById).toHaveBeenCalledWith(event.coreid);
     });
@@ -160,10 +170,13 @@ describe('DevicesEventListener', () => {
         coreid: '3b003d000747343232363230',
         name: 'oinkbrew/start',
       };
+      const conf1 = { ...configurationArchived, toObject: () => ({ ...configurationArchived }) };
+      const conf2 = { ...configurationNotArchived, toObject: () => ({ ...configurationNotArchived }) };
+
       const device = {
         id: event.coreid,
         populate: jest.fn(),
-        configurations: [{ ...configurationArchived }, { ...configurationNotArchived }],
+        configurations: [{ ...conf1 }, { ...conf2 }],
       };
       mockDevicesService.findById.mockResolvedValue(device);
       device.populate.mockResolvedValue(void 0);
@@ -171,7 +184,7 @@ describe('DevicesEventListener', () => {
 
       listener.onApplicationBootstrap();
       mockEventStream.next(event);
-      await sleep(100);
+      await jest.advanceTimersByTimeAsync(6000);
 
       expect(mockParticleService.sendConfiguration).toHaveBeenCalledTimes(1);
       expect(mockParticleService.sendConfiguration).toHaveBeenCalledWith({
@@ -194,7 +207,7 @@ describe('DevicesEventListener', () => {
 
       listener.onApplicationBootstrap();
       mockEventStream.next(event);
-      await sleep(1000);
+      await jest.advanceTimersByTimeAsync(7000);
 
       expect(mockLoggerService.error).toHaveBeenCalledWith(
         'device service error',
@@ -221,7 +234,7 @@ describe('DevicesEventListener', () => {
 
       listener.onApplicationBootstrap();
       mockEventStream.next(event);
-      await sleep(100);
+      await jest.advanceTimersByTimeAsync(5100);
 
       expect(mockLoggerService.error).toHaveBeenCalledWith(
         'populate error',
@@ -238,12 +251,14 @@ describe('DevicesEventListener', () => {
         coreid: '3b003d000747343232363230',
         name: 'oinkbrew/start',
       };
+      const conf1 = { ...configurationArchived, archived: false };
+      const conf2 = { ...configurationNotArchived };
       const device = {
         id: event.coreid,
         populate: jest.fn(),
         configurations: [
-          { ...configurationArchived, archived: false },
-          { ...configurationNotArchived },
+          { ...conf1, toObject: () => conf1 },
+          { ...conf2, toObject: () => conf2 },
         ],
       };
       mockDevicesService.findById.mockResolvedValue(device);
@@ -254,7 +269,7 @@ describe('DevicesEventListener', () => {
 
       listener.onApplicationBootstrap();
       mockEventStream.next(event);
-      await sleep(100);
+      await jest.advanceTimersByTimeAsync(12000);
 
       expect(mockParticleService.sendConfiguration).toHaveBeenCalledTimes(2);
       expect(mockLoggerService.error).toHaveBeenCalledWith(

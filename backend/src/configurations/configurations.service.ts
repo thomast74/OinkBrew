@@ -246,6 +246,6 @@ export class ConfigurationsService {
       return;
     }
 
-    await this.particle.sendConfiguration(configuration.toObject());
+    await this.particle.sendConfiguration(configuration.toObject({flattenMaps: true, flattenObjectIds: true, virtuals: true, versionKey: false}) as any);
   }
 }

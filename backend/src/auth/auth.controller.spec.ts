@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common/constants';
 import { Test, TestingModule } from '@nestjs/testing';
 
+import { TestingLogger } from '../../test/helper.fn';
 import {
   createUserFromAuthDto,
   userDto,
@@ -42,6 +43,7 @@ describe('AuthController', () => {
           };
         }
       })
+      .setLogger(new TestingLogger())
       .compile();
 
     controller = module.get<AuthController>(AuthController);
