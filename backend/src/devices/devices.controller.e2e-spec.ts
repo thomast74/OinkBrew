@@ -216,7 +216,7 @@ describe('DevicesController (e2e)', () => {
       const error = JSON.parse(result.text);
       expect(result.statusCode).toBe(500);
       expect(error.message).toBe(
-        "403: I didn't recognize that device name or ID, try opening \"https://api.particle.io/v1/devices\" with an auth header and bearer token",
+        '403: I didn\'t recognize that device name or ID, try opening "https://api.particle.io/v1/devices" with an auth header and bearer token',
       );
     });
 
@@ -274,7 +274,7 @@ describe('DevicesController (e2e)', () => {
       const error = JSON.parse(result.text);
       expect(result.statusCode).toBe(500);
       expect(error.message).toBe(
-        "403: I didn't recognize that device name or ID, try opening \"https://api.particle.io/v1/devices\" with an auth header and bearer token",
+        '403: I didn\'t recognize that device name or ID, try opening "https://api.particle.io/v1/devices" with an auth header and bearer token',
       );
     });
   });

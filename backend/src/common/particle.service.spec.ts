@@ -1,14 +1,14 @@
+import { Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { parseJSON } from 'date-fns';
 import { ParticleMock } from 'particle-api-js';
 
+import { TestingLogger } from '../../test/helper.fn';
 import { Configuration } from '../configurations/schemas';
 import { mockBrewNotArchived } from '../configurations/tests/brew-configurations.mock';
 import { mockDeviceOnline } from '../devices/tests/devices.mock';
 import { ParticleService } from './particle.service';
-import { Logger } from '@nestjs/common';
-import { TestingLogger } from '../../test/helper.fn';
 
 describe('ParticleService', () => {
   let testModule: TestingModule;
@@ -32,20 +32,16 @@ describe('ParticleService', () => {
     testModule = await Test.createTestingModule({
       providers: [ParticleService],
     })
-    .setLogger(new TestingLogger())
-    .compile();
+      .setLogger(new TestingLogger())
+      .compile();
   });
 
   describe('init', () => {
     it('should init particle with clientId and clientSecret', () => {
       testModule.get<ParticleService>(ParticleService);
 
-      expect(ParticleMock.mockConstructorOptions().clientId).toEqual(
-        'my_client_id',
-      );
-      expect(ParticleMock.mockConstructorOptions().clientSecret).toEqual(
-        'my_client_secret',
-      );
+      expect(ParticleMock.mockConstructorOptions().clientId).toEqual('my_client_id');
+      expect(ParticleMock.mockConstructorOptions().clientSecret).toEqual('my_client_secret');
     });
 
     it('should immediatelly loginAsClientOwner', () => {
@@ -127,11 +123,7 @@ describe('ParticleService', () => {
       ParticleMock.mockUpdateDevice.mockResolvedValue({});
       const testSubject = testModule.get<ParticleService>(ParticleService);
 
-      const response = await testSubject.updateDevice(
-        'aaa',
-        'new name',
-        'my notes',
-      );
+      const response = await testSubject.updateDevice('aaa', 'new name', 'my notes');
 
       expect(response.isSuccessful).toBe(true);
     });
@@ -143,11 +135,7 @@ describe('ParticleService', () => {
       });
       const testSubject = testModule.get<ParticleService>(ParticleService);
 
-      const response = await testSubject.updateDevice(
-        'aaa',
-        'new name',
-        'my notes',
-      );
+      const response = await testSubject.updateDevice('aaa', 'new name', 'my notes');
 
       expect(response.isSuccessful).toBe(false);
       expect(response.errorCode).toBe(403);
@@ -297,9 +285,7 @@ describe('ParticleService', () => {
     });
 
     it('should return an error if update fails', async () => {
-      ParticleMock.mockCallFunction.mockRejectedValue(
-        new Error('bad api error'),
-      );
+      ParticleMock.mockCallFunction.mockRejectedValue(new Error('bad api error'));
       const testSubject = testModule.get<ParticleService>(ParticleService);
       const confToSend = { ...mockBrewNotArchived } as any;
 
@@ -333,9 +319,7 @@ describe('ParticleService', () => {
     });
 
     it('should return an error if update fails', async () => {
-      ParticleMock.mockCallFunction.mockRejectedValue(
-        new Error('bad api error'),
-      );
+      ParticleMock.mockCallFunction.mockRejectedValue(new Error('bad api error'));
 
       const testSubject = testModule.get<ParticleService>(ParticleService);
 

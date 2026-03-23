@@ -17,22 +17,23 @@
     }
   ],
   "settings": {
-    "jest.disabledWorkspaceFolders": [
-      "docker",
-      "firmware",
-      "mobile_ios",
-      "OinkBrew"
-    ],
-    "jest.jestCommandLine": "source ~/.zshrc && npx jest",
-    "jest.shell": "/bin/zsh",
-    "jest.autoRun": {
-      "watch": false,
-      "onStartup": ["all-tests"],
-      "onSave": "test-src-file"
-    },
+    "editor.tabSize": 2,
+    "editor.formatOnPaste": true,
+    "editor.formatOnSave": true,
     "[typescript]": {
       "javascript.preferences.importModuleSpecifier": "relative",
-      "typescript.preferences.importModuleSpecifier": "relative"
-    }
+      "typescript.preferences.importModuleSpecifier": "relative",
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[javascript]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[json]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[jsonc]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "typescript.tsdk": "node_modules/typescript/lib"
   }
 }

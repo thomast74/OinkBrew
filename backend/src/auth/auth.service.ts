@@ -9,7 +9,7 @@ import { ConfigType } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 
 import * as argon2 from 'argon2';
-import { verify as otpVerify, generateURI as otpGenerateURI } from 'otplib';
+import { generateURI as otpGenerateURI, verify as otpVerify } from 'otplib';
 import * as qrcode from 'qrcode';
 
 import { User } from '../users/schemas';
@@ -60,7 +60,7 @@ export class AuthService {
   async confirmOtp(dto: OtpDto, confirmOtp = false): Promise<Tokens> {
     const user = await this.usersService.findById(dto.userId);
     const otpConfirmedNotCorrect = confirmOtp
-      ? user?.otpConfirmed ?? true
+      ? (user?.otpConfirmed ?? true)
       : !(user?.otpConfirmed ?? true);
 
     if (!user || !user.otpSecret || otpConfirmedNotCorrect) {
@@ -123,7 +123,7 @@ export class AuthService {
 
     const otp = await this.jwtService.signAsync(jwtPayload, {
       secret: this.jwt.otpTokenSecret,
-      expiresIn: `${this.jwt.otpTokenExpiration}minutes` as any
+      expiresIn: `${this.jwt.otpTokenExpiration}minutes` as any,
     });
 
     return {
@@ -133,7 +133,14 @@ export class AuthService {
   }
 
   private getOtpUrl(email: string, otpSecret: string): string {
-    return otpGenerateURI({ label: email, issuer: OTP_SERVICE_NAME, secret: otpSecret, algorithm: "sha256", digits: 6, period: 30 });
+    return otpGenerateURI({
+      label: email,
+      issuer: OTP_SERVICE_NAME,
+      secret: otpSecret,
+      algorithm: 'sha256',
+      digits: 6,
+      period: 30,
+    });
   }
 
   private async getOtpBarcode(otpUrl: string): Promise<any> {

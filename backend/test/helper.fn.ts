@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-
 /* eslint-disable @typescript-eslint/no-empty-function */
-import { LoggerService, LogLevel } from '@nestjs/common';
+import { LogLevel, LoggerService } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
 export class TestingLogger implements LoggerService {

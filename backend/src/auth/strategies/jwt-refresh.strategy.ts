@@ -9,10 +9,7 @@ import jwtConfig from '../config/jwt.config';
 import { JwtPayload, JwtPayloadWithRefreshToken } from '../types';
 
 @Injectable()
-export class JwtRefreshStrategy extends PassportStrategy(
-  Strategy,
-  'jwt-refresh',
-) {
+export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
   constructor(
     @Inject(jwtConfig.KEY)
     jwt: ConfigType<typeof jwtConfig>,
@@ -26,10 +23,7 @@ export class JwtRefreshStrategy extends PassportStrategy(
   }
 
   validate(req: Request, payload: JwtPayload): JwtPayloadWithRefreshToken {
-    const refreshToken = req
-      ?.get('authorization')
-      ?.replace('Bearer', '')
-      .trim();
+    const refreshToken = req?.get('authorization')?.replace('Bearer', '').trim();
 
     if (!refreshToken) throw new ForbiddenException('Refresh token malformed');
 

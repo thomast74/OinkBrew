@@ -164,7 +164,12 @@ export class ParticleService {
     const argument = JSON.stringify(data);
 
     const $source = this.tokenInfo.pipe(
-      tap(() => this.logger.log(`callFunction: UPDATE_CONFIGURATION -> ${configuration.name} / ${configuration.device.id}`, argument)),
+      tap(() =>
+        this.logger.log(
+          `callFunction: UPDATE_CONFIGURATION -> ${configuration.name} / ${configuration.device.id}`,
+          argument,
+        ),
+      ),
       switchMap((tokens: any) =>
         from(
           this.particle.callFunction({
@@ -175,7 +180,11 @@ export class ParticleService {
           }),
         ),
       ),
-      tap(() => this.logger.log(`callFunction: UPDATE_CONFIGURATION -> ${configuration.name} / ${configuration.device.id} successful`)),
+      tap(() =>
+        this.logger.log(
+          `callFunction: UPDATE_CONFIGURATION -> ${configuration.name} / ${configuration.device.id} successful`,
+        ),
+      ),
       map(() => void 0),
     );
 

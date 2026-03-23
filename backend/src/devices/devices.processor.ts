@@ -51,9 +51,7 @@ export class DevicesProcessor {
           ));
 
           const connectedDevices = ConnectedDeviceHelper.parseArray(
-            JSON.parse(
-              (await this.particle.getVariable(storedDevice.id, 'Devices')) ?? '[]',
-            ),
+            JSON.parse((await this.particle.getVariable(storedDevice.id, 'Devices')) ?? '[]'),
           );
           this.updateConnectedDevices(storedDevice, connectedDevices);
         } else if (!storedDevice.connectedDevices) {
@@ -70,10 +68,7 @@ export class DevicesProcessor {
     }
   }
 
-  private updateConnectedDevices(
-    device: Device,
-    rConnectedDevices: ConnectedDevice[],
-  ) {
+  private updateConnectedDevices(device: Device, rConnectedDevices: ConnectedDevice[]) {
     if (!device.connectedDevices) {
       device.connectedDevices = [];
     }
@@ -89,8 +84,7 @@ export class DevicesProcessor {
 
       if (index >= 0) {
         device.connectedDevices[index].connected = true;
-        device.connectedDevices[index].deviceOffset =
-          rConnectedDevice.deviceOffset;
+        device.connectedDevices[index].deviceOffset = rConnectedDevice.deviceOffset;
       } else {
         rConnectedDevice.connected = true;
         device.connectedDevices.push(rConnectedDevice);

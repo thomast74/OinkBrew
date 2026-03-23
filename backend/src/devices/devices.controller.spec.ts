@@ -71,24 +71,15 @@ describe('DevicesController', () => {
   describe('GET /', () => {
     it('should not be public', () => {
       const controller = module.get<DevicesController>(DevicesController);
-      const metadata = Reflect.getMetadata(
-        IS_PUBLIC_KEY,
-        controller.getListOfDevices,
-      );
+      const metadata = Reflect.getMetadata(IS_PUBLIC_KEY, controller.getListOfDevices);
 
       expect(metadata).toBeUndefined();
     });
 
     it('should react to Get /', () => {
       const controller = module.get<DevicesController>(DevicesController);
-      const method = Reflect.getMetadata(
-        METHOD_METADATA,
-        controller.getListOfDevices,
-      );
-      const path = Reflect.getMetadata(
-        PATH_METADATA,
-        controller.getListOfDevices,
-      );
+      const method = Reflect.getMetadata(METHOD_METADATA, controller.getListOfDevices);
+      const path = Reflect.getMetadata(PATH_METADATA, controller.getListOfDevices);
 
       expect(method).toEqual(RequestMethod.GET);
       expect(path).toEqual('/');
@@ -96,10 +87,7 @@ describe('DevicesController', () => {
 
     it('should return HttpStatus.OK', () => {
       const controller = module.get<DevicesController>(DevicesController);
-      const metadata = Reflect.getMetadata(
-        HTTP_CODE_METADATA,
-        controller.getListOfDevices,
-      );
+      const metadata = Reflect.getMetadata(HTTP_CODE_METADATA, controller.getListOfDevices);
 
       expect(metadata).toEqual(HttpStatus.OK);
     });
@@ -128,24 +116,15 @@ describe('DevicesController', () => {
   describe('POST /{id}/{hwAddress}/{pinNr}', () => {
     it('should not be public', () => {
       const controller = module.get<DevicesController>(DevicesController);
-      const metadata = Reflect.getMetadata(
-        IS_PUBLIC_KEY,
-        controller.updateConnectedDevice,
-      );
+      const metadata = Reflect.getMetadata(IS_PUBLIC_KEY, controller.updateConnectedDevice);
 
       expect(metadata).toBeUndefined();
     });
 
     it('should react to POST /{id}/{hwAddres}/{pinNr}', () => {
       const controller = module.get<DevicesController>(DevicesController);
-      const method = Reflect.getMetadata(
-        METHOD_METADATA,
-        controller.updateConnectedDevice,
-      );
-      const path = Reflect.getMetadata(
-        PATH_METADATA,
-        controller.updateConnectedDevice,
-      );
+      const method = Reflect.getMetadata(METHOD_METADATA, controller.updateConnectedDevice);
+      const path = Reflect.getMetadata(PATH_METADATA, controller.updateConnectedDevice);
 
       expect(method).toEqual(RequestMethod.PUT);
       expect(path).toEqual('/:id/:hwAddress/:pinNr');
@@ -153,41 +132,31 @@ describe('DevicesController', () => {
 
     it('should return HttpStatus.OK', () => {
       const controller = module.get<DevicesController>(DevicesController);
-      const metadata = Reflect.getMetadata(
-        HTTP_CODE_METADATA,
-        controller.updateConnectedDevice,
-      );
+      const metadata = Reflect.getMetadata(HTTP_CODE_METADATA, controller.updateConnectedDevice);
 
       expect(metadata).toEqual(HttpStatus.OK);
     });
 
     it('should use guard DeviceConnectedDevice', () => {
       const controller = module.get<DevicesController>(DevicesController);
-      const metadata = Reflect.getMetadata(
-        GUARDS_METADATA,
-        controller.updateConnectedDevice,
-      );
+      const metadata = Reflect.getMetadata(GUARDS_METADATA, controller.updateConnectedDevice);
 
       expect(metadata).toEqual([DeviceConnectedDeviceGuard]);
     });
 
     it('should call device service with id, hwAddress, pnNr, name and offset', async () => {
-      mockDevicesService.updateConnectedDeviceWithNameAndOffset.mockResolvedValue(
-        {},
-      );
+      mockDevicesService.updateConnectedDeviceWithNameAndOffset.mockResolvedValue({});
       const controller = module.get<DevicesController>(DevicesController);
 
-      await controller.updateConnectedDevice(
+      await controller.updateConnectedDevice('abcdefg', 17, '0000000', 'new sensor name', 0.8);
+
+      expect(mockDevicesService.updateConnectedDeviceWithNameAndOffset).toHaveBeenCalledWith(
         'abcdefg',
         17,
         '0000000',
         'new sensor name',
         0.8,
       );
-
-      expect(
-        mockDevicesService.updateConnectedDeviceWithNameAndOffset,
-      ).toHaveBeenCalledWith('abcdefg', 17, '0000000', 'new sensor name', 0.8);
     });
 
     it('should return not found when device not found in database', async () => {
@@ -198,13 +167,7 @@ describe('DevicesController', () => {
       const controller = module.get<DevicesController>(DevicesController);
 
       await expect(
-        controller.updateConnectedDevice(
-          'abcdefg',
-          18,
-          '0000000',
-          'new sensor name',
-          0.8,
-        ),
+        controller.updateConnectedDevice('abcdefg', 18, '0000000', 'new sensor name', 0.8),
       ).rejects.toEqual(new NotFoundException('Device not found'));
     });
 
@@ -216,13 +179,7 @@ describe('DevicesController', () => {
       const controller = module.get<DevicesController>(DevicesController);
 
       await expect(
-        controller.updateConnectedDevice(
-          'abcdefg',
-          18,
-          '0000000',
-          'new sensor name',
-          0.8,
-        ),
+        controller.updateConnectedDevice('abcdefg', 18, '0000000', 'new sensor name', 0.8),
       ).rejects.toEqual(new NotFoundException('Connected Device not found'));
     });
 
@@ -234,13 +191,7 @@ describe('DevicesController', () => {
       const controller = module.get<DevicesController>(DevicesController);
 
       await expect(
-        controller.updateConnectedDevice(
-          'abcdefg',
-          18,
-          '0000000',
-          'new sensor name',
-          0.8,
-        ),
+        controller.updateConnectedDevice('abcdefg', 18, '0000000', 'new sensor name', 0.8),
       ).rejects.toEqual(new InternalServerErrorException('Bad error'));
     });
   });
@@ -248,20 +199,14 @@ describe('DevicesController', () => {
   describe('POST /{id}/refresh', () => {
     it('should not be public', () => {
       const controller = module.get<DevicesController>(DevicesController);
-      const metadata = Reflect.getMetadata(
-        IS_PUBLIC_KEY,
-        controller.restartDevice,
-      );
+      const metadata = Reflect.getMetadata(IS_PUBLIC_KEY, controller.restartDevice);
 
       expect(metadata).toBeUndefined();
     });
 
     it('should react to POST /{id}/restart', () => {
       const controller = module.get<DevicesController>(DevicesController);
-      const method = Reflect.getMetadata(
-        METHOD_METADATA,
-        controller.restartDevice,
-      );
+      const method = Reflect.getMetadata(METHOD_METADATA, controller.restartDevice);
       const path = Reflect.getMetadata(PATH_METADATA, controller.restartDevice);
 
       expect(method).toEqual(RequestMethod.PUT);
@@ -270,10 +215,7 @@ describe('DevicesController', () => {
 
     it('should return HttpStatus.OK', () => {
       const controller = module.get<DevicesController>(DevicesController);
-      const metadata = Reflect.getMetadata(
-        HTTP_CODE_METADATA,
-        controller.restartDevice,
-      );
+      const metadata = Reflect.getMetadata(HTTP_CODE_METADATA, controller.restartDevice);
 
       expect(metadata).toEqual(HttpStatus.OK);
     });
@@ -291,20 +233,14 @@ describe('DevicesController', () => {
   describe('POST /{id}', () => {
     it('should not be public', () => {
       const controller = module.get<DevicesController>(DevicesController);
-      const metadata = Reflect.getMetadata(
-        IS_PUBLIC_KEY,
-        controller.updateDevice,
-      );
+      const metadata = Reflect.getMetadata(IS_PUBLIC_KEY, controller.updateDevice);
 
       expect(metadata).toBeUndefined();
     });
 
     it('should react to PUT /{id}', () => {
       const controller = module.get<DevicesController>(DevicesController);
-      const method = Reflect.getMetadata(
-        METHOD_METADATA,
-        controller.updateDevice,
-      );
+      const method = Reflect.getMetadata(METHOD_METADATA, controller.updateDevice);
       const path = Reflect.getMetadata(PATH_METADATA, controller.updateDevice);
 
       expect(method).toEqual(RequestMethod.PUT);
@@ -313,20 +249,14 @@ describe('DevicesController', () => {
 
     it('should return HttpStatus.OK', () => {
       const controller = module.get<DevicesController>(DevicesController);
-      const metadata = Reflect.getMetadata(
-        HTTP_CODE_METADATA,
-        controller.updateDevice,
-      );
+      const metadata = Reflect.getMetadata(HTTP_CODE_METADATA, controller.updateDevice);
 
       expect(metadata).toEqual(HttpStatus.OK);
     });
 
     it('should use guard DeviceName', () => {
       const controller = module.get<DevicesController>(DevicesController);
-      const metadata = Reflect.getMetadata(
-        GUARDS_METADATA,
-        controller.updateDevice,
-      );
+      const metadata = Reflect.getMetadata(GUARDS_METADATA, controller.updateDevice);
 
       expect(metadata).toEqual([DeviceNameGuard]);
     });
@@ -337,35 +267,27 @@ describe('DevicesController', () => {
 
       await controller.updateDevice('abcdefg', 'new name', 'my notes');
 
-      expect(mockDevicesService.update).toHaveBeenCalledWith(
-        'abcdefg',
-        'new name',
-        'my notes',
-      );
+      expect(mockDevicesService.update).toHaveBeenCalledWith('abcdefg', 'new name', 'my notes');
     });
 
     it('should return not found when device not found in database', async () => {
-      mockDevicesService.update.mockRejectedValue(
-        new NotFoundException('Device not found'),
-      );
+      mockDevicesService.update.mockRejectedValue(new NotFoundException('Device not found'));
 
       const controller = module.get<DevicesController>(DevicesController);
 
-      await expect(
-        controller.updateDevice('abcdefgh', 'new name'),
-      ).rejects.toEqual(new NotFoundException('Device not found'));
+      await expect(controller.updateDevice('abcdefgh', 'new name')).rejects.toEqual(
+        new NotFoundException('Device not found'),
+      );
     });
 
     it('should return internal server error for any other error', async () => {
-      mockDevicesService.update.mockRejectedValue(
-        new InternalServerErrorException('Bad error'),
-      );
+      mockDevicesService.update.mockRejectedValue(new InternalServerErrorException('Bad error'));
 
       const controller = module.get<DevicesController>(DevicesController);
 
-      await expect(
-        controller.updateDevice('abcdefgh', 'new name'),
-      ).rejects.toEqual(new InternalServerErrorException('Bad error'));
+      await expect(controller.updateDevice('abcdefgh', 'new name')).rejects.toEqual(
+        new InternalServerErrorException('Bad error'),
+      );
     });
   });
 
@@ -388,10 +310,7 @@ describe('DevicesController', () => {
 
     it('should return HttpStatus.OK', () => {
       const controller = module.get<DevicesController>(DevicesController);
-      const metadata = Reflect.getMetadata(
-        HTTP_CODE_METADATA,
-        controller.refresh,
-      );
+      const metadata = Reflect.getMetadata(HTTP_CODE_METADATA, controller.refresh);
 
       expect(metadata).toEqual(HttpStatus.OK);
     });

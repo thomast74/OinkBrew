@@ -1,11 +1,7 @@
-import {
-  BadRequestException,
-  Injectable,
-  ValidationPipe,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, ValidationPipe } from '@nestjs/common';
 
 import { plainToInstance } from 'class-transformer';
-import { validate, ValidationError } from 'class-validator';
+import { ValidationError, validate } from 'class-validator';
 import { iterate } from 'iterare';
 
 import { BrewConfigurationDto, FridgeConfigurationDto } from '../dtos';
@@ -33,9 +29,6 @@ export class ConfigurationValidationPipe extends ValidationPipe {
       }
     }
 
-    throw new BadRequestException(
-      this.flattenValidationErrors(errors),
-      'Configuration not valid',
-    );
+    throw new BadRequestException(this.flattenValidationErrors(errors), 'Configuration not valid');
   }
 }

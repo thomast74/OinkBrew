@@ -3,11 +3,11 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import { when } from 'jest-when';
 
+import { TestingLogger } from '../../test/helper.fn';
 import { ParticleService } from '../common/particle.service';
 import { DevicesProcessor } from './devices.processor';
 import { DevicesService } from './devices.service';
 import { Device } from './schemas';
-import { TestingLogger } from '../../test/helper.fn';
 
 describe('DevicesProcessor', () => {
   let processor: DevicesProcessor;
@@ -120,18 +120,9 @@ describe('DevicesProcessor', () => {
       await processor.refresh(mockJob);
 
       expect(mockParticleService.getVariable).toHaveBeenCalledTimes(3);
-      expect(mockParticleService.getVariable).toHaveBeenCalledWith(
-        devices[0].id,
-        'ShieldVersion',
-      );
-      expect(mockParticleService.getVariable).toHaveBeenCalledWith(
-        devices[0].id,
-        'Version',
-      );
-      expect(mockParticleService.getVariable).toHaveBeenCalledWith(
-        devices[0].id,
-        'Devices',
-      );
+      expect(mockParticleService.getVariable).toHaveBeenCalledWith(devices[0].id, 'ShieldVersion');
+      expect(mockParticleService.getVariable).toHaveBeenCalledWith(devices[0].id, 'Version');
+      expect(mockParticleService.getVariable).toHaveBeenCalledWith(devices[0].id, 'Devices');
     });
 
     it('should save variables to device with no previous connected devices', async () => {

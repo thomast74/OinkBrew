@@ -1,12 +1,5 @@
 import { Type } from 'class-transformer';
-import {
-  IsInt,
-  IsNumber,
-  IsOptional,
-  Max,
-  Min,
-  ValidateNested,
-} from 'class-validator';
+import { IsInt, IsNumber, IsOptional, Max, Min, ValidateNested } from 'class-validator';
 
 import { ConnectedDevice } from '../../devices/schemas';
 import { ConfigurationDto, ConnectedDeviceDto } from './configuration.dto';

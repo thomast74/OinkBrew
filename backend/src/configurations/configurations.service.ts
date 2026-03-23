@@ -33,7 +33,8 @@ export class ConfigurationsService {
   constructor(
     @InjectModel(Configuration.name) private configurationModel: Model<Configuration>,
     @InjectModel(BrewConfiguration.name) private brewConfigurationModel: Model<BrewConfiguration>,
-    @InjectModel(FridgeConfiguration.name) private fridgeConfigurationModel: Model<FridgeConfiguration>,
+    @InjectModel(FridgeConfiguration.name)
+    private fridgeConfigurationModel: Model<FridgeConfiguration>,
     @InjectModel(Device.name) private deviceModel: Model<Device>,
     private device: DevicesService,
     private particle: ParticleService,
@@ -246,6 +247,13 @@ export class ConfigurationsService {
       return;
     }
 
-    await this.particle.sendConfiguration(configuration.toObject({flattenMaps: true, flattenObjectIds: true, virtuals: true, versionKey: false}) as any);
+    await this.particle.sendConfiguration(
+      configuration.toObject({
+        flattenMaps: true,
+        flattenObjectIds: true,
+        virtuals: true,
+        versionKey: false,
+      }) as any,
+    );
   }
 }

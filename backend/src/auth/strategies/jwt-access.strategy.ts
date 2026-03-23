@@ -8,10 +8,7 @@ import jwtConfig from '../config/jwt.config';
 import { JwtPayload } from '../types';
 
 @Injectable()
-export class JwtAccessStrategy extends PassportStrategy(
-  Strategy,
-  'jwt-access',
-) {
+export class JwtAccessStrategy extends PassportStrategy(Strategy, 'jwt-access') {
   constructor(
     @Inject(jwtConfig.KEY)
     jwt: ConfigType<typeof jwtConfig>,

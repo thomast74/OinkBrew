@@ -29,10 +29,7 @@ describe('UsersService', () => {
     userModel = getUserModel();
 
     const app: TestingModule = await Test.createTestingModule({
-      providers: [
-        UsersService,
-        { provide: getModelToken(User.name), useValue: userModel },
-      ],
+      providers: [UsersService, { provide: getModelToken(User.name), useValue: userModel }],
     })
       .setLogger(new TestingLogger())
       .compile();
@@ -81,17 +78,13 @@ describe('UsersService', () => {
     it('should return UserAlreadyExists if email is already in use', async () => {
       await createUserInDb(userModel, false);
 
-      await expect(service.create(userDto)).rejects.toEqual(
-        new UserAlreadyExists(),
-      );
+      await expect(service.create(userDto)).rejects.toEqual(new UserAlreadyExists());
     });
 
     it('should return BadRequestException in case of database error', async () => {
       await closeDatabase();
 
-      await expect(service.create(userDto)).rejects.toEqual(
-        new BadRequestException(),
-      );
+      await expect(service.create(userDto)).rejects.toEqual(new BadRequestException());
 
       await connectDatabase();
     });
@@ -115,10 +108,7 @@ describe('UsersService', () => {
       };
 
       const updatedUser = (
-        await service.updateRefreshToken(
-          newUser?.id.toString() ?? '',
-          refreshToken,
-        )
+        await service.updateRefreshToken(newUser?.id.toString() ?? '', refreshToken)
       ).toJSON();
 
       expect(updatedUser).toEqual(createdUser);
@@ -132,9 +122,7 @@ describe('UsersService', () => {
       };
       delete createdUser.hashedRt;
 
-      const updatedUser = (
-        await service.updateRefreshToken(newUser?.id.toString() ?? '')
-      ).toJSON();
+      const updatedUser = (await service.updateRefreshToken(newUser?.id.toString() ?? '')).toJSON();
 
       expect(updatedUser).toEqual(createdUser);
     });
@@ -151,11 +139,7 @@ describe('UsersService', () => {
       };
 
       const updatedUser = (
-        await service.updateRefreshToken(
-          newUser?.id.toString() ?? '',
-          refreshToken,
-          true,
-        )
+        await service.updateRefreshToken(newUser?.id.toString() ?? '', refreshToken, true)
       ).toJSON();
 
       expect(updatedUser).toEqual(createdUser);

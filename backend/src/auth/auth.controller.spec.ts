@@ -8,19 +8,12 @@ import {
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { TestingLogger } from '../../test/helper.fn';
-import {
-  createUserFromAuthDto,
-  userDto,
-} from '../users/tests/users-helper.mock';
+import { createUserFromAuthDto, userDto } from '../users/tests/users-helper.mock';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { IS_PUBLIC_KEY } from './decorators';
 import { OtpDto } from './dtos';
-import {
-  JwtOtphAuthGuard,
-  JwtRefreshAuthGuard,
-  LogInAuthGuard,
-} from './guards';
+import { JwtOtphAuthGuard, JwtRefreshAuthGuard, LogInAuthGuard } from './guards';
 import { JwtPayloadWithRefreshToken, Tokens } from './types';
 
 describe('AuthController', () => {
@@ -70,10 +63,7 @@ describe('AuthController', () => {
     });
 
     it('should return HttpStatus.OK', () => {
-      const metadata = Reflect.getMetadata(
-        HTTP_CODE_METADATA,
-        controller.signup,
-      );
+      const metadata = Reflect.getMetadata(HTTP_CODE_METADATA, controller.signup);
 
       expect(metadata).toEqual(HttpStatus.OK);
     });
@@ -112,19 +102,13 @@ describe('AuthController', () => {
     });
 
     it('should use guard JwtOtphAuthGuard', () => {
-      const metadata = Reflect.getMetadata(
-        GUARDS_METADATA,
-        controller.signupOtp,
-      );
+      const metadata = Reflect.getMetadata(GUARDS_METADATA, controller.signupOtp);
 
       expect(metadata).toEqual([JwtOtphAuthGuard]);
     });
 
     it('should return HttpStatus.OK', () => {
-      const metadata = Reflect.getMetadata(
-        HTTP_CODE_METADATA,
-        controller.signupOtp,
-      );
+      const metadata = Reflect.getMetadata(HTTP_CODE_METADATA, controller.signupOtp);
 
       expect(metadata).toEqual(HttpStatus.OK);
     });
@@ -164,10 +148,7 @@ describe('AuthController', () => {
     });
 
     it('should return HttpStatus.OK', () => {
-      const metadata = Reflect.getMetadata(
-        HTTP_CODE_METADATA,
-        controller.signin,
-      );
+      const metadata = Reflect.getMetadata(HTTP_CODE_METADATA, controller.signin);
 
       expect(metadata).toEqual(HttpStatus.OK);
     });
@@ -209,19 +190,13 @@ describe('AuthController', () => {
     });
 
     it('should use guard JwtOtphAuthGuard', () => {
-      const metadata = Reflect.getMetadata(
-        GUARDS_METADATA,
-        controller.signinOtp,
-      );
+      const metadata = Reflect.getMetadata(GUARDS_METADATA, controller.signinOtp);
 
       expect(metadata).toEqual([JwtOtphAuthGuard]);
     });
 
     it('should return HttpStatus.OK', () => {
-      const metadata = Reflect.getMetadata(
-        HTTP_CODE_METADATA,
-        controller.signinOtp,
-      );
+      const metadata = Reflect.getMetadata(HTTP_CODE_METADATA, controller.signinOtp);
 
       expect(metadata).toEqual(HttpStatus.OK);
     });
@@ -261,10 +236,7 @@ describe('AuthController', () => {
     });
 
     it('should return HttpStatus.OK', () => {
-      const metadata = Reflect.getMetadata(
-        HTTP_CODE_METADATA,
-        controller.logout,
-      );
+      const metadata = Reflect.getMetadata(HTTP_CODE_METADATA, controller.logout);
 
       expect(metadata).toEqual(HttpStatus.OK);
     });
@@ -286,19 +258,13 @@ describe('AuthController', () => {
 
   describe('refreshTokens', () => {
     it('should be public', () => {
-      const metadata = Reflect.getMetadata(
-        IS_PUBLIC_KEY,
-        controller.refreshTokens,
-      );
+      const metadata = Reflect.getMetadata(IS_PUBLIC_KEY, controller.refreshTokens);
 
       expect(metadata).toEqual(true);
     });
 
     it('should react to POST signin', () => {
-      const method = Reflect.getMetadata(
-        METHOD_METADATA,
-        controller.refreshTokens,
-      );
+      const method = Reflect.getMetadata(METHOD_METADATA, controller.refreshTokens);
       const path = Reflect.getMetadata(PATH_METADATA, controller.refreshTokens);
 
       expect(method).toEqual(RequestMethod.POST);
@@ -306,19 +272,13 @@ describe('AuthController', () => {
     });
 
     it('should return HttpStatus.OK', () => {
-      const metadata = Reflect.getMetadata(
-        HTTP_CODE_METADATA,
-        controller.refreshTokens,
-      );
+      const metadata = Reflect.getMetadata(HTTP_CODE_METADATA, controller.refreshTokens);
 
       expect(metadata).toEqual(HttpStatus.OK);
     });
 
     it('should use guard LoggedInAuthGuard', () => {
-      const metadata = Reflect.getMetadata(
-        GUARDS_METADATA,
-        controller.refreshTokens,
-      );
+      const metadata = Reflect.getMetadata(GUARDS_METADATA, controller.refreshTokens);
 
       expect(metadata).toEqual([JwtRefreshAuthGuard]);
     });
@@ -326,10 +286,7 @@ describe('AuthController', () => {
     it('should call auth service with jwt user', async () => {
       await controller.refreshTokens(jwtUser);
 
-      expect(service.refreshTokens).toHaveBeenCalledWith(
-        jwtUser.sub,
-        jwtUser.refreshToken,
-      );
+      expect(service.refreshTokens).toHaveBeenCalledWith(jwtUser.sub, jwtUser.refreshToken);
     });
 
     it('should return tokens', async () => {

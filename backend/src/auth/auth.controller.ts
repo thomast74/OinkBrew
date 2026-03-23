@@ -1,21 +1,10 @@
-import {
-  Body,
-  Controller,
-  HttpCode,
-  HttpStatus,
-  Post,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common';
 
 import { User } from '../users/schemas';
 import { AuthService } from './auth.service';
 import { GetRequestUser, GetRequestUserId, Public } from './decorators';
 import { AuthDto, OtpDto } from './dtos';
-import {
-  JwtOtphAuthGuard as JwtOtpAuthGuard,
-  JwtRefreshAuthGuard,
-  LogInAuthGuard,
-} from './guards';
+import { JwtOtphAuthGuard as JwtOtpAuthGuard, JwtRefreshAuthGuard, LogInAuthGuard } from './guards';
 import { JwtPayloadWithRefreshToken, Tokens } from './types';
 
 @Controller('auth')
@@ -63,9 +52,7 @@ export class AuthController {
   @Post('refresh')
   @UseGuards(JwtRefreshAuthGuard)
   @HttpCode(HttpStatus.OK)
-  refreshTokens(
-    @GetRequestUser() user: JwtPayloadWithRefreshToken,
-  ): Promise<Tokens> {
+  refreshTokens(@GetRequestUser() user: JwtPayloadWithRefreshToken): Promise<Tokens> {
     return this.authService.refreshTokens(user.sub, user.refreshToken);
   }
 }

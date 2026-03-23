@@ -51,9 +51,7 @@ export async function getParticleConnectedDevices(
     auth: access_token,
   });
 
-  const cDevices = ConnectedDeviceHelper.parseArray(
-    JSON.parse(response.body.result),
-  );
+  const cDevices = ConnectedDeviceHelper.parseArray(JSON.parse(response.body.result));
   const cDevice = findConnectedDevice(cDevices, pinNr, hwAddress);
 
   return cDevice;

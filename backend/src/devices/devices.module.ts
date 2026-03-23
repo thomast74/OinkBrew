@@ -8,9 +8,7 @@ import { DevicesProcessor } from './devices.processor';
 import { DevicesService } from './devices.service';
 import { Device, DeviceSchema } from './schemas';
 
-const modelDefinition: ModelDefinition[] = [
-  { name: Device.name, schema: DeviceSchema },
-];
+const modelDefinition: ModelDefinition[] = [{ name: Device.name, schema: DeviceSchema }];
 
 @Module({
   imports: [

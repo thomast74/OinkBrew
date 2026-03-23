@@ -90,13 +90,12 @@ export class ParticleEventListener implements OnApplicationBootstrap, OnApplicat
 
       await device.populate('configurations');
 
-
       for (const configuration of device.configurations) {
         const configurationDoc = configuration as ConfigurationDocument;
         const confToSend = configurationDoc.toObject();
-        
+
         confToSend.device = { id: deviceId } as any;
-        
+
         this.sendConfiguration(deviceId, confToSend);
       }
     } catch (error) {
@@ -174,7 +173,7 @@ export class ParticleEventListener implements OnApplicationBootstrap, OnApplicat
         });
       }
 
-      configuration.markModified('sensorData')
+      configuration.markModified('sensorData');
       await configuration.save();
     });
   }
@@ -219,14 +218,14 @@ export class ParticleEventListener implements OnApplicationBootstrap, OnApplicat
   }
   private async sendConfiguration(deviceId: string, configuration: Configuration): Promise<void> {
     if (configuration.archived) return;
-    
+
     if (!configuration.device) {
       configuration.device = { id: deviceId } as any;
     }
     if (!configuration.device.id) {
       configuration.device.id = deviceId;
     }
-  
+
     try {
       await this.particle.sendConfiguration(configuration);
     } catch (error) {

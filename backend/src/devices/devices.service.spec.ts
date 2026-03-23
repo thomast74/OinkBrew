@@ -1,7 +1,4 @@
-import {
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
+import { InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { getModelToken } from '@nestjs/mongoose';
 import { Test } from '@nestjs/testing';
 
@@ -13,6 +10,7 @@ import {
   connectDatabase,
   getDeviceModel,
 } from '../../test/db-helper.fn';
+import { TestingLogger } from '../../test/helper.fn';
 import { ParticleService } from '../common/particle.service';
 import { DevicesService } from './devices.service';
 import { ConnectedDevice, Device } from './schemas';
@@ -26,7 +24,6 @@ import {
   newConnectedDevice,
 } from './tests/devices.mock';
 import { ConnectedDeviceType } from './types';
-import { TestingLogger } from '../../test/helper.fn';
 
 describe('DevicesService', () => {
   let service: DevicesService;
@@ -50,8 +47,8 @@ describe('DevicesService', () => {
         { provide: ParticleService, useValue: mockParticleService },
       ],
     })
-    .setLogger(new TestingLogger())
-    .compile();
+      .setLogger(new TestingLogger())
+      .compile();
 
     service = app.get<DevicesService>(DevicesService);
   });
@@ -89,14 +86,8 @@ describe('DevicesService', () => {
 
   describe('findAll', () => {
     it('should return found devices', async () => {
-      const expectedDevice1 = await createDeviceInDb(
-        deviceModel,
-        mockDeviceOnline,
-      );
-      const expectedDevice2 = await createDeviceInDb(
-        deviceModel,
-        mockDeviceOffline,
-      );
+      const expectedDevice1 = await createDeviceInDb(deviceModel, mockDeviceOnline);
+      const expectedDevice2 = await createDeviceInDb(deviceModel, mockDeviceOffline);
 
       const receivedDevices = await service.findAll();
 
@@ -115,10 +106,7 @@ describe('DevicesService', () => {
 
   describe('findById', () => {
     it('should return found device', async () => {
-      const expectedDevice = await createDeviceInDb(
-        deviceModel,
-        mockDeviceOffline,
-      );
+      const expectedDevice = await createDeviceInDb(deviceModel, mockDeviceOffline);
       await createDeviceInDb(deviceModel, mockDeviceOnline);
 
       const device = await service.findById(mockDeviceOffline.id);
@@ -138,9 +126,7 @@ describe('DevicesService', () => {
       await closeDatabase();
 
       await expect(service.findById('aaa')).rejects.toEqual(
-        new InternalServerErrorException(
-          'Client must be connected before running operations',
-        ),
+        new InternalServerErrorException('Client must be connected before running operations'),
       );
     });
   });
@@ -161,9 +147,7 @@ describe('DevicesService', () => {
 
       await service.update('ddd', 'new name', 'my notes');
 
-      const dbDevice = (
-        await deviceModel.findOne({ id: mockDeviceOffline.id }).exec()
-      )?.toObject();
+      const dbDevice = (await deviceModel.findOne({ id: mockDeviceOffline.id }).exec())?.toObject();
 
       expect(dbDevice).toBeDefined();
       expect(dbDevice).toEqual(newDevice);
@@ -190,9 +174,7 @@ describe('DevicesService', () => {
         info: 'Particle device update failed',
       });
 
-      await expect(
-        service.update(mockDeviceOnline.id, 'new name', 'my notes'),
-      ).rejects.toEqual(
+      await expect(service.update(mockDeviceOnline.id, 'new name', 'my notes')).rejects.toEqual(
         new InternalServerErrorException('403: Particle device update failed'),
       );
     });
@@ -204,9 +186,7 @@ describe('DevicesService', () => {
 
       await service.save(expectedDevice);
 
-      const dbDevice = (
-        await deviceModel.findOne({ id: mockDeviceOnline.id }).exec()
-      )?.toObject();
+      const dbDevice = (await deviceModel.findOne({ id: mockDeviceOnline.id }).exec())?.toObject();
 
       expect(dbDevice).toBeDefined();
       expect(dbDevice).toMatchObject(mockDeviceOnline);
@@ -219,9 +199,7 @@ describe('DevicesService', () => {
 
       await service.save(expectedDevice);
 
-      const dbDevice = (
-        await deviceModel.findOne({ id: expectedDevice.id }).exec()
-      )?.toObject();
+      const dbDevice = (await deviceModel.findOne({ id: expectedDevice.id }).exec())?.toObject();
 
       expect(dbDevice).toBeDefined();
       expect(dbDevice).toMatchObject(expectedDevice);
@@ -231,9 +209,7 @@ describe('DevicesService', () => {
       await closeDatabase();
 
       await expect(service.save(mockDeviceOnline)).rejects.toEqual(
-        new InternalServerErrorException(
-          'Client must be connected before running operations',
-        ),
+        new InternalServerErrorException('Client must be connected before running operations'),
       );
     });
   });
@@ -245,24 +221,16 @@ describe('DevicesService', () => {
       } as ConnectedDevice;
 
       await expect(
-        service.addConnectedDeviceWithConnectStatus(
-          'bbb',
-          expectedConnectedDevice,
-        ),
+        service.addConnectedDeviceWithConnectStatus('bbb', expectedConnectedDevice),
       ).rejects.toEqual(new NotFoundException('Device not found'));
     });
 
     it('should add new connected device to device and save it', async () => {
       await createDeviceInDb(deviceModel, mockDeviceOffline);
 
-      await service.addConnectedDeviceWithConnectStatus(
-        'ddd',
-        newConnectedDevice,
-      );
+      await service.addConnectedDeviceWithConnectStatus('ddd', newConnectedDevice);
 
-      const dbDevice = (
-        await deviceModel.findOne({ id: mockDeviceOffline.id })
-      )?.toObject();
+      const dbDevice = (await deviceModel.findOne({ id: mockDeviceOffline.id }))?.toObject();
 
       expect(dbDevice?.connectedDevices).toContainEqual(newConnectedDevice);
     });
@@ -284,13 +252,7 @@ describe('DevicesService', () => {
   describe('updateConnectedDeviceWithNameAndOffset', () => {
     it('should return not found exception when device was not found', async () => {
       await expect(
-        service.updateConnectedDeviceWithNameAndOffset(
-          'aaa',
-          17,
-          '000000',
-          'new sensor name',
-          0.8,
-        ),
+        service.updateConnectedDeviceWithNameAndOffset('aaa', 17, '000000', 'new sensor name', 0.8),
       ).rejects.toEqual(new NotFoundException('Device not found'));
     });
 
@@ -298,13 +260,7 @@ describe('DevicesService', () => {
       await createDeviceInDb(deviceModel, mockDeviceOffline);
 
       await expect(
-        service.updateConnectedDeviceWithNameAndOffset(
-          'ddd',
-          17,
-          '000000',
-          'new sensor name',
-          0.8,
-        ),
+        service.updateConnectedDeviceWithNameAndOffset('ddd', 17, '000000', 'new sensor name', 0.8),
       ).rejects.toEqual(new NotFoundException('Connected device not found'));
     });
 
@@ -360,9 +316,12 @@ describe('DevicesService', () => {
         0.8,
       );
 
-      expect(
-        mockParticleService.updateConnectedDeviceOffset,
-      ).toHaveBeenCalledWith('ccc', 18, '000000000000', 0.8);
+      expect(mockParticleService.updateConnectedDeviceOffset).toHaveBeenCalledWith(
+        'ccc',
+        18,
+        '000000000000',
+        0.8,
+      );
     });
 
     it('should not send offset if device is not online', async () => {
@@ -376,9 +335,7 @@ describe('DevicesService', () => {
         0.8,
       );
 
-      expect(
-        mockParticleService.updateConnectedDeviceOffset,
-      ).not.toHaveBeenCalled();
+      expect(mockParticleService.updateConnectedDeviceOffset).not.toHaveBeenCalled();
     });
 
     it('should return 5xx error if offset to to device fails', async () => {
@@ -397,20 +354,14 @@ describe('DevicesService', () => {
           'new sensor name',
           0.8,
         ),
-      ).rejects.toEqual(
-        new InternalServerErrorException('403: Device not found'),
-      );
+      ).rejects.toEqual(new InternalServerErrorException('403: Device not found'));
     });
   });
 
   describe('updateConnectedDeviceWithConnectStatus', () => {
     it('should return Not Found exceotion if device is not found', async () => {
       await expect(
-        service.updateConnectedDeviceWithConnectStatus(
-          'bbb',
-          {} as ConnectedDevice,
-          true,
-        ),
+        service.updateConnectedDeviceWithConnectStatus('bbb', {} as ConnectedDevice, true),
       ).rejects.toEqual(new NotFoundException('Device not found'));
     });
 
@@ -421,26 +372,15 @@ describe('DevicesService', () => {
         connected: true,
       };
 
-      await service.updateConnectedDeviceWithConnectStatus(
-        'ddd',
-        newConnectedDevice,
-        true,
-      );
+      await service.updateConnectedDeviceWithConnectStatus('ddd', newConnectedDevice, true);
 
-      const dbDevice = await deviceModel
-        .findOne({ id: mockDeviceOffline.id })
-        .exec();
+      const dbDevice = await deviceModel.findOne({ id: mockDeviceOffline.id }).exec();
 
-      expect(dbDevice?.connectedDevices).toContainEqual(
-        expectedConnectedDevice,
-      );
+      expect(dbDevice?.connectedDevices).toContainEqual(expectedConnectedDevice);
     });
 
     it('should mark connected device as disconnected device and save it', async () => {
-      await createDeviceInDb(
-        deviceModel,
-        mockDeviceOfflineWithConnectedDeviceConnected,
-      );
+      await createDeviceInDb(deviceModel, mockDeviceOfflineWithConnectedDeviceConnected);
 
       await service.updateConnectedDeviceWithConnectStatus(
         'ddd',
@@ -476,16 +416,10 @@ describe('DevicesService', () => {
       await createDeviceInDb(deviceModel, mockDeviceOfflineWithConnectedDevice);
 
       const response = { exec: jest.fn().mockRejectedValue('update error') };
-      jest
-        .spyOn(deviceModel, 'findOneAndUpdate')
-        .mockReturnValue(response as any);
+      jest.spyOn(deviceModel, 'findOneAndUpdate').mockReturnValue(response as any);
 
       try {
-        await service.updateConnectedDeviceWithConnectStatus(
-          'ddd',
-          newConnectedDevice,
-          true,
-        );
+        await service.updateConnectedDeviceWithConnectStatus('ddd', newConnectedDevice, true);
         fail();
       } catch (error) {
         expect(error).toEqual(new InternalServerErrorException('update error'));

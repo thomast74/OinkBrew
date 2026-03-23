@@ -35,11 +35,7 @@ const modelDefinition: ModelDefinition[] = [
 ];
 
 @Module({
-  imports: [
-    CommonModule,
-    MongooseModule.forFeature(modelDefinition),
-    DevicesModule,
-  ],
+  imports: [CommonModule, MongooseModule.forFeature(modelDefinition), DevicesModule],
   exports: [MongooseModule.forFeature(modelDefinition), ConfigurationsService],
   controllers: [ConfigurationsController],
   providers: [ConfigurationsService],

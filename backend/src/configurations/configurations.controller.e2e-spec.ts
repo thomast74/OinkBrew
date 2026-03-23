@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import * as argon2 from 'argon2';
-import { EventSource }  from 'eventsource';
+import { EventSource } from 'eventsource';
 import { Model } from 'mongoose';
 import request from 'supertest';
 
@@ -281,7 +281,7 @@ describe('ConfigurationsController (e2e)', () => {
 
       expect(response.statusCode).toBe(500);
       expect(response.body.info).toEqual(
-        "I didn't recognize that device name or ID, try opening \"https://api.particle.io/v1/devices\" with an auth header and bearer token",
+        'I didn\'t recognize that device name or ID, try opening "https://api.particle.io/v1/devices" with an auth header and bearer token',
       );
     });
   });
@@ -407,7 +407,7 @@ describe('ConfigurationsController (e2e)', () => {
 
       expect(response.statusCode).toBe(500);
       expect(response.body.info).toEqual(
-        "I didn't recognize that device name or ID, try opening \"https://api.particle.io/v1/devices\" with an auth header and bearer token",
+        'I didn\'t recognize that device name or ID, try opening "https://api.particle.io/v1/devices" with an auth header and bearer token',
       );
     });
   });
@@ -472,7 +472,7 @@ describe('ConfigurationsController (e2e)', () => {
 
       expect(response.statusCode).toBe(500);
       expect(response.body.info).toEqual(
-        "I didn't recognize that device name or ID, try opening \"https://api.particle.io/v1/devices\" with an auth header and bearer token",
+        'I didn\'t recognize that device name or ID, try opening "https://api.particle.io/v1/devices" with an auth header and bearer token',
       );
     });
   });
@@ -502,10 +502,11 @@ describe('ConfigurationsController (e2e)', () => {
     it.skip('should connect to configuration sse EventSensorData stream', async () => {
       let eventsReceived = 0;
       eventSource = new EventSource(`${serverUrl}/configurations/25/sse`, {
-        fetch: (input, init) => fetch(input, {
+        fetch: (input, init) =>
+          fetch(input, {
             ...init,
-            headers: {...init.headers, Authorization: `Bearer ${validAccessToken}`},
-        }),
+            headers: { ...init.headers, Authorization: `Bearer ${validAccessToken}` },
+          }),
       });
 
       eventSource.addEventListener('SensorData', () => {

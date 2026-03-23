@@ -1,5 +1,4 @@
 import { RawBody } from '../../common/decorators';
 import { ConfigurationValidationPipe } from '../pipes';
 
-export const ValidConfigurationBody = () =>
-  RawBody(new ConfigurationValidationPipe());
+export const ValidConfigurationBody = () => RawBody(new ConfigurationValidationPipe());

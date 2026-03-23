@@ -136,7 +136,6 @@ describe('ParticleEventListener', () => {
   });
 
   describe('event data: oinkbrew/start', () => {
-
     beforeEach(() => {
       jest.useFakeTimers();
     });
@@ -171,7 +170,10 @@ describe('ParticleEventListener', () => {
         name: 'oinkbrew/start',
       };
       const conf1 = { ...configurationArchived, toObject: () => ({ ...configurationArchived }) };
-      const conf2 = { ...configurationNotArchived, toObject: () => ({ ...configurationNotArchived }) };
+      const conf2 = {
+        ...configurationNotArchived,
+        toObject: () => ({ ...configurationNotArchived }),
+      };
 
       const device = {
         id: event.coreid,
