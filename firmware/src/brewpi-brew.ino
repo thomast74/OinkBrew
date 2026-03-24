@@ -109,4 +109,6 @@ void processCommand(ReceivedConfig config)
     System.reset();
     break;
   }
+
+  buzzer.beep(1, 50);
 }
