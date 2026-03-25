@@ -41,7 +41,7 @@
 | X)   | Make configuration detail editable                | Configuration details need to be editable for at least base information                                     |
 | X)   | Archive/un-archive configuration                  | Add button to archive a configuration                                                                       |
 | X)   | New configuration                                 | Add button to create a new configuration                                                                    |
-|      | Create chart screen                               | Make screen and char sensor data                                                                            |
+| ->   | Create chart screen                               | Make screen and char sensor data                                                                            |
 |      | Add fragment for details                          | Add fragment on chart view to show sensor configuration and latest values                                   |
 |      | Listen to SSE                                     | If active start listening to sensor data via SSE and chart new values                                       |
 | X)   | Sensor & Actuator data update                     | Allow the update of sensor & actuator with backend update                                                   |
