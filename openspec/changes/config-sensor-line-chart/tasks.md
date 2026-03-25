@@ -1,6 +1,6 @@
 ## 1. Project Configuration
 
-- [ ] 1.1 Update Podfile `platform :ios` from `'15.0'` to `'17.6'` in `mobile_ios/Podfile`
+- [x] 1.1 Update Podfile `platform :ios` from `'15.0'` to `'17.6'` in `mobile_ios/Podfile`
 
 ## 2. Models
 
