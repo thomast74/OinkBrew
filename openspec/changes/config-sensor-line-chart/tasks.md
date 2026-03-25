@@ -4,8 +4,8 @@
 
 ## 2. Models
 
-- [ ] 2.1 Create `SensorDataPoint` struct (`date: Date`, `name: String`, `value: Double`) in `mobile_ios/OinkBrew Mobile/Models/SensorDataPoint.swift`
-- [ ] 2.2 Create `ConfigurationSensorDatas` response model in `mobile_ios/OinkBrew Mobile/Models/ConfigurationSensorDatas.swift` to decode `GET /configurations/{id}/sensordata` JSON (fields: `publishedAt`, `configurationId`, `sensorData` dictionary keyed by ISO8601 date strings)
+- [x] 2.1 Create `SensorDataPoint` struct (`date: Date`, `name: String`, `value: Double`) in `mobile_ios/OinkBrew Mobile/Models/SensorDataPoint.swift`
+- [x] 2.2 Create `ConfigurationSensorDatas` response model in `mobile_ios/OinkBrew Mobile/Models/ConfigurationSensorDatas.swift` to decode `GET /configurations/{id}/sensordata` JSON (fields: `publishedAt`, `configurationId`, `sensorData` dictionary keyed by ISO8601 date strings)
 
 ## 3. API & SSE Services
 
